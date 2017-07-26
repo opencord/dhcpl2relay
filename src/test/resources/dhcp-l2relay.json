@@ -1,0 +1,9 @@
+{
+  "apps": {
+    "org.opencord.dhcpl2relay" : {
+      "dhcpl2relay" : {
+        "dhcpserverConnectPoint": "of:0000000000000002/2"
+      }
+    }
+  }
+}

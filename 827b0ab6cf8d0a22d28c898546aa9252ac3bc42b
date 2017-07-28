@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a1a2d67_2240b055",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 370,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2017-07-28T19:44:35Z",
+      "side": 1,
+      "message": "might be nice to have a log.trace statement that displays the packet or key information about the packet like src mac",
+      "revId": "827b0ab6cf8d0a22d28c898546aa9252ac3bc42b",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a1a2d67_8231c40d",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/package-info.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2017-07-28T19:44:35Z",
+      "side": 1,
+      "message": "2017",
+      "revId": "827b0ab6cf8d0a22d28c898546aa9252ac3bc42b",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a1a2d67_6236a805",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/package-info.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2017-07-28T19:44:35Z",
+      "side": 1,
+      "message": "L2",
+      "revId": "827b0ab6cf8d0a22d28c898546aa9252ac3bc42b",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a1a2d67_423baceb",
+        "filename": "src/main/resources/dhcp-l2relay.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2017-07-28T19:44:35Z",
+      "side": 1,
+      "message": "should this be in src/test/resources?",
+      "revId": "827b0ab6cf8d0a22d28c898546aa9252ac3bc42b",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1a1a2d67_8db695db",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 370,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-07-31T04:53:48Z",
+      "side": 1,
+      "message": "Agreed",
+      "parentUuid": "1a1a2d67_2240b055",
+      "revId": "827b0ab6cf8d0a22d28c898546aa9252ac3bc42b",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a1a2d67_8231c40d",
         "filename": "src/main/java/org/opencord/dhcpl2relay/package-info.java",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2017-07-28T19:44:35Z",
       "side": 1,
       "message": "2017",
+      "revId": "827b0ab6cf8d0a22d28c898546aa9252ac3bc42b",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a1a2d67_0da3a59f",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/package-info.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-07-31T04:53:48Z",
+      "side": 1,
+      "message": "Agreed",
+      "parentUuid": "1a1a2d67_8231c40d",
       "revId": "827b0ab6cf8d0a22d28c898546aa9252ac3bc42b",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "1a1a2d67_ed9f494f",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/package-info.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-07-31T04:53:48Z",
+      "side": 1,
+      "message": "Agreed",
+      "parentUuid": "1a1a2d67_6236a805",
+      "revId": "827b0ab6cf8d0a22d28c898546aa9252ac3bc42b",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a1a2d67_423baceb",
         "filename": "src/main/resources/dhcp-l2relay.json",
         "patchSetId": 1
@@ -64,6 +118,24 @@
       "writtenOn": "2017-07-28T19:44:35Z",
       "side": 1,
       "message": "should this be in src/test/resources?",
+      "revId": "827b0ab6cf8d0a22d28c898546aa9252ac3bc42b",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a1a2d67_cdac8d8f",
+        "filename": "src/main/resources/dhcp-l2relay.json",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-07-31T04:53:48Z",
+      "side": 1,
+      "message": "Agreed",
+      "parentUuid": "1a1a2d67_423baceb",
       "revId": "827b0ab6cf8d0a22d28c898546aa9252ac3bc42b",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": false

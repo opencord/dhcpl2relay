@@ -16,6 +16,7 @@
 package org.opencord.dhcpl2relay;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
@@ -33,6 +34,8 @@ import org.onlab.packet.IPv4;
 import org.onlab.packet.TpPort;
 import org.onlab.packet.UDP;
 import org.onlab.packet.VlanId;
+import org.opencord.dhcpl2relay.packet.DhcpEthernet.java;
+import org.opencord.dhcpl2relay.packet.DhcpOption82.java;
 
 import org.onlab.util.Tools;
 import org.onosproject.cfg.ComponentConfigService;
@@ -68,8 +71,10 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.Dictionary;
+import java.util.List;
 import java.util.Set;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
 import static org.onlab.packet.MacAddress.valueOf;
@@ -132,21 +137,23 @@ public class DhcpL2Relay {
 
     @Activate
     protected void activate(ComponentContext context) {
-        //start the dhcp relay agent
-        appId = coreService.registerApplication(DHCP_L2RELAY_APP);
-        componentConfigService.registerProperties(getClass());
+      if (dhcpServerConnectPoint != null) {
+            TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
+                    .matchEthType(Ethernet.TYPE_IPV4)
+                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
+            packetService.cancelPackets(selectorServer.build(),
+                    PacketPriority.CONTROL, appId,
+                    Optional.of(dhcpServerConnectPoint.deviceId()));
 
-        cfgService.addListener(cfgListener);
-        factories.forEach(cfgService::registerConfigFactory);
-        //update the dhcp server configuration.
-        updateConfig();
-        //add the packet services.
-        packetService.addProcessor(dhcpRelayPacketProcessor,
-                PacketProcessor.director(0));
-        requestDhcpPackets();
-        modified(context);
-
-        log.info("DHCP-L2-RELAY Started");
+            TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
+                    .matchEthType(Ethernet.TYPE_IPV4)
+                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
+            packetService.cancelPackets(selectorClient.build(),
+                    PacketPriority.CONTROL, appId,
+                    Optional.of(dhcpServerConnectPoint.deviceId()));
+        }
     }
 
     @Deactivate
@@ -163,6 +170,7 @@ public class DhcpL2Relay {
 
     @Modified
     protected void modified(ComponentContext context) {
+
         Dictionary<?, ?> properties = context.getProperties();
 
         Boolean o = Tools.isPropertyEnabled(properties, "option82");
@@ -195,46 +203,46 @@ public class DhcpL2Relay {
      * Request DHCP packet in via PacketService.
      */
     private void requestDhcpPackets() {
-        if (dhcpServerConnectPoint != null) {
-            TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
-                    .matchEthType(Ethernet.TYPE_IPV4)
-                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
-            packetService.requestPackets(selectorServer.build(),
-                    PacketPriority.CONTROL, appId,
-                    Optional.of(dhcpServerConnectPoint.deviceId()));
+        TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
+                .matchEthType(Ethernet.TYPE_IPV4)
+                .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
+        packetService.requestPackets(selectorServer.build(),
+                PacketPriority.CONTROL, appId,
+                dhcpServerConnectPoint != null ?
+                        Optional.ofNullable(dhcpServerConnectPoint.deviceId()) : Optional.empty());
 
-            TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
-                    .matchEthType(Ethernet.TYPE_IPV4)
-                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
-            packetService.requestPackets(selectorClient.build(),
-                    PacketPriority.CONTROL, appId,
-                    Optional.of(dhcpServerConnectPoint.deviceId()));
-        }
+        TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
+                .matchEthType(Ethernet.TYPE_IPV4)
+                .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
+        packetService.requestPackets(selectorClient.build(),
+                PacketPriority.CONTROL, appId,
+                dhcpServerConnectPoint != null ?
+                        Optional.of(dhcpServerConnectPoint.deviceId()) : Optional.empty());
     }
 
     /**
      * Cancel requested DHCP packets in via packet service.
      */
     private void cancelDhcpPackets() {
-        if (dhcpServerConnectPoint != null) {
-            TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
-                    .matchEthType(Ethernet.TYPE_IPV4)
-                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
-            packetService.cancelPackets(selectorServer.build(),
-                    PacketPriority.CONTROL, appId,
-                    Optional.of(dhcpServerConnectPoint.deviceId()));
+        TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
+                .matchEthType(Ethernet.TYPE_IPV4)
+                .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
+        packetService.cancelPackets(selectorServer.build(),
+                PacketPriority.CONTROL, appId,
+                dhcpServerConnectPoint != null ?
+                        Optional.of(dhcpServerConnectPoint.deviceId()) : Optional.empty());
 
-            TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
-                    .matchEthType(Ethernet.TYPE_IPV4)
-                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
-            packetService.cancelPackets(selectorClient.build(),
-                    PacketPriority.CONTROL, appId,
-                    Optional.of(dhcpServerConnectPoint.deviceId()));
-        }
+        TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
+                .matchEthType(Ethernet.TYPE_IPV4)
+                .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
+        packetService.cancelPackets(selectorClient.build(),
+                PacketPriority.CONTROL, appId,
+                dhcpServerConnectPoint != null ?
+                        Optional.of(dhcpServerConnectPoint.deviceId()) : Optional.empty());
     }
 
     private SubscriberAndDeviceInformation getDevice(PacketContext context) {
@@ -263,7 +271,7 @@ public class DhcpL2Relay {
 
     private MacAddress relayAgentMacAddress(PacketContext context) {
 
-        SubscriberAndDeviceInformation device = getDevice(context);
+        SubscriberAndDeviceInformation device = this.getDevice(context);
         if (device == null) {
             log.warn("Device not found for {}", context.inPacket().
                     receivedFrom());
@@ -275,12 +283,10 @@ public class DhcpL2Relay {
 
     private String nasPortId(PacketContext context) {
         Port p = deviceService.getPort(context.inPacket().receivedFrom());
-
         return p.annotations().value(AnnotationKeys.PORT_NAME);
     }
 
     private SubscriberAndDeviceInformation getSubscriber(PacketContext context) {
-
         return subsService.get(nasPortId(context));
     }
 
@@ -304,6 +310,16 @@ public class DhcpL2Relay {
         return sub.sTag();
     }
 
+    private String nasId(PacketContext context) {
+        SubscriberAndDeviceInformation sub = getSubscriber(context);
+        if (sub == null) {
+            log.warn("Subscriber info not found for {}", context.inPacket().
+                    receivedFrom());
+            return null;
+        }
+        return sub.nasId();
+    }
+
     private class DhcpRelayPacketProcessor implements PacketProcessor {
 
         @Override
@@ -314,21 +330,28 @@ public class DhcpL2Relay {
             }
 
             // process the packet and get the payload
-            Ethernet packet = context.inPacket().parsed();
+            DhcpEthernet packet = null;
+            ByteBuffer byteBuffer = context.inPacket().unparsed();
+            try{
+                packet = DhcpEthernet.deserializer().deserialize(byteBuffer.array(), 0, byteBuffer.array().length);
+            }catch (DeserializationException e){
+                log.warn("Unable to deserialize packet");
+            }
+
             if (packet == null) {
                 log.warn("Packet is null");
                 return;
             }
 
-            //log.info("Got a packet of type {}", packet.getEtherType());
+            log.debug("Got a packet ", packet);
 
-            if (packet.getEtherType() == Ethernet.TYPE_IPV4) {
+            if (packet.getEtherType() == DhcpEthernet.TYPE_IPV4) {
                 IPv4 ipv4Packet = (IPv4) packet.getPayload();
 
                 if (ipv4Packet.getProtocol() == IPv4.PROTOCOL_UDP) {
                     UDP udpPacket = (UDP) ipv4Packet.getPayload();
                     if (udpPacket.getSourcePort() == UDP.DHCP_CLIENT_PORT ||
-                        udpPacket.getSourcePort() == UDP.DHCP_SERVER_PORT) {
+                            udpPacket.getSourcePort() == UDP.DHCP_SERVER_PORT) {
                         DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
                         //This packet is dhcp.
                         processDhcpPacket(context, packet, dhcpPayload);
@@ -338,7 +361,7 @@ public class DhcpL2Relay {
         }
 
         //forward the packet to ConnectPoint where the DHCP server is attached.
-        private void forwardPacket(Ethernet packet) {
+        private void forwardPacket(DhcpEthernet packet) {
 
             if (dhcpServerConnectPoint != null) {
                 TrafficTreatment t = DefaultTrafficTreatment.builder()
@@ -347,8 +370,8 @@ public class DhcpL2Relay {
                         dhcpServerConnectPoint.deviceId(), t,
                         ByteBuffer.wrap(packet.serialize()));
                 if (log.isTraceEnabled()) {
-                    log.trace("Relaying packet to dhcp server {} at {}",
-                            packet, dhcpServerConnectPoint);
+                log.trace("Relaying packet to dhcp server {} at {}",
+                        packet, dhcpServerConnectPoint);
                 }
                 packetService.emit(o);
             } else {
@@ -357,7 +380,7 @@ public class DhcpL2Relay {
         }
 
         //process the dhcp packet before sending to server
-        private void processDhcpPacket(PacketContext context, Ethernet packet,
+        private void processDhcpPacket(PacketContext context, DhcpEthernet packet,
                                        DHCP dhcpPayload) {
             if (dhcpPayload == null) {
                 log.warn("DHCP payload is null");
@@ -365,6 +388,7 @@ public class DhcpL2Relay {
             }
 
             DHCPPacketType incomingPacketType = null;
+
             for (DHCPOption option : dhcpPayload.getOptions()) {
                 if (option.getCode() == OptionCode_MessageType.getValue()) {
                     byte[] data = option.getData();
@@ -372,75 +396,88 @@ public class DhcpL2Relay {
                 }
             }
             log.info("Received DHCP Packet of type {}", incomingPacketType);
-            log.trace("Processing Packet {}", packet);
 
             switch (incomingPacketType) {
-            case DHCPDISCOVER:
-                Ethernet ethernetPacketDiscover =
-                    processDhcpPacketFromClient(context, packet);
-                if (ethernetPacketDiscover != null) {
-                    forwardPacket(ethernetPacketDiscover);
-                }
-                break;
-            case DHCPOFFER:
-                //reply to dhcp client.
-                Ethernet ethernetPacketOffer = processDhcpPacketFromServer(packet);
-                if (ethernetPacketOffer != null) {
-                    sendReply(ethernetPacketOffer, dhcpPayload);
-                }
-                break;
-            case DHCPREQUEST:
-                Ethernet ethernetPacketRequest =
-                    processDhcpPacketFromClient(context, packet);
-                if (ethernetPacketRequest != null) {
-                    forwardPacket(ethernetPacketRequest);
-                }
-                break;
-            case DHCPACK:
-                //reply to dhcp client.
-                Ethernet ethernetPacketAck = processDhcpPacketFromServer(packet);
-                if (ethernetPacketAck != null) {
-                    sendReply(ethernetPacketAck, dhcpPayload);
-                }
-                break;
-            default:
-                break;
+                case DHCPDISCOVER:
+                    DhcpEthernet ethernetPacketDiscover =
+                            processDhcpPacketFromClient(context, packet);
+                    if (ethernetPacketDiscover != null) {
+                        forwardPacket(ethernetPacketDiscover);
+                    }
+                    break;
+                case DHCPOFFER:
+                    //reply to dhcp client.
+                    DhcpEthernet ethernetPacketOffer = processDhcpPacketFromServer(packet);
+                    if (ethernetPacketOffer != null) {
+                        sendReply(ethernetPacketOffer, dhcpPayload);
+                    }
+                    break;
+                case DHCPREQUEST:
+                    DhcpEthernet ethernetPacketRequest =
+                            processDhcpPacketFromClient(context, packet);
+                    if (ethernetPacketRequest != null) {
+                        forwardPacket(ethernetPacketRequest);
+                    }
+                    break;
+                case DHCPACK:
+                    //reply to dhcp client.
+                    DhcpEthernet ethernetPacketAck = processDhcpPacketFromServer(packet);
+                    if (ethernetPacketAck != null) {
+                        sendReply(ethernetPacketAck, dhcpPayload);
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
-        private Ethernet processDhcpPacketFromClient(PacketContext context,
-                                                     Ethernet ethernetPacket) {
+        private DhcpEthernet processDhcpPacketFromClient(PacketContext context,
+                                                         DhcpEthernet ethernetPacket) {
             log.info("Processing packet from client");
 
             MacAddress relayAgentMac = relayAgentMacAddress(context);
             if (relayAgentMac == null) {
                 log.warn("RelayAgent MAC not found ");
-
                 return null;
             }
 
-            Ethernet etherReply = ethernetPacket;
+            DhcpEthernet etherReply = ethernetPacket;
 
             IPv4 ipv4Packet = (IPv4) etherReply.getPayload();
             UDP udpPacket = (UDP) ipv4Packet.getPayload();
             DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
 
+            if (option82) {
+                SubscriberAndDeviceInformation entry = getSubscriber(context);
+                if(entry == null){
+                    log.info("Dropping packet as subscriber entry is not available");
+                    return null;
+                }
+
+                String option82data = entry.nasId()+ " " + entry.nasPortId();
+
+                DHCP dhcpPacketWithOption82 = addOptions(dhcpPacket, option82data);
+                udpPacket.setPayload(dhcpPacketWithOption82);
+            }
+
+            ipv4Packet.setPayload(udpPacket);
+            etherReply.setPayload(ipv4Packet);
             etherReply.setSourceMACAddress(relayAgentMac);
             etherReply.setDestinationMACAddress(dhcpConnectMac);
 
             etherReply.setVlanID(cTag(context).toShort());
-            etherReply.setQinQTPID(Ethernet.TYPE_VLAN);
+            etherReply.setQinQTPID(DhcpEthernet.TYPE_QINQ);
             etherReply.setQinQVID(sTag(context).toShort());
 
-            log.info("Finished processing");
+            log.info("Finished processing packet" );
             return etherReply;
         }
 
         //build the DHCP offer/ack with proper client port.
-        private Ethernet processDhcpPacketFromServer(Ethernet ethernetPacket) {
-            log.warn("Processing DHCP packet from server");
+        private DhcpEthernet processDhcpPacketFromServer(DhcpEthernet ethernetPacket) {
+            log.info("Processing DHCP packet from server");
             // get dhcp header.
-            Ethernet etherReply = (Ethernet) ethernetPacket.clone();
+            DhcpEthernet etherReply = (DhcpEthernet) ethernetPacket.clone();
             IPv4 ipv4Packet = (IPv4) etherReply.getPayload();
             UDP udpPacket = (UDP) ipv4Packet.getPayload();
             DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
@@ -450,8 +487,8 @@ public class DhcpL2Relay {
             Set<Host> hosts = hostService.getHostsByMac(dstMac);
             if (hosts == null || hosts.isEmpty()) {
                 log.warn("Cannot determine host for DHCP client: {}. Aborting "
-                        + "relay for dhcp packet from server {}",
-                         dstMac, ethernetPacket);
+                                + "relay for dhcp packet from server {}",
+                        dstMac, ethernetPacket);
                 return null;
             } else if (hosts.size() > 1) {
                 // XXX  redo to send reply to all hosts found
@@ -473,7 +510,7 @@ public class DhcpL2Relay {
                             host.location().port()));
             if (relayAgentIP == null) {
                 log.warn("Cannot determine relay agent Ipv4 addr for host {}. "
-                        + "Aborting relay for dhcp packet from server {}",
+                                + "Aborting relay for dhcp packet from server {}",
                         host, ethernetPacket);
                 return null;
             }
@@ -482,7 +519,11 @@ public class DhcpL2Relay {
             ipv4Packet.setDestinationAddress(dhcpPayload.getYourIPAddress());
 
             udpPacket.setDestinationPort(UDP.DHCP_CLIENT_PORT);
-            udpPacket.setPayload(dhcpPayload);
+            if (option82) {
+                udpPacket.setPayload(removeOptions(dhcpPayload));
+            } else {
+                udpPacket.setPayload(dhcpPayload);
+            }
             ipv4Packet.setPayload(udpPacket);
             etherReply.setPayload(ipv4Packet);
 
@@ -491,7 +532,7 @@ public class DhcpL2Relay {
         }
 
         //send the response to the requester host.
-        private void sendReply(Ethernet ethPacket, DHCP dhcpPayload) {
+        private void sendReply(DhcpEthernet ethPacket, DHCP dhcpPayload) {
             MacAddress descMac = valueOf(dhcpPayload.getClientHardwareAddress());
             Host host = hostService.getHostsByMac(descMac).stream().findFirst().orElse(null);
 
@@ -506,13 +547,39 @@ public class DhcpL2Relay {
                     log.trace("Relaying packet to dhcp client {}", ethPacket);
                 }
                 packetService.emit(o);
-                log.error("DHCP Packet sent to {}", host.location());
+                log.info("DHCP Packet sent to {}", host.location());
             } else {
-                log.info("Dropping DHCP packet because can't find host for {}", descMac);
+                log.error("Dropping DHCP packet because can't find host for {}", descMac);
             }
         }
     }
 
+    private DHCP addOptions(DHCP dhcpPacket, String option82data) {
+        log.debug("option82data {} ", option82data);
+
+        List<DHCPOption> options = Lists.newArrayList(dhcpPacket.getOptions());
+        DhcpOption82 option82 = new DhcpOption82();
+        option82.setAgentCircuitId(option82data);
+
+        DHCPOption option = new DHCPOption()
+                                .setCode(DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
+                                .setData(option82.toByteArray())
+                                .setLength(option82.length());
+
+        options.add(options.size() -1, option);
+        dhcpPacket.setOptions(options);
+        return dhcpPacket;
+
+    }
+
+    private DHCP removeOptions(DHCP dhcpPacket) {
+        List<DHCPOption> options = dhcpPacket.getOptions();
+        List<DHCPOption> newoptions = options.stream()
+                .filter(option -> option.getCode() != DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
+                .collect(Collectors.toList());
+
+        return dhcpPacket.setOptions(newoptions);
+    }
     /**
      * Listener for network config events.
      */
@@ -529,4 +596,7 @@ public class DhcpL2Relay {
             }
         }
     }
+
+
+
 }

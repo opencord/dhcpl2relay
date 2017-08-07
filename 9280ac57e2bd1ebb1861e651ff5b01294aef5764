@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da3975d1_b1e400ad",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 220,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-08-07T08:50:45Z",
+      "side": 1,
+      "message": "Do we need to check ofNullable as the check is already done in line 213",
+      "revId": "9280ac57e2bd1ebb1861e651ff5b01294aef5764",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da3975d1_91e1fc9c",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 318,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-08-07T08:50:45Z",
+      "side": 1,
+      "message": "This function doesn\u0027t seem to be used",
+      "revId": "9280ac57e2bd1ebb1861e651ff5b01294aef5764",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da3975d1_71ee988d",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 462,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-08-07T08:50:45Z",
+      "side": 1,
+      "message": "To keep things more generic, my suggestion would be to introduce circuitId as an attribute in Sadis. \n\nIn this particular case the circuitId is derived from nasId and nasPortId, but in other cases if operator wants different scemantics of the circuitId, it will not work.",
+      "revId": "9280ac57e2bd1ebb1861e651ff5b01294aef5764",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da3975d1_d1d784be",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/packet/DhcpEthernet.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-08-07T08:50:45Z",
+      "side": 1,
+      "message": "This class is needed as the Ethernet class in ONOS 1.8.x does not have support for double tags.\n\nI had submitted a patch for this and this feature is available in ONOS 1.10.0 onwards.\n\nSo once we migrate to ONOS 1.10.0, we should move from DhcpEthernet to Ethernet class. The next release of CORD is going to happen on ONOS 1.10.x.",
+      "revId": "9280ac57e2bd1ebb1861e651ff5b01294aef5764",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da3975d1_f1da88e8",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/packet/DhcpOption82.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-08-07T08:50:45Z",
+      "side": 1,
+      "message": "Any particular reason why we are not doing the javadoc documentation for the set functions?",
+      "revId": "9280ac57e2bd1ebb1861e651ff5b01294aef5764",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da3975d1_11d62cc6",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/packet/DhcpOption82.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-08-07T08:50:45Z",
+      "side": 1,
+      "message": "Please remove the commented code",
+      "revId": "9280ac57e2bd1ebb1861e651ff5b01294aef5764",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

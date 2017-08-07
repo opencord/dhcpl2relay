@@ -53,6 +53,24 @@
     },
     {
       "key": {
+        "uuid": "da3975d1_f1af282a",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 462,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2017-08-07T14:16:47Z",
+      "side": 1,
+      "message": "I like this idea. If Java had a templating class like Golang I might suggest that this option would be available to, i.e the specification of circuit ID could be a template or literal text.",
+      "parentUuid": "da3975d1_71ee988d",
+      "revId": "9280ac57e2bd1ebb1861e651ff5b01294aef5764",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da3975d1_d1d784be",
         "filename": "src/main/java/org/opencord/dhcpl2relay/packet/DhcpEthernet.java",
         "patchSetId": 1

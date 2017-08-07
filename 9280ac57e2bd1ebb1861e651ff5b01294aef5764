@@ -71,6 +71,24 @@
     },
     {
       "key": {
+        "uuid": "da3975d1_31125063",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 462,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2017-08-07T21:34:20Z",
+      "side": 1,
+      "message": "add circuit ID and remote ID to sadis",
+      "parentUuid": "da3975d1_71ee988d",
+      "revId": "9280ac57e2bd1ebb1861e651ff5b01294aef5764",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da3975d1_d1d784be",
         "filename": "src/main/java/org/opencord/dhcpl2relay/packet/DhcpEthernet.java",
         "patchSetId": 1

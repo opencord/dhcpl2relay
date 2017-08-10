@@ -40,7 +40,8 @@
         <onos.app.category>default</onos.app.category>
         <onos.app.url>http://opencord.org</onos.app.url>
         <onos.app.readme>DHCP L2 Relay Agent Application.</onos.app.readme>
-        <onos.version>1.8.0</onos.version>
+	<onos.version>1.8.0</onos.version>
+	<sadis.api.version>1.0.0-SNAPSHOT</sadis.api.version>
     </properties>
 
     <dependencies>
@@ -53,7 +54,7 @@
         <dependency>
             <groupId>org.opencord</groupId>
             <artifactId>sadis-api</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+	    <version>${sadis.api.version}</version>
         </dependency>
 
         <dependency>

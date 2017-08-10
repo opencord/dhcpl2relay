@@ -31,11 +31,15 @@ import org.onlab.packet.DHCPOption;
 import org.onlab.packet.DHCPPacketType;
 import org.onlab.packet.Ethernet;
 import org.onlab.packet.IPv4;
-import org.onlab.packet.Ip4Address;
 import org.onlab.packet.MacAddress;
 import org.onlab.packet.TpPort;
 import org.onlab.packet.UDP;
 import org.onlab.packet.VlanId;
+import org.onosproject.mastership.MastershipEvent;
+import org.onosproject.mastership.MastershipListener;
+import org.onosproject.mastership.MastershipService;
+import org.onosproject.net.device.DeviceEvent;
+import org.onosproject.net.device.DeviceListener;
 import org.opencord.dhcpl2relay.packet.DhcpEthernet;
 import org.opencord.dhcpl2relay.packet.DhcpOption82;
 import org.onlab.util.Tools;
@@ -72,7 +76,6 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.Dictionary;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -123,6 +126,9 @@ public class DhcpL2Relay {
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     protected DeviceService deviceService;
 
+    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    protected MastershipService mastershipService;
+
     @Property(name = "option82", boolValue = true,
             label = "Add option 82 to relayed packets")
     protected boolean option82 = true;
@@ -130,7 +136,11 @@ public class DhcpL2Relay {
     private DhcpRelayPacketProcessor dhcpRelayPacketProcessor =
             new DhcpRelayPacketProcessor();
 
+    private InnerMastershipListener changeListener = new InnerMastershipListener();
+    private InnerDeviceListener deviceListener = new InnerDeviceListener();
 
+    // connect points to the DHCP server
+    Set<ConnectPoint> dhcpConnectPoints;
     private ConnectPoint dhcpServerConnectPoint = null;
     private MacAddress dhcpConnectMac = MacAddress.BROADCAST;
     private ApplicationId appId;
@@ -142,6 +152,9 @@ public class DhcpL2Relay {
         componentConfigService.registerProperties(getClass());
 
         cfgService.addListener(cfgListener);
+        mastershipService.addListener(changeListener);
+        deviceService.addListener(deviceListener);
+
         factories.forEach(cfgService::registerConfigFactory);
         //update the dhcp server configuration.
         updateConfig();
@@ -188,20 +201,46 @@ public class DhcpL2Relay {
         return dhcpServerConnectPoint != null;
     }
 
+    /**
+     * Selects a connect point through an available device for which it is the master.
+     */
+    private void selectServerConnectPoint() {
+        synchronized (this) {
+            dhcpServerConnectPoint = null;
+            if (dhcpConnectPoints != null) {
+                // find a connect point through a device for which we are master
+                for (ConnectPoint cp: dhcpConnectPoints) {
+                    if (mastershipService.isLocalMaster(cp.deviceId())) {
+                        if (deviceService.isAvailable(cp.deviceId())) {
+                            dhcpServerConnectPoint = cp;
+                        }
+                        log.info("DHCP connectPoint selected is {}", cp);
+                        break;
+                    }
+                }
+            }
+
+            log.info("DHCP Server connectPoint is {}", dhcpServerConnectPoint);
+
+            if (dhcpServerConnectPoint == null) {
+                log.error("Master of none, can't relay DHCP Message to server");
+            }
+        }
+    }
+
+    /**
+     * Updates the network configuration.
+     */
     private void updateConfig() {
         DhcpL2RelayConfig cfg = cfgService.getConfig(appId, DhcpL2RelayConfig.class);
         if (cfg == null) {
             log.warn("Dhcp Server info not available");
             return;
         }
-        if (dhcpServerConnectPoint == null) {
-            dhcpServerConnectPoint = cfg.getDhcpServerConnectPoint();
-            requestDhcpPackets();
-        } else {
-            cancelDhcpPackets();
-            dhcpServerConnectPoint = cfg.getDhcpServerConnectPoint();
-            requestDhcpPackets();
-        }
+
+        dhcpConnectPoints = cfg.getDhcpServerConnectPoint();
+
+        selectServerConnectPoint();
 
         log.info("dhcp server connect point: " + dhcpServerConnectPoint);
     }
@@ -210,44 +249,39 @@ public class DhcpL2Relay {
      * Request DHCP packet in via PacketService.
      */
     private void requestDhcpPackets() {
-        if (dhcpServerConnectPoint != null) {
-            TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
-                    .matchEthType(Ethernet.TYPE_IPV4)
-                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
-            packetService.requestPackets(selectorServer.build(),
-                    PacketPriority.CONTROL, appId,
-                    Optional.of(dhcpServerConnectPoint.deviceId()));
+        TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
+                .matchEthType(Ethernet.TYPE_IPV4)
+                .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
+        packetService.requestPackets(selectorServer.build(),
+                PacketPriority.CONTROL, appId);
 
-            TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
-                    .matchEthType(Ethernet.TYPE_IPV4)
-                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
-            packetService.requestPackets(selectorClient.build(),
-                    PacketPriority.CONTROL, appId,
-                    Optional.of(dhcpServerConnectPoint.deviceId()));
-        }
+        TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
+                .matchEthType(Ethernet.TYPE_IPV4)
+                .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
+        packetService.requestPackets(selectorClient.build(),
+                PacketPriority.CONTROL, appId);
+
     }
 
     /**
      * Cancel requested DHCP packets in via packet service.
      */
     private void cancelDhcpPackets() {
-        if (dhcpServerConnectPoint != null) {
-            TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
-                    .matchEthType(Ethernet.TYPE_IPV4)
-                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
-            packetService.cancelPackets(selectorServer.build(),
-                    PacketPriority.CONTROL, appId, Optional.of(dhcpServerConnectPoint.deviceId()));
+        TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
+                .matchEthType(Ethernet.TYPE_IPV4)
+                .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
+        packetService.cancelPackets(selectorServer.build(),
+                PacketPriority.CONTROL, appId);
 
-            TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
-                    .matchEthType(Ethernet.TYPE_IPV4)
-                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
-            packetService.cancelPackets(selectorClient.build(),
-                    PacketPriority.CONTROL, appId, Optional.of(dhcpServerConnectPoint.deviceId()));
-        }
+        TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
+                .matchEthType(Ethernet.TYPE_IPV4)
+                .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
+        packetService.cancelPackets(selectorClient.build(),
+                PacketPriority.CONTROL, appId);
     }
 
     private SubscriberAndDeviceInformation getDevice(PacketContext context) {
@@ -263,16 +297,6 @@ public class DhcpL2Relay {
 
         return subsService.get(serialNo);
     }
-    private Ip4Address relayAgentIPv4Address(ConnectPoint cp) {
-
-        SubscriberAndDeviceInformation device = getDevice(cp);
-        if (device == null) {
-            log.warn("Device not found for {}", cp);
-            return null;
-        }
-
-        return device.ipAddress();
-    }
 
     private MacAddress relayAgentMacAddress(PacketContext context) {
 
@@ -287,7 +311,11 @@ public class DhcpL2Relay {
     }
 
     private String nasPortId(PacketContext context) {
-        Port p = deviceService.getPort(context.inPacket().receivedFrom());
+        return nasPortId(context.inPacket().receivedFrom());
+    }
+
+    private String nasPortId(ConnectPoint cp) {
+        Port p = deviceService.getPort(cp);
         return p.annotations().value(AnnotationKeys.PORT_NAME);
     }
 
@@ -303,6 +331,26 @@ public class DhcpL2Relay {
             return VlanId.NONE;
         }
         return sub.cTag();
+    }
+
+    private VlanId cTag(ConnectPoint cp) {
+        String portId = nasPortId(cp);
+        SubscriberAndDeviceInformation sub = subsService.get(portId);
+        if (sub == null) {
+            log.warn("Subscriber info not found for {} looking for C-TAG", cp);
+            return VlanId.NONE;
+        }
+        return sub.cTag();
+    }
+
+    private VlanId sTag(ConnectPoint cp) {
+        String portId = nasPortId(cp);
+        SubscriberAndDeviceInformation sub = subsService.get(portId);
+        if (sub == null) {
+            log.warn("Subscriber info not found for {} looking for S-TAG", cp);
+            return VlanId.NONE;
+        }
+        return sub.sTag();
     }
 
     private VlanId sTag(PacketContext context) {
@@ -458,11 +506,12 @@ public class DhcpL2Relay {
             etherReply.setSourceMacAddress(relayAgentMac);
             etherReply.setDestinationMacAddress(dhcpConnectMac);
 
+            etherReply.setPriorityCode(ethernetPacket.getPriorityCode());
             etherReply.setVlanID(cTag(context).toShort());
             etherReply.setQinQtpid(DhcpEthernet.TYPE_QINQ);
             etherReply.setQinQVid(sTag(context).toShort());
 
-            log.info("Finished processing packet");
+            log.info("Finished processing packet -- sending packet {}", etherReply);
             return etherReply;
         }
 
@@ -474,7 +523,6 @@ public class DhcpL2Relay {
             IPv4 ipv4Packet = (IPv4) etherReply.getPayload();
             UDP udpPacket = (UDP) ipv4Packet.getPayload();
             DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
-
 
             MacAddress dstMac = valueOf(dhcpPayload.getClientHardwareAddress());
             Set<Host> hosts = hostService.getHostsByMac(dstMac);
@@ -490,28 +538,15 @@ public class DhcpL2Relay {
             }
             Host host = hosts.iterator().next();
 
-            etherReply.setDestinationMacAddress(dstMac);
-            etherReply.setQinQVid(Ethernet.VLAN_UNTAGGED);
-            etherReply.setPriorityCode(ethernetPacket.getPriorityCode());
-            etherReply.setVlanID((short) 0);
+            ConnectPoint subsCp = new ConnectPoint(host.location().deviceId(),
+                    host.location().port());
 
             // we leave the srcMac from the original packet
+            etherReply.setDestinationMacAddress(dstMac);
+            etherReply.setQinQVid(sTag(subsCp).toShort());
+            etherReply.setPriorityCode(ethernetPacket.getPriorityCode());
+            etherReply.setVlanID((cTag(subsCp).toShort()));
 
-            // figure out the relay agent IP corresponding to the original request
-            Ip4Address relayAgentIP = relayAgentIPv4Address(
-                    new ConnectPoint(host.location().deviceId(),
-                            host.location().port()));
-            if (relayAgentIP == null) {
-                log.warn("Cannot determine relay agent Ipv4 addr for host {}. "
-                                + "Aborting relay for dhcp packet from server {}",
-                        host, ethernetPacket);
-                return null;
-            }
-
-            ipv4Packet.setSourceAddress(relayAgentIP.toInt());
-            ipv4Packet.setDestinationAddress(dhcpPayload.getYourIPAddress());
-
-            udpPacket.setDestinationPort(UDP.DHCP_CLIENT_PORT);
             if (option82) {
                 udpPacket.setPayload(removeOption82(dhcpPayload));
             } else {
@@ -561,6 +596,7 @@ public class DhcpL2Relay {
 
         options.add(options.size() - 1, option);
         dhcpPacket.setOptions(options);
+
         return dhcpPacket;
 
     }
@@ -590,6 +626,58 @@ public class DhcpL2Relay {
         }
     }
 
+    /**
+     * Handles Mastership changes for the devices which connect
+     * to the DHCP server.
+     */
+    private class InnerMastershipListener implements MastershipListener {
+        @Override
+        public void event(MastershipEvent event) {
+            if (dhcpServerConnectPoint != null &&
+                    dhcpServerConnectPoint.deviceId().
+                            equals(event.subject())) {
+                log.trace("Mastership Event recevived for {}", event.subject());
+                // mastership of the device for our connect point has changed
+                // reselect
+                selectServerConnectPoint();
+            }
+        }
+    }
 
-
+    /**
+     * Handles Device status change for the devices which connect
+     * to the DHCP server.
+     */
+    private class InnerDeviceListener implements DeviceListener {
+        @Override
+        public void event(DeviceEvent event) {
+            log.trace("Device Event recevived for {} event {}", event.subject(), event.type());
+            if (dhcpServerConnectPoint == null) {
+                switch (event.type()) {
+                    case DEVICE_ADDED:
+                    case DEVICE_AVAILABILITY_CHANGED:
+                        // some device is available check if we can get one
+                        selectServerConnectPoint();
+                        break;
+                    default:
+                        break;
+                }
+                return;
+            }
+            if (dhcpServerConnectPoint.deviceId().
+                    equals(event.subject().id())) {
+                switch (event.type()) {
+                    case DEVICE_AVAILABILITY_CHANGED:
+                    case DEVICE_REMOVED:
+                    case DEVICE_SUSPENDED:
+                        // state of our device has changed, check if we need
+                        // to re-select
+                        selectServerConnectPoint();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
 }

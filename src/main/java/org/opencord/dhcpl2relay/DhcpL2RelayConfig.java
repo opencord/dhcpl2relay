@@ -15,32 +15,59 @@
  */
 package org.opencord.dhcpl2relay;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
+import com.google.common.collect.ImmutableSet;
+
 import org.onosproject.core.ApplicationId;
 import org.onosproject.net.ConnectPoint;
 import org.onosproject.net.config.Config;
 
-import static org.onosproject.net.config.Config.FieldPresence.MANDATORY;
+import java.util.HashSet;
+import java.util.Set;
+
 
 /**
  * DHCP Relay Config class.
  */
 public class DhcpL2RelayConfig extends Config<ApplicationId> {
 
-    private static final String DHCP_CONNECT_POINT = "dhcpserverConnectPoint";
+    private static final String DHCP_CONNECT_POINTS = "dhcpServerConnectPoints";
 
     @Override
     public boolean isValid() {
 
-        return hasOnlyFields(DHCP_CONNECT_POINT) &&
-                isConnectPoint(DHCP_CONNECT_POINT, MANDATORY);
+        return hasOnlyFields(DHCP_CONNECT_POINTS);
     }
 
     /**
-     * Returns the dhcp server connect point.
+     * Returns the dhcp server connect points.
      *
-     * @return dhcp server connect point
+     * @return dhcp server connect points
      */
-    public ConnectPoint getDhcpServerConnectPoint() {
-        return ConnectPoint.deviceConnectPoint(object.path(DHCP_CONNECT_POINT).asText());
+    public Set<ConnectPoint> getDhcpServerConnectPoint() {
+        if (object == null) {
+            return new HashSet<ConnectPoint>();
+        }
+
+        if (!object.has(DHCP_CONNECT_POINTS)) {
+            return ImmutableSet.of();
+        }
+
+        ImmutableSet.Builder<ConnectPoint> builder = ImmutableSet.builder();
+        ArrayNode arrayNode = (ArrayNode) object.path(DHCP_CONNECT_POINTS);
+        for (JsonNode jsonNode : arrayNode) {
+            String portName = jsonNode.asText(null);
+            if (portName == null) {
+                return null;
+            }
+            try {
+                builder.add(ConnectPoint.deviceConnectPoint(portName));
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
+        }
+        return builder.build();
     }
 }

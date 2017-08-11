@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a288981_2ed1c7cd",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2017-08-11T18:47:42Z",
+      "side": 1,
+      "message": "Could a AtomicReference be used here to avoid the \"synchronized\" block below?",
+      "revId": "7f5b4bd6e8115dc1a3cf2b40b17f20523a8400b4",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a288981_0ed60bc6",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 208,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2017-08-11T18:47:42Z",
+      "side": 1,
+      "message": "could AtomicReference and concurrent sets be used to avoid the synchronized block? should they be?",
+      "revId": "7f5b4bd6e8115dc1a3cf2b40b17f20523a8400b4",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

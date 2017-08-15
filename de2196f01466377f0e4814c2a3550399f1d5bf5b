@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a2585a7_70120eb6",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2017-08-15T19:01:53Z",
+      "side": 1,
+      "message": "If we used `ConcurrentSkipListSet` for `dhcpConnectPoints` would we be able to remove the `synchronized` block below. Curious if using Java 8 concurrent classes will help with performance over a `synchronized` block?",
+      "revId": "de2196f01466377f0e4814c2a3550399f1d5bf5b",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a2585a7_501712a4",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 210,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2017-08-15T19:01:53Z",
+      "side": 1,
+      "message": "If we used `ConcurrentSkipListSet` for `dhcpConnectPoints` would we be able to remove the `synchronized` block below. Curious if using Java 8 concurrent classes will help with performance over a `synchronized` block?\n\nIt may be that using non-concurrent classes and the synchronized block is more efficient, I honestly don\u0027t know. I am looking for feedback from you and not necessarily a change.\n\nI f the concurrent classes are not more efficient in this use case then we can likely remove the concurrent reference as well.",
+      "range": {
+        "startLine": 210,
+        "startChar": 0,
+        "endLine": 210,
+        "endChar": 29
+      },
+      "revId": "de2196f01466377f0e4814c2a3550399f1d5bf5b",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

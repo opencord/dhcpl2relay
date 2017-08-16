@@ -45,7 +45,7 @@ public class DhcpOption82 {
 
     /**
      * sets AgentRemoteId.
-     * @param value
+     * @param value   Value to be set
      */
     public void setAgentRemoteId(String value) {
         this.agentRemoteId = value;

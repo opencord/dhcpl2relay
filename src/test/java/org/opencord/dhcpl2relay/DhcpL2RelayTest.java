@@ -15,8 +15,6 @@
  */
 package org.opencord.dhcpl2relay;
 
-//import com.fasterxml.jackson.databind.util.Annotations;
-
 import org.easymock.EasyMock;
 
 import com.google.common.collect.Lists;

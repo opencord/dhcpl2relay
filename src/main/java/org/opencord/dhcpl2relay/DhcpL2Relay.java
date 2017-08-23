@@ -16,6 +16,7 @@
 package org.opencord.dhcpl2relay;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -31,6 +32,7 @@ import org.onlab.packet.DHCP;
 import org.onlab.packet.DHCPOption;
 import org.onlab.packet.DHCPPacketType;
 import org.onlab.packet.Ethernet;
+import org.onlab.packet.IpAddress;
 import org.onlab.packet.IPv4;
 import org.onlab.packet.MacAddress;
 import org.onlab.packet.TpPort;
@@ -76,6 +78,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.Dictionary;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -135,6 +138,10 @@ public class DhcpL2Relay {
             label = "Add option 82 to relayed packets")
     protected boolean option82 = true;
 
+    @Property(name = "enableDhcpBroadcastReplies", boolValue = false,
+            label = "Add option 82 to relayed packets")
+    protected boolean enableDhcpBroadcastReplies = false;
+
     private DhcpRelayPacketProcessor dhcpRelayPacketProcessor =
             new DhcpRelayPacketProcessor();
 
@@ -146,6 +153,8 @@ public class DhcpL2Relay {
     private AtomicReference<ConnectPoint> dhcpServerConnectPoint = new AtomicReference<>();
     private MacAddress dhcpConnectMac = MacAddress.BROADCAST;
     private ApplicationId appId;
+
+    static Map<String, DhcpAllocationInfo> allocationMap = Maps.newConcurrentMap();
 
     @Activate
     protected void activate(ComponentContext context) {
@@ -286,6 +295,10 @@ public class DhcpL2Relay {
                 PacketPriority.CONTROL, appId);
     }
 
+    public static Map<String, DhcpAllocationInfo> allocationMap() {
+        return allocationMap;
+    }
+
     private SubscriberAndDeviceInformation getDevice(PacketContext context) {
         String serialNo = deviceService.getDevice(context.inPacket().
                 receivedFrom().deviceId()).serialNumber();
@@ -424,6 +437,18 @@ public class DhcpL2Relay {
             }
         }
 
+        // get the type of the DHCP packet
+        private DHCPPacketType getDhcpPacketType(DHCP dhcpPayload) {
+
+            for (DHCPOption option : dhcpPayload.getOptions()) {
+                if (option.getCode() == OptionCode_MessageType.getValue()) {
+                    byte[] data = option.getData();
+                    return DHCPPacketType.getType(data[0]);
+                }
+            }
+            return null;
+        }
+
         //process the dhcp packet before sending to server
         private void processDhcpPacket(PacketContext context, DhcpEthernet packet,
                                        DHCP dhcpPayload) {
@@ -432,14 +457,8 @@ public class DhcpL2Relay {
                 return;
             }
 
-            DHCPPacketType incomingPacketType = null;
+            DHCPPacketType incomingPacketType = getDhcpPacketType(dhcpPayload);
 
-            for (DHCPOption option : dhcpPayload.getOptions()) {
-                if (option.getCode() == OptionCode_MessageType.getValue()) {
-                    byte[] data = option.getData();
-                    incomingPacketType = DHCPPacketType.getType(data[0]);
-                }
-            }
             log.info("Received DHCP Packet of type {}", incomingPacketType);
 
             switch (incomingPacketType) {
@@ -478,7 +497,6 @@ public class DhcpL2Relay {
 
         private DhcpEthernet processDhcpPacketFromClient(PacketContext context,
                                                          DhcpEthernet ethernetPacket) {
-            log.info("Processing packet from client");
 
             MacAddress relayAgentMac = relayAgentMacAddress(context);
             if (relayAgentMac == null) {
@@ -491,6 +509,22 @@ public class DhcpL2Relay {
             IPv4 ipv4Packet = (IPv4) etherReply.getPayload();
             UDP udpPacket = (UDP) ipv4Packet.getPayload();
             DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
+
+            if (enableDhcpBroadcastReplies) {
+                // We want the reply to come back as a L2 broadcast
+                dhcpPacket.setFlags((short) 0x8000);
+            }
+
+            // remove from the allocation map (used for display) as it's is
+            // requesting a fresh allocation
+            if (getDhcpPacketType(dhcpPacket) == DHCPPacketType.DHCPREQUEST) {
+
+                String portId = nasPortId(context.inPacket().receivedFrom());
+                SubscriberAndDeviceInformation sub = subsService.get(portId);
+                if (sub != null) {
+                    allocationMap.remove(sub.nasPortId());
+                }
+            } // end allocation for display
 
             if (option82) {
                 SubscriberAndDeviceInformation entry = getSubscriber(context);
@@ -510,7 +544,7 @@ public class DhcpL2Relay {
 
             etherReply.setPriorityCode(ethernetPacket.getPriorityCode());
             etherReply.setVlanID(cTag(context).toShort());
-            etherReply.setQinQtpid(DhcpEthernet.TYPE_QINQ);
+            etherReply.setQinQtpid(DhcpEthernet.TYPE_VLAN);
             etherReply.setQinQVid(sTag(context).toShort());
 
             log.info("Finished processing packet -- sending packet {}", etherReply);
@@ -519,7 +553,6 @@ public class DhcpL2Relay {
 
         //build the DHCP offer/ack with proper client port.
         private DhcpEthernet processDhcpPacketFromServer(DhcpEthernet ethernetPacket) {
-            log.info("Processing DHCP packet from server");
             // get dhcp header.
             DhcpEthernet etherReply = (DhcpEthernet) ethernetPacket.clone();
             IPv4 ipv4Packet = (IPv4) etherReply.getPayload();
@@ -527,21 +560,31 @@ public class DhcpL2Relay {
             DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
 
             MacAddress dstMac = valueOf(dhcpPayload.getClientHardwareAddress());
-            Set<Host> hosts = hostService.getHostsByMac(dstMac);
-            if (hosts == null || hosts.isEmpty()) {
-                log.warn("Cannot determine host for DHCP client: {}. Aborting "
-                                + "relay for dhcp packet from server {}",
-                        dstMac, ethernetPacket);
-                return null;
-            } else if (hosts.size() > 1) {
-                // XXX  redo to send reply to all hosts found
-                log.warn("Multiple hosts found for mac:{}. Picking one "
-                        + "host out of {}", dstMac, hosts);
-            }
-            Host host = hosts.iterator().next();
+            ConnectPoint subsCp = getConnectPointOfClient(dstMac);
+            // if it's an ACK packet store the information for display purpose
+            if (getDhcpPacketType(dhcpPayload) == DHCPPacketType.DHCPACK) {
 
-            ConnectPoint subsCp = new ConnectPoint(host.location().deviceId(),
-                    host.location().port());
+                String portId = nasPortId(subsCp);
+                SubscriberAndDeviceInformation sub = subsService.get(portId);
+                if (sub != null) {
+                    List<DHCPOption> options = dhcpPayload.getOptions();
+                    List<DHCPOption> circuitIds = options.stream()
+                            .filter(option -> option.getCode() == DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
+                            .collect(Collectors.toList());
+
+                    String circuitId = "None";
+                    if (circuitIds.size() == 1) {
+                        circuitId = circuitIds.get(0).getData().toString();
+                    }
+
+                    IpAddress ip = IpAddress.valueOf(dhcpPayload.getYourIPAddress());
+
+                    //storeDHCPAllocationInfo
+                    DhcpAllocationInfo info = new DhcpAllocationInfo(circuitId, dstMac, ip);
+
+                    allocationMap.put(sub.nasPortId(), info);
+                }
+            } // end storing of info
 
             // we leave the srcMac from the original packet
             etherReply.setDestinationMacAddress(dstMac);
@@ -561,23 +604,48 @@ public class DhcpL2Relay {
             return etherReply;
         }
 
+        /*
+         * Get ConnectPoint of the Client based on it's MAC address
+         */
+        private ConnectPoint getConnectPointOfClient(MacAddress dstMac) {
+            Set<Host> hosts = hostService.getHostsByMac(dstMac);
+            if (hosts == null || hosts.isEmpty()) {
+                log.warn("Cannot determine host for DHCP client: {}. Aborting "
+                        + "relay for dhcp packet from server",
+                        dstMac);
+                return null;
+            }
+            for (Host h : hosts) {
+                // if more than one,
+                // find the connect point which has an valid entry in SADIS
+                ConnectPoint cp = new ConnectPoint(h.location().deviceId(),
+                        h.location().port());
+
+                if (sTag(cp) != VlanId.NONE) {
+                    return cp;
+                }
+            }
+
+            return null;
+        }
+
         //send the response to the requester host.
         private void sendReply(DhcpEthernet ethPacket, DHCP dhcpPayload) {
             MacAddress descMac = valueOf(dhcpPayload.getClientHardwareAddress());
-            Host host = hostService.getHostsByMac(descMac).stream().findFirst().orElse(null);
+            ConnectPoint subCp = getConnectPointOfClient(descMac);
 
             // Send packet out to requester if the host information is available
-            if (host != null) {
-                log.info("Sending DHCP packet to host: {}", host);
+            if (subCp != null) {
+                log.info("Sending DHCP packet to cp: {}", subCp);
                 TrafficTreatment t = DefaultTrafficTreatment.builder()
-                        .setOutput(host.location().port()).build();
+                        .setOutput(subCp.port()).build();
                 OutboundPacket o = new DefaultOutboundPacket(
-                        host.location().deviceId(), t, ByteBuffer.wrap(ethPacket.serialize()));
+                        subCp.deviceId(), t, ByteBuffer.wrap(ethPacket.serialize()));
                 if (log.isTraceEnabled()) {
                     log.trace("Relaying packet to dhcp client {}", ethPacket);
                 }
                 packetService.emit(o);
-                log.info("DHCP Packet sent to {}", host.location());
+                log.info("DHCP Packet sent to {}", subCp);
             } else {
                 log.error("Dropping DHCP packet because can't find host for {}", descMac);
             }

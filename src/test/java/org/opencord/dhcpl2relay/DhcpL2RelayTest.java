@@ -28,6 +28,7 @@ import org.onlab.osgi.ComponentContextAdapter;
 import org.onlab.packet.ChassisId;
 import org.onlab.packet.DHCP;
 import org.onlab.packet.DHCPOption;
+import org.onlab.packet.Ethernet;
 import org.onlab.packet.IpAddress;
 import org.onlab.packet.Ip4Address;
 import org.onlab.packet.IPv4;
@@ -58,7 +59,6 @@ import org.onosproject.net.HostLocation;
 import org.onosproject.net.provider.ProviderId;
 import org.onosproject.net.Port;
 
-import org.opencord.dhcpl2relay.packet.DhcpEthernet;
 import org.opencord.dhcpl2relay.packet.DhcpOption82;
 import org.opencord.sadis.SubscriberAndDeviceInformation;
 import org.opencord.sadis.SubscriberAndDeviceInformationService;
@@ -132,11 +132,11 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     public void testDhcpDiscover()  throws Exception {
         //  (1) Sending DHCP discover packet
         System.out.println("Sending pakcet");
-        DhcpEthernet discoverPacket = constructDhcpDiscoverPacket(CLIENT_MAC);
+        Ethernet discoverPacket = constructDhcpDiscoverPacket(CLIENT_MAC);
 
         sendPacket(discoverPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
 
-        DhcpEthernet discoverRelayed = (DhcpEthernet) getPacket();
+        Ethernet discoverRelayed = (Ethernet) getPacket();
         compareClientPackets(discoverPacket, discoverRelayed);
     }
 
@@ -149,11 +149,11 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     public void testDhcpRequest()  throws Exception {
         //  (1) Sending DHCP discover packet
         System.out.println("Sending pakcet");
-        DhcpEthernet requestPacket = constructDhcpRequestPacket(CLIENT_MAC);
+        Ethernet requestPacket = constructDhcpRequestPacket(CLIENT_MAC);
 
         sendPacket(requestPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
 
-        DhcpEthernet requestRelayed = (DhcpEthernet) getPacket();
+        Ethernet requestRelayed = (Ethernet) getPacket();
         compareClientPackets(requestPacket, requestRelayed);
     }
 
@@ -166,12 +166,12 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     public void testDhcpOffer() {
         //  (1) Sending DHCP discover packet
         System.out.println("Sending pakcet");
-        DhcpEthernet offerPacket = constructDhcpOfferPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
+        Ethernet offerPacket = constructDhcpOfferPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
                 CLIENT_MAC, "1.1.1.1", "2.2.2.2");
 
         sendPacket(offerPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
 
-        DhcpEthernet offerRelayed = (DhcpEthernet) getPacket();
+        Ethernet offerRelayed = (Ethernet) getPacket();
         compareServerPackets(offerPacket, offerRelayed);
     }
 
@@ -183,18 +183,18 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     @Test
     public void testDhcpAck() {
 
-        DhcpEthernet ackPacket = constructDhcpAckPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
+        Ethernet ackPacket = constructDhcpAckPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
                 CLIENT_MAC, "1.1.1.1", "2.2.2.2");
 
         sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
 
-        DhcpEthernet ackRelayed = (DhcpEthernet) getPacket();
+        Ethernet ackRelayed = (Ethernet) getPacket();
         compareServerPackets(ackPacket, ackRelayed);
     }
 
-    public void compareClientPackets(DhcpEthernet sent, DhcpEthernet relayed) {
-        sent.setSourceMacAddress(OLT_MAC_ADDRESS);
-        sent.setQinQVid(CLIENT_S_TAG.toShort());
+    public void compareClientPackets(Ethernet sent, Ethernet relayed) {
+        sent.setSourceMACAddress(OLT_MAC_ADDRESS);
+        sent.setQinQVID(CLIENT_S_TAG.toShort());
         sent.setVlanID(CLIENT_C_TAG.toShort());
 
         IPv4 ipv4Packet = (IPv4) sent.getPayload();
@@ -214,9 +214,9 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         dhcpPacket.setOptions(options);
 
         final ByteBuffer byteBuffer = ByteBuffer.wrap(sent.serialize());
-        DhcpEthernet expectedPacket = null;
+        Ethernet expectedPacket = null;
         try {
-            expectedPacket = DhcpEthernet.deserializer().deserialize(byteBuffer.array(),
+            expectedPacket = Ethernet.deserializer().deserialize(byteBuffer.array(),
                     0, byteBuffer.array().length);
         } catch (Exception e) {
         }
@@ -224,15 +224,15 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
 
     }
 
-    public void compareServerPackets(DhcpEthernet sent, DhcpEthernet relayed) {
-        sent.setDestinationMacAddress(CLIENT_MAC);
-        sent.setQinQVid(CLIENT_S_TAG.toShort());
+    public void compareServerPackets(Ethernet sent, Ethernet relayed) {
+        sent.setDestinationMACAddress(CLIENT_MAC);
+        sent.setQinQVID(CLIENT_S_TAG.toShort());
         sent.setVlanID(CLIENT_C_TAG.toShort());
 
         final ByteBuffer byteBuffer = ByteBuffer.wrap(sent.serialize());
-        DhcpEthernet expectedPacket = null;
+        Ethernet expectedPacket = null;
         try {
-            expectedPacket = DhcpEthernet.deserializer().deserialize(byteBuffer.array(),
+            expectedPacket = Ethernet.deserializer().deserialize(byteBuffer.array(),
                     0, byteBuffer.array().length);
         } catch (Exception e) {
         }

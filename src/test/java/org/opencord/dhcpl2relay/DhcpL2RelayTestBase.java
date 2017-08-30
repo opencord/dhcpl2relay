@@ -34,7 +34,6 @@ import org.onosproject.net.packet.PacketContext;
 import org.onosproject.net.packet.PacketProcessor;
 import org.onosproject.net.packet.PacketServiceAdapter;
 
-import org.opencord.dhcpl2relay.packet.DhcpEthernet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,7 +88,7 @@ public class DhcpL2RelayTestBase {
         @Override
         public void emit(OutboundPacket packet) {
             try {
-                DhcpEthernet eth = DhcpEthernet.deserializer().deserialize(packet.data().array(),
+                Ethernet eth = Ethernet.deserializer().deserialize(packet.data().array(),
                         0, packet.data().array().length);
                 savePacket(eth);
             } catch (Exception e) {
@@ -119,9 +118,9 @@ public class DhcpL2RelayTestBase {
      *
      * @param pkt Ethernet packet
      */
-    void sendPacket(DhcpEthernet pkt, ConnectPoint cp) {
+    void sendPacket(Ethernet pkt, ConnectPoint cp) {
         final ByteBuffer byteBuffer = ByteBuffer.wrap(pkt.serialize());
-        InboundPacket inPacket = new DefaultInboundPacket(cp, null, byteBuffer);
+        InboundPacket inPacket = new DefaultInboundPacket(cp, pkt, byteBuffer);
 
         PacketContext context = new TestPacketContext(127L, inPacket, null, false);
         packetProcessor.process(context);
@@ -132,14 +131,14 @@ public class DhcpL2RelayTestBase {
      *
      * @return Ethernet packet
      */
-    private DhcpEthernet construcEthernetPacket(MacAddress srcMac, MacAddress dstMac,
+    private Ethernet construcEthernetPacket(MacAddress srcMac, MacAddress dstMac,
                                                 String dstIp, byte dhcpReqRsp,
                                                 MacAddress clientHwAddress,
                                                 Ip4Address dhcpClientIpAddress) {
         // Ethernet Frame.
-        DhcpEthernet ethPkt = new DhcpEthernet();
-        ethPkt.setSourceMacAddress(srcMac);
-        ethPkt.setDestinationMacAddress(dstMac);
+        Ethernet ethPkt = new Ethernet();
+        ethPkt.setSourceMACAddress(srcMac);
+        ethPkt.setDestinationMACAddress(dstMac);
         ethPkt.setEtherType(Ethernet.TYPE_IPV4);
         ethPkt.setVlanID((short) 2);
         ethPkt.setPriorityCode((byte) 6);
@@ -188,9 +187,9 @@ public class DhcpL2RelayTestBase {
      *
      * @return Ethernet packet
      */
-    DhcpEthernet constructDhcpDiscoverPacket(MacAddress clientMac) {
+    Ethernet constructDhcpDiscoverPacket(MacAddress clientMac) {
 
-        DhcpEthernet pkt = construcEthernetPacket(clientMac, MacAddress.BROADCAST,
+        Ethernet pkt = construcEthernetPacket(clientMac, MacAddress.BROADCAST,
                 "255.255.255.255", DHCP.OPCODE_REQUEST, MacAddress.NONE,
                 Ip4Address.valueOf("0.0.0.0"));
 
@@ -208,9 +207,9 @@ public class DhcpL2RelayTestBase {
      *
      * @return Ethernet packet
      */
-    DhcpEthernet constructDhcpRequestPacket(MacAddress clientMac) {
+    Ethernet constructDhcpRequestPacket(MacAddress clientMac) {
 
-        DhcpEthernet pkt = construcEthernetPacket(clientMac, MacAddress.BROADCAST,
+        Ethernet pkt = construcEthernetPacket(clientMac, MacAddress.BROADCAST,
                 "255.255.255.255", DHCP.OPCODE_REQUEST, MacAddress.NONE,
                 Ip4Address.valueOf("0.0.0.0"));
 
@@ -228,10 +227,10 @@ public class DhcpL2RelayTestBase {
      *
      * @return Ethernet packet
      */
-    DhcpEthernet constructDhcpOfferPacket(MacAddress servMac, MacAddress clientMac,
+    Ethernet constructDhcpOfferPacket(MacAddress servMac, MacAddress clientMac,
                                            String ipAddress, String dhcpClientIpAddress) {
 
-        DhcpEthernet pkt = construcEthernetPacket(servMac, clientMac, ipAddress, DHCP.OPCODE_REPLY,
+        Ethernet pkt = construcEthernetPacket(servMac, clientMac, ipAddress, DHCP.OPCODE_REPLY,
                 clientMac, Ip4Address.valueOf(dhcpClientIpAddress));
 
         IPv4 ipv4Packet = (IPv4) pkt.getPayload();
@@ -248,10 +247,10 @@ public class DhcpL2RelayTestBase {
      *
      * @return Ethernet packet
      */
-    DhcpEthernet constructDhcpAckPacket(MacAddress servMac, MacAddress clientMac,
+    Ethernet constructDhcpAckPacket(MacAddress servMac, MacAddress clientMac,
                                            String ipAddress, String dhcpClientIpAddress) {
 
-        DhcpEthernet pkt = construcEthernetPacket(servMac, clientMac, ipAddress, DHCP.OPCODE_REPLY,
+        Ethernet pkt = construcEthernetPacket(servMac, clientMac, ipAddress, DHCP.OPCODE_REPLY,
                 clientMac, Ip4Address.valueOf(dhcpClientIpAddress));
 
         IPv4 ipv4Packet = (IPv4) pkt.getPayload();

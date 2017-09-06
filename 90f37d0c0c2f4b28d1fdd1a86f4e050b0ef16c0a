@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa5d592f_397c7b72",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 394,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-09-06T08:13:12Z",
+      "side": 1,
+      "message": "As we have removed the DhcpEthernet, now I guess we can directly say \n\npacket \u003d context.inPacket().parsed();",
+      "revId": "90f37d0c0c2f4b28d1fdd1a86f4e050b0ef16c0a",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

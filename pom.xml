@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.onosproject</groupId>
         <artifactId>onos-dependencies</artifactId>
-        <version>1.10.3</version>
+        <version>1.10.6</version>
         <relativePath></relativePath>
     </parent>
 
@@ -40,7 +40,7 @@
         <onos.app.category>default</onos.app.category>
         <onos.app.url>http://opencord.org</onos.app.url>
         <onos.app.readme>DHCP L2 Relay Agent Application.</onos.app.readme>
-	<onos.version>1.10.3</onos.version>
+	<onos.version>1.10.6</onos.version>
         <sadis.api.version>1.1.0-SNAPSHOT</sadis.api.version>
         <!-- TODO onos-build-conf.version can be dropped when onos.version > 1.10.3 -->
         <onos-build-conf.version>1.10.3-onf</onos-build-conf.version>

@@ -26,7 +26,7 @@
 
     <groupId>org.opencord</groupId>
     <artifactId>dhcpl2relay</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <description>DHCP L2 Relay Agent</description>
@@ -41,7 +41,7 @@
         <onos.app.url>http://opencord.org</onos.app.url>
         <onos.app.readme>DHCP L2 Relay Agent Application.</onos.app.readme>
 	<onos.version>1.10.6</onos.version>
-        <sadis.api.version>1.1.0-SNAPSHOT</sadis.api.version>
+        <sadis.api.version>1.2.0-SNAPSHOT</sadis.api.version>
         <!-- TODO onos-build-conf.version can be dropped when onos.version > 1.10.3 -->
         <onos-build-conf.version>1.10.3-onf</onos-build-conf.version>
     </properties>

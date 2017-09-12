@@ -151,7 +151,7 @@ public class DhcpL2Relay {
     // connect points to the DHCP server
     Set<ConnectPoint> dhcpConnectPoints;
     private AtomicReference<ConnectPoint> dhcpServerConnectPoint = new AtomicReference<>();
-    private MacAddress dhcpConnectMac = MacAddress.BROADCAST;
+    //private MacAddress dhcpConnectMac = MacAddress.BROADCAST;
     private ApplicationId appId;
 
     static Map<String, DhcpAllocationInfo> allocationMap = Maps.newConcurrentMap();
@@ -540,7 +540,7 @@ public class DhcpL2Relay {
             ipv4Packet.setPayload(udpPacket);
             etherReply.setPayload(ipv4Packet);
             etherReply.setSourceMacAddress(relayAgentMac);
-            etherReply.setDestinationMacAddress(dhcpConnectMac);
+            //etherReply.setDestinationMacAddress(dhcpConnectMac);
 
             etherReply.setPriorityCode(ethernetPacket.getPriorityCode());
             etherReply.setVlanID(cTag(context).toShort());
@@ -561,6 +561,10 @@ public class DhcpL2Relay {
 
             MacAddress dstMac = valueOf(dhcpPayload.getClientHardwareAddress());
             ConnectPoint subsCp = getConnectPointOfClient(dstMac);
+            // If we can't find the subscriber, can't process further
+            if (subsCp == null) {
+                return null;
+            }
             // if it's an ACK packet store the information for display purpose
             if (getDhcpPacketType(dhcpPayload) == DHCPPacketType.DHCPACK) {
 

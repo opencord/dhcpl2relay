@@ -15,60 +15,56 @@
  */
 package org.opencord.dhcpl2relay;
 
-import org.easymock.EasyMock;
-
-import com.google.common.collect.Lists;
 import com.google.common.collect.ImmutableSet;
-
+import com.google.common.collect.Lists;
+import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 import org.onlab.osgi.ComponentContextAdapter;
 import org.onlab.packet.ChassisId;
 import org.onlab.packet.DHCP;
 import org.onlab.packet.DHCPOption;
-import org.onlab.packet.IpAddress;
-import org.onlab.packet.Ip4Address;
 import org.onlab.packet.IPv4;
+import org.onlab.packet.Ip4Address;
+import org.onlab.packet.IpAddress;
 import org.onlab.packet.MacAddress;
 import org.onlab.packet.UDP;
 import org.onlab.packet.VlanId;
-
-import org.onosproject.mastership.MastershipServiceAdapter;
-import org.onosproject.net.Annotations;
-import org.onosproject.net.AnnotationKeys;
-import org.onosproject.net.DeviceId;
-import org.onosproject.net.DefaultAnnotations;
-import org.onosproject.net.PortNumber;
 import org.onosproject.cfg.ComponentConfigService;
 import org.onosproject.core.CoreServiceAdapter;
-import org.onosproject.net.config.Config;
-import org.onosproject.net.config.NetworkConfigRegistryAdapter;
+import org.onosproject.mastership.MastershipServiceAdapter;
+import org.onosproject.net.AnnotationKeys;
+import org.onosproject.net.Annotations;
 import org.onosproject.net.ConnectPoint;
-import org.onosproject.net.device.DeviceServiceAdapter;
+import org.onosproject.net.DefaultAnnotations;
 import org.onosproject.net.DefaultDevice;
 import org.onosproject.net.DefaultHost;
 import org.onosproject.net.Device;
+import org.onosproject.net.DeviceId;
 import org.onosproject.net.Element;
-import org.onosproject.net.host.HostServiceAdapter;
 import org.onosproject.net.Host;
 import org.onosproject.net.HostId;
 import org.onosproject.net.HostLocation;
-import org.onosproject.net.provider.ProviderId;
 import org.onosproject.net.Port;
-
+import org.onosproject.net.PortNumber;
+import org.onosproject.net.config.Config;
+import org.onosproject.net.config.NetworkConfigRegistryAdapter;
+import org.onosproject.net.device.DeviceServiceAdapter;
+import org.onosproject.net.host.HostServiceAdapter;
+import org.onosproject.net.provider.ProviderId;
 import org.opencord.dhcpl2relay.packet.DhcpEthernet;
 import org.opencord.dhcpl2relay.packet.DhcpOption82;
 import org.opencord.sadis.SubscriberAndDeviceInformation;
 import org.opencord.sadis.SubscriberAndDeviceInformationService;
-
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -95,6 +91,15 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     private static final DefaultAnnotations DEVICE_ANNOTATIONS = DefaultAnnotations.builder()
             .set(AnnotationKeys.PROTOCOL, SCHEME_NAME.toUpperCase()).build();
 
+    static Hashtable<String, String> props = new Hashtable<String, String>();
+
+    public static final ComponentContextAdapter DHCP_L2_RELAY_CONTEXT = new ComponentContextAdapter() {
+        @Override
+        public Dictionary getProperties() {
+            return props;
+        }
+    };
+
     ComponentConfigService mockConfigService =
             EasyMock.createMock(ComponentConfigService.class);
 
@@ -112,7 +117,10 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         dhcpL2Relay.subsService = new MockSubService();
         dhcpL2Relay.hostService = new MockHostService();
         dhcpL2Relay.mastershipService = new MockMastershipService();
-        dhcpL2Relay.activate(new ComponentContextAdapter());
+        props.put("option82", "true");
+        props.put("enableDhcpBroadcastReplies", "false");
+        props.put("enforceUntaggedPacket", "false");
+        dhcpL2Relay.activate(DHCP_L2_RELAY_CONTEXT);
     }
 
     /**
@@ -192,6 +200,37 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         compareServerPackets(ackPacket, ackRelayed);
     }
 
+    /**
+     * Tests the DHCP relay app by sending DHCP Ack Packet.
+     *
+     * @throws Exception when an unhandled error occurs
+     */
+    @Test
+    public void testDhcpAckWithEnforceUntag() {
+        props.put("enforceUntaggedPacket", "true");
+        dhcpL2Relay.modified(DHCP_L2_RELAY_CONTEXT);
+        DhcpEthernet ackPacket = constructDhcpAckPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
+                CLIENT_MAC, "1.1.1.1", "2.2.2.2");
+
+        sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        DhcpEthernet ackRelayed = (DhcpEthernet) getPacket();
+        compareUntagedServerPackets(ackPacket, ackRelayed);
+    }
+
+    @Test
+    public void testDhcpOfferWithEnforceUntag() {
+        props.put("enforceUntaggedPacket", "true");
+        dhcpL2Relay.modified(DHCP_L2_RELAY_CONTEXT);
+        DhcpEthernet offerPacket = constructDhcpOfferPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
+                CLIENT_MAC, "1.1.1.1", "2.2.2.2");
+
+        sendPacket(offerPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        DhcpEthernet offerRelayed = (DhcpEthernet) getPacket();
+        compareUntagedServerPackets(offerPacket, offerRelayed);
+    }
+
     public void compareClientPackets(DhcpEthernet sent, DhcpEthernet relayed) {
         sent.setSourceMacAddress(OLT_MAC_ADDRESS);
         sent.setQinQVid(CLIENT_S_TAG.toShort());
@@ -228,6 +267,22 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         sent.setDestinationMacAddress(CLIENT_MAC);
         sent.setQinQVid(CLIENT_S_TAG.toShort());
         sent.setVlanID(CLIENT_C_TAG.toShort());
+
+        final ByteBuffer byteBuffer = ByteBuffer.wrap(sent.serialize());
+        DhcpEthernet expectedPacket = null;
+        try {
+            expectedPacket = DhcpEthernet.deserializer().deserialize(byteBuffer.array(),
+                    0, byteBuffer.array().length);
+        } catch (Exception e) {
+        }
+        assertEquals(expectedPacket, relayed);
+
+    }
+
+    public void compareUntagedServerPackets(DhcpEthernet sent, DhcpEthernet relayed) {
+        sent.setDestinationMacAddress(CLIENT_MAC);
+        sent.setQinQVid(DhcpEthernet.VLAN_UNTAGGED);
+        sent.setVlanID(DhcpEthernet.VLAN_UNTAGGED);
 
         final ByteBuffer byteBuffer = ByteBuffer.wrap(sent.serialize());
         DhcpEthernet expectedPacket = null;

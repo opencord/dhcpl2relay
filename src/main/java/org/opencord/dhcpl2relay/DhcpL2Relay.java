@@ -142,6 +142,10 @@ public class DhcpL2Relay {
             label = "Add option 82 to relayed packets")
     protected boolean enableDhcpBroadcastReplies = false;
 
+    @Property(name = "enforceUntaggedPacket", boolValue = false,
+            label = "Enforce packets as Untagged towards uni")
+    protected boolean enforceUntaggedPacket = false;
+
     private DhcpRelayPacketProcessor dhcpRelayPacketProcessor =
             new DhcpRelayPacketProcessor();
 
@@ -200,6 +204,12 @@ public class DhcpL2Relay {
         Boolean o = Tools.isPropertyEnabled(properties, "option82");
         if (o != null) {
             option82 = o;
+        }
+
+
+        o = Tools.isPropertyEnabled(properties, "enforceUntaggedPacket");
+        if (o != null) {
+            enforceUntaggedPacket = o;
         }
     }
 
@@ -588,9 +598,20 @@ public class DhcpL2Relay {
 
             // we leave the srcMac from the original packet
             etherReply.setDestinationMacAddress(dstMac);
-            etherReply.setQinQVid(sTag(subsCp).toShort());
-            etherReply.setPriorityCode(ethernetPacket.getPriorityCode());
-            etherReply.setVlanID((cTag(subsCp).toShort()));
+            if (ethernetPacket.getVlanID() != DhcpEthernet.VLAN_UNTAGGED) {
+                if  (enforceUntaggedPacket) {
+                    etherReply.setVlanID(DhcpEthernet.VLAN_UNTAGGED);
+                    etherReply.setQinQVid(DhcpEthernet.VLAN_UNTAGGED);
+                } else {
+                    etherReply.setVlanID(cTag(subsCp).toShort());
+                    etherReply.setQinQVid(sTag(subsCp).toShort());
+                }
+                etherReply.setPriorityCode(ethernetPacket.getPriorityCode());
+            } else {
+                etherReply.setVlanID(DhcpEthernet.VLAN_UNTAGGED);
+                etherReply.setQinQVid(DhcpEthernet.VLAN_UNTAGGED);
+            }
+
 
             if (option82) {
                 udpPacket.setPayload(removeOption82(dhcpPayload));

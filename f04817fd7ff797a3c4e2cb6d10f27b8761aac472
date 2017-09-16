@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a5c5d37_56049a14",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 611,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-09-16T17:06:32Z",
+      "side": 1,
+      "message": "Do we really need the if else condition for (ethernetPacket.getVlanID())?",
+      "revId": "f04817fd7ff797a3c4e2cb6d10f27b8761aac472",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

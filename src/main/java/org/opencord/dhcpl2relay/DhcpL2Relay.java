@@ -164,7 +164,8 @@ public class DhcpL2Relay {
         cancelDhcpPackets();
 
         componentConfigService.unregisterProperties(getClass(), false);
-
+        deviceService.removeListener(deviceListener);
+        mastershipService.removeListener(changeListener);
         log.info("DHCP-L2-RELAY Stopped");
     }
 

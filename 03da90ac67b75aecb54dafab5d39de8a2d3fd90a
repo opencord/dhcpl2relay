@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a5c5d37_f39f1b4f",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 553,
+      "author": {
+        "id": 1000269
+      },
+      "writtenOn": "2017-09-25T22:06:54Z",
+      "side": 1,
+      "message": "Here, we are trying to get cTag from sadis. The problem is that if we do not have a cTag data for the entry, we will have null and that will cause NPE. This will not occur if the entry is correctly created in the first place. Since we do not have a validation in sadis, this has to be handled in users using sadis index. \nLet me know your opinion on this.",
+      "revId": "03da90ac67b75aecb54dafab5d39de8a2d3fd90a",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

@@ -73,6 +73,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.List;
 import java.util.Map;
@@ -136,7 +137,7 @@ DhcpL2Relay {
     protected boolean option82 = true;
 
     @Property(name = "enableDhcpBroadcastReplies", boolValue = false,
-            label = "Add option 82 to relayed packets")
+            label = "Ask the DHCP Server to send back replies as L2 broadcast")
     protected boolean enableDhcpBroadcastReplies = false;
 
     private DhcpRelayPacketProcessor dhcpRelayPacketProcessor =
@@ -198,6 +199,11 @@ DhcpL2Relay {
         Boolean o = Tools.isPropertyEnabled(properties, "option82");
         if (o != null) {
             option82 = o;
+        }
+
+        o = Tools.isPropertyEnabled(properties, "enableDhcpBroadcastReplies");
+        if (o != null) {
+            enableDhcpBroadcastReplies = o;
         }
     }
 
@@ -553,6 +559,10 @@ DhcpL2Relay {
 
             MacAddress dstMac = valueOf(dhcpPayload.getClientHardwareAddress());
             ConnectPoint subsCp = getConnectPointOfClient(dstMac);
+            // If we can't find the subscriber, can't process further
+            if (subsCp == null) {
+                return null;
+            }
             // if it's an ACK packet store the information for display purpose
             if (getDhcpPacketType(dhcpPayload) == DHCPPacketType.DHCPACK) {
 
@@ -566,7 +576,12 @@ DhcpL2Relay {
 
                     String circuitId = "None";
                     if (circuitIds.size() == 1) {
-                        circuitId = circuitIds.get(0).getData().toString();
+                        byte[] array = circuitIds.get(0).getData();
+
+                        try {
+                            // we leave the first two bytes as they are the id and length
+                            circuitId = new String(Arrays.copyOfRange(array, 2, array.length), "UTF-8");
+                        } catch (Exception e) { }
                     }
 
                     IpAddress ip = IpAddress.valueOf(dhcpPayload.getYourIPAddress());

@@ -16,6 +16,24 @@
       "revId": "03da90ac67b75aecb54dafab5d39de8a2d3fd90a",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a5c5d37_c6f1f796",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 553,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-09-26T21:42:12Z",
+      "side": 1,
+      "message": "As you have pointed out; a subscriber entry without a C-tag is not a valid entry and should not have been created. I would say we need to solve the problem at Sadis, it would be too much of an overhead if each of the apps had to do validation for incorrect entries in Sadis all over their code.",
+      "parentUuid": "9a5c5d37_f39f1b4f",
+      "revId": "03da90ac67b75aecb54dafab5d39de8a2d3fd90a",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
     }
   ]
 }

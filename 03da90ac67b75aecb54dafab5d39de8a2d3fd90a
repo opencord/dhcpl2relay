@@ -34,6 +34,24 @@
       "revId": "03da90ac67b75aecb54dafab5d39de8a2d3fd90a",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a5c5d37_66300b57",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 553,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2017-09-26T22:02:25Z",
+      "side": 1,
+      "message": "I think there are two issues.\n1. I do think we need to start separating sadis records into device and subscriber, btw I don\u0027t think port name is valid for subscriber going forward as there could be multiple subscribers (RGs) behind a port\n\n2. apps still should check if data is valid.",
+      "parentUuid": "9a5c5d37_c6f1f796",
+      "revId": "03da90ac67b75aecb54dafab5d39de8a2d3fd90a",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
     }
   ]
 }

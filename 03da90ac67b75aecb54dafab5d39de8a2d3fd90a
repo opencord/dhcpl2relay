@@ -52,6 +52,24 @@
       "revId": "03da90ac67b75aecb54dafab5d39de8a2d3fd90a",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a5c5d37_09a3a09f",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 553,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2017-09-27T18:33:55Z",
+      "side": 1,
+      "message": "1. Agree that if we separate out the sadis records into device and subscriber it would remove ambiguity and make life easier\n\n2. Regarding port name being valid for a subscriber, I don\u0027t get your point. As pre my understanding each Logical Port at ONOS represents a UNI and so there can be only one RG connected to it, what is the use case you are thinking of in which we can have multiple RGs on the same UNI?\n\n3. Regarding the checking of sadis data in the apps, I don\u0027t have a problem with it, but there would be too many checks across all the apps; I would expect that going forward even oltApp and igmpproxy would also use sadis. Wouldn\u0027t it be better if we can ensure that if we get a subscriber/device from Sadis then all the mandatory fields are already available? What I was thinking of is to have a function which validates if the data for a subscriber/device. This could be implemented in Sadis or in the apps.",
+      "parentUuid": "9a5c5d37_66300b57",
+      "revId": "03da90ac67b75aecb54dafab5d39de8a2d3fd90a",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
     }
   ]
 }

@@ -153,6 +153,7 @@ DhcpL2Relay {
     private ApplicationId appId;
 
     static Map<String, DhcpAllocationInfo> allocationMap = Maps.newConcurrentMap();
+    private boolean modifyClientPktsSrcDstMac = false;
 
     @Activate
     protected void activate(ComponentContext context) {
@@ -254,6 +255,7 @@ DhcpL2Relay {
         }
 
         dhcpConnectPoints = Sets.newConcurrentHashSet(cfg.getDhcpServerConnectPoint());
+        modifyClientPktsSrcDstMac = cfg.getModifySrcDstMacAddresses();
 
         selectServerConnectPoint();
 
@@ -537,8 +539,10 @@ DhcpL2Relay {
 
             ipv4Packet.setPayload(udpPacket);
             etherReply.setPayload(ipv4Packet);
-            etherReply.setSourceMACAddress(relayAgentMac);
-            etherReply.setDestinationMACAddress(dhcpConnectMac);
+            if (modifyClientPktsSrcDstMac) {
+                etherReply.setSourceMACAddress(relayAgentMac);
+                etherReply.setDestinationMACAddress(dhcpConnectMac);
+            }
 
             etherReply.setPriorityCode(ethernetPacket.getPriorityCode());
             etherReply.setVlanID(cTag(context).toShort());

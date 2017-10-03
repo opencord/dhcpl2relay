@@ -367,6 +367,11 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         public Set<ConnectPoint> getDhcpServerConnectPoint() {
             return ImmutableSet.of(SERVER_CONNECT_POINT);
         }
+
+        @Override
+        public boolean getModifySrcDstMacAddresses() {
+            return true;
+        }
     }
 
     /**

@@ -34,11 +34,31 @@ import java.util.Set;
 public class DhcpL2RelayConfig extends Config<ApplicationId> {
 
     private static final String DHCP_CONNECT_POINTS = "dhcpServerConnectPoints";
+    private static final String MODIFY_SRC_DST_MAC  = "modifyUlPacketsSrcDstMacAddresses";
+
+    private static final Boolean DEFAULT_MODIFY_SRC_DST_MAC = false;
 
     @Override
     public boolean isValid() {
 
-        return hasOnlyFields(DHCP_CONNECT_POINTS);
+        return hasOnlyFields(DHCP_CONNECT_POINTS, MODIFY_SRC_DST_MAC);
+    }
+
+    /**
+     * Returns whether the app would modify MAC address of uplink packets.
+     *
+     * @return whether app would modify src and dst MAC addresses or not of packets
+     *         sent to the DHCP server
+     */
+    public boolean getModifySrcDstMacAddresses() {
+        if (object == null) {
+            return DEFAULT_MODIFY_SRC_DST_MAC;
+        }
+        if (!object.has(MODIFY_SRC_DST_MAC)) {
+            return DEFAULT_MODIFY_SRC_DST_MAC;
+        }
+
+        return object.path(MODIFY_SRC_DST_MAC).asBoolean();
     }
 
     /**

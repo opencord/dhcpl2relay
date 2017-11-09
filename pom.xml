@@ -44,7 +44,7 @@
             org.opencord.sadis
         </onos.app.requires>
 	<onos.version>1.10.9</onos.version>
-        <sadis.api.version>1.2.0-SNAPSHOT</sadis.api.version>
+        <sadis.api.version>2.0.0-SNAPSHOT</sadis.api.version>
     </properties>
 
     <dependencies>

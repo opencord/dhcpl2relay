@@ -34,11 +34,51 @@ import java.util.Set;
 public class DhcpL2RelayConfig extends Config<ApplicationId> {
 
     private static final String DHCP_CONNECT_POINTS = "dhcpServerConnectPoints";
+    private static final String MODIFY_SRC_DST_MAC  = "modifyUlPacketsSrcDstMacAddresses";
+    private static final String USE_OLT_ULPORT_FOR_PKT_INOUT = "useOltUplinkForServerPktInOut";
+
+    private static final Boolean DEFAULT_MODIFY_SRC_DST_MAC = false;
+    private static final Boolean DEFAULT_USE_OLT_ULPORT_FOR_PKT_INOUT = false;
 
     @Override
     public boolean isValid() {
 
-        return hasOnlyFields(DHCP_CONNECT_POINTS);
+        return hasOnlyFields(DHCP_CONNECT_POINTS, MODIFY_SRC_DST_MAC,
+                USE_OLT_ULPORT_FOR_PKT_INOUT);
+    }
+
+    /**
+     * Returns whether the app would use the uplink port of OLT for sending/receving
+     * messages to/from the server.
+     *
+     * @return true if OLT uplink port is to be used, false otherwise
+     */
+    public boolean getUseOltUplinkForServerPktInOut() {
+        if (object == null) {
+            return DEFAULT_USE_OLT_ULPORT_FOR_PKT_INOUT;
+        }
+        if (!object.has(USE_OLT_ULPORT_FOR_PKT_INOUT)) {
+            return DEFAULT_USE_OLT_ULPORT_FOR_PKT_INOUT;
+        }
+
+        return object.path(USE_OLT_ULPORT_FOR_PKT_INOUT).asBoolean();
+    }
+
+    /**
+     * Returns whether the app would modify MAC address of uplink packets.
+     *
+     * @return whether app would modify src and dst MAC addresses or not of packets
+     *         sent to the DHCP server
+     */
+    public boolean getModifySrcDstMacAddresses() {
+        if (object == null) {
+            return DEFAULT_MODIFY_SRC_DST_MAC;
+        }
+        if (!object.has(MODIFY_SRC_DST_MAC)) {
+            return DEFAULT_MODIFY_SRC_DST_MAC;
+        }
+
+        return object.path(MODIFY_SRC_DST_MAC).asBoolean();
     }
 
     /**

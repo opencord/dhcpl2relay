@@ -45,8 +45,11 @@ import org.onosproject.mastership.MastershipListener;
 import org.onosproject.mastership.MastershipService;
 import org.onosproject.net.AnnotationKeys;
 import org.onosproject.net.ConnectPoint;
+import org.onosproject.net.Device;
+import org.onosproject.net.DeviceId;
 import org.onosproject.net.Host;
 import org.onosproject.net.Port;
+import org.onosproject.net.PortNumber;
 import org.onosproject.net.config.ConfigFactory;
 import org.onosproject.net.config.NetworkConfigEvent;
 import org.onosproject.net.config.NetworkConfigListener;
@@ -74,9 +77,11 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -153,6 +158,9 @@ DhcpL2Relay {
     private ApplicationId appId;
 
     static Map<String, DhcpAllocationInfo> allocationMap = Maps.newConcurrentMap();
+    private boolean modifyClientPktsSrcDstMac = false;
+    //Whether to use the uplink port of the OLTs to send/receive messages to the DHCP server
+    private boolean useOltUplink = false;
 
     @Activate
     protected void activate(ComponentContext context) {
@@ -213,7 +221,10 @@ DhcpL2Relay {
      * @return true if all information we need have been initialized
      */
     private boolean configured() {
-        return dhcpServerConnectPoint.get() != null;
+        if (!useOltUplink) {
+            return dhcpServerConnectPoint.get() != null;
+        }
+        return true;
     }
 
     /**
@@ -254,29 +265,140 @@ DhcpL2Relay {
         }
 
         dhcpConnectPoints = Sets.newConcurrentHashSet(cfg.getDhcpServerConnectPoint());
+        modifyClientPktsSrcDstMac = cfg.getModifySrcDstMacAddresses();
+        useOltUplink = cfg.getUseOltUplinkForServerPktInOut();
 
-        selectServerConnectPoint();
+        if (!useOltUplink) {
+            selectServerConnectPoint();
+        }
 
         log.info("dhcp server connect point: " + dhcpServerConnectPoint);
+    }
+
+    /**
+     * Returns all the uplink ports of OLTs configured in SADIS.
+     * Only ports visible in ONOS and for which this instance is master
+     * are returned
+     */
+    private List<ConnectPoint> getUplinkPortsOfOlts() {
+        List<ConnectPoint> cps = new ArrayList<>();
+
+        // find all the olt devices and if their uplink ports are visible
+        Iterable<Device> devices = deviceService.getDevices();
+        for (Device d : devices) {
+            // check if this device is provisioned in Sadis
+
+            log.debug("getUplinkPortsOfOlts: Checking mastership of {}", d);
+            // do only for devices for which we are the master
+            if (!mastershipService.isLocalMaster(d.id())) {
+                continue;
+            }
+
+            String devSerialNo = d.serialNumber();
+            SubscriberAndDeviceInformation deviceInfo = subsService.get(devSerialNo);
+            log.debug("getUplinkPortsOfOlts: Found device: {}", deviceInfo);
+            if (deviceInfo != null) {
+                // check if the uplink port with that number is available on the device
+                PortNumber pNum = PortNumber.portNumber(deviceInfo.uplinkPort());
+                Port port = deviceService.getPort(d.id(), pNum);
+                log.debug("getUplinkPortsOfOlts: Found port: {}", port);
+                if (port != null) {
+                    cps.add(new ConnectPoint(d.id(), pNum));
+                }
+            }
+        }
+        return cps;
+    }
+
+    /**
+     * Returns whether the passed port is the uplink port of the olt device.
+     */
+    private boolean isUplinkPortOfOlt(DeviceId dId, Port p) {
+        log.debug("isUplinkPortOfOlt: DeviceId: {} Port: {}", dId, p);
+        // do only for devices for which we are the master
+        if (!mastershipService.isLocalMaster(dId)) {
+            return false;
+        }
+
+        Device d = deviceService.getDevice(dId);
+        SubscriberAndDeviceInformation deviceInfo = subsService.get(d.serialNumber());
+
+        if (deviceInfo != null) {
+            return (deviceInfo.uplinkPort() == p.number().toLong());
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the connectPoint which is the uplink port of the OLT.
+     */
+    private ConnectPoint getUplinkConnectPointOfOlt(DeviceId dId) {
+
+        Device d = deviceService.getDevice(dId);
+        SubscriberAndDeviceInformation deviceInfo = subsService.get(d.serialNumber());
+        log.debug("getUplinkConnectPointOfOlt DeviceId: {} devInfo: {}", dId, deviceInfo);
+        if (deviceInfo != null) {
+            PortNumber pNum = PortNumber.portNumber(deviceInfo.uplinkPort());
+            Port port = deviceService.getPort(d.id(), pNum);
+            if (port != null) {
+                return new ConnectPoint(d.id(), pNum);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Request DHCP packet from particular connect point via PacketService.
+     */
+    private void requestDhcpPacketsFromConnectPoint(ConnectPoint cp) {
+        TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
+                .matchEthType(Ethernet.TYPE_IPV4)
+                .matchInPort(cp.port())
+                .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
+        packetService.requestPackets(selectorServer.build(),
+                PacketPriority.CONTROL, appId, Optional.of(cp.deviceId()));
+    }
+
+    /**
+     * Cancel DHCP packet from particular connect point via PacketService.
+     */
+    private void cancelDhcpPacketsFromConnectPoint(ConnectPoint cp) {
+        TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
+                .matchEthType(Ethernet.TYPE_IPV4)
+                .matchInPort(cp.port())
+                .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
+        packetService.cancelPackets(selectorServer.build(),
+                PacketPriority.CONTROL, appId, Optional.of(cp.deviceId()));
     }
 
     /**
      * Request DHCP packet in via PacketService.
      */
     private void requestDhcpPackets() {
-        TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
-                .matchEthType(Ethernet.TYPE_IPV4)
-                .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
-        packetService.requestPackets(selectorServer.build(),
-                PacketPriority.CONTROL, appId);
+        if (!useOltUplink) {
+            TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
+                    .matchEthType(Ethernet.TYPE_IPV4)
+                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
+            packetService.requestPackets(selectorServer.build(),
+                    PacketPriority.CONTROL, appId);
 
-        TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
-                .matchEthType(Ethernet.TYPE_IPV4)
-                .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
-        packetService.requestPackets(selectorClient.build(),
-                PacketPriority.CONTROL, appId);
+            TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
+                    .matchEthType(Ethernet.TYPE_IPV4)
+                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
+            packetService.requestPackets(selectorClient.build(),
+                    PacketPriority.CONTROL, appId);
+        } else {
+            for (ConnectPoint cp: getUplinkPortsOfOlts()) {
+                log.debug("requestDhcpPackets: ConnectPoint: {}", cp);
+                requestDhcpPacketsFromConnectPoint(cp);
+            }
+        }
 
     }
 
@@ -284,19 +406,25 @@ DhcpL2Relay {
      * Cancel requested DHCP packets in via packet service.
      */
     private void cancelDhcpPackets() {
-        TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
-                .matchEthType(Ethernet.TYPE_IPV4)
-                .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
-        packetService.cancelPackets(selectorServer.build(),
-                PacketPriority.CONTROL, appId);
+        if (!useOltUplink) {
+            TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
+                    .matchEthType(Ethernet.TYPE_IPV4)
+                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
+            packetService.cancelPackets(selectorServer.build(),
+                    PacketPriority.CONTROL, appId);
 
-        TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
-                .matchEthType(Ethernet.TYPE_IPV4)
-                .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
-        packetService.cancelPackets(selectorClient.build(),
-                PacketPriority.CONTROL, appId);
+            TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
+                    .matchEthType(Ethernet.TYPE_IPV4)
+                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
+            packetService.cancelPackets(selectorClient.build(),
+                    PacketPriority.CONTROL, appId);
+        } else {
+            for (ConnectPoint cp: getUplinkPortsOfOlts()) {
+                cancelDhcpPacketsFromConnectPoint(cp);
+            }
+        }
     }
 
     public static Map<String, DhcpAllocationInfo> allocationMap() {
@@ -417,21 +545,29 @@ DhcpL2Relay {
         }
 
         //forward the packet to ConnectPoint where the DHCP server is attached.
-        private void forwardPacket(Ethernet packet) {
+        private void forwardPacket(Ethernet packet, PacketContext context) {
+            ConnectPoint toSendTo = null;
 
-            if (dhcpServerConnectPoint.get() != null) {
+            if (!useOltUplink) {
+                toSendTo = dhcpServerConnectPoint.get();
+            } else {
+                toSendTo = getUplinkConnectPointOfOlt(context.inPacket().
+                                                      receivedFrom().deviceId());
+            }
+
+            if (toSendTo != null) {
                 TrafficTreatment t = DefaultTrafficTreatment.builder()
-                        .setOutput(dhcpServerConnectPoint.get().port()).build();
+                        .setOutput(toSendTo.port()).build();
                 OutboundPacket o = new DefaultOutboundPacket(
-                        dhcpServerConnectPoint.get().deviceId(), t,
+                        toSendTo.deviceId(), t,
                         ByteBuffer.wrap(packet.serialize()));
                 if (log.isTraceEnabled()) {
                     log.trace("Relaying packet to dhcp server {} at {}",
-                            packet, dhcpServerConnectPoint.get());
+                            packet, toSendTo);
                 }
                 packetService.emit(o);
             } else {
-                log.warn("No dhcp server connect point");
+                log.error("No connect point to send msg to DHCP Server");
             }
         }
 
@@ -464,7 +600,7 @@ DhcpL2Relay {
                     Ethernet ethernetPacketDiscover =
                             processDhcpPacketFromClient(context, packet);
                     if (ethernetPacketDiscover != null) {
-                        forwardPacket(ethernetPacketDiscover);
+                        forwardPacket(ethernetPacketDiscover, context);
                     }
                     break;
                 case DHCPOFFER:
@@ -478,7 +614,7 @@ DhcpL2Relay {
                     Ethernet ethernetPacketRequest =
                             processDhcpPacketFromClient(context, packet);
                     if (ethernetPacketRequest != null) {
-                        forwardPacket(ethernetPacketRequest);
+                        forwardPacket(ethernetPacketRequest, context);
                     }
                     break;
                 case DHCPACK:
@@ -537,8 +673,10 @@ DhcpL2Relay {
 
             ipv4Packet.setPayload(udpPacket);
             etherReply.setPayload(ipv4Packet);
-            etherReply.setSourceMACAddress(relayAgentMac);
-            etherReply.setDestinationMACAddress(dhcpConnectMac);
+            if (modifyClientPktsSrcDstMac) {
+                etherReply.setSourceMACAddress(relayAgentMac);
+                etherReply.setDestinationMACAddress(dhcpConnectMac);
+            }
 
             etherReply.setPriorityCode(ethernetPacket.getPriorityCode());
             etherReply.setVlanID(cTag(context).toShort());
@@ -710,13 +848,15 @@ DhcpL2Relay {
     private class InnerMastershipListener implements MastershipListener {
         @Override
         public void event(MastershipEvent event) {
-            if (dhcpServerConnectPoint.get() != null &&
-                    dhcpServerConnectPoint.get().deviceId().
-                            equals(event.subject())) {
-                log.trace("Mastership Event recevived for {}", event.subject());
-                // mastership of the device for our connect point has changed
-                // reselect
-                selectServerConnectPoint();
+            if (!useOltUplink) {
+                if (dhcpServerConnectPoint.get() != null &&
+                        dhcpServerConnectPoint.get().deviceId().
+                                equals(event.subject())) {
+                    log.trace("Mastership Event recevived for {}", event.subject());
+                    // mastership of the device for our connect point has changed
+                    // reselect
+                    selectServerConnectPoint();
+                }
             }
         }
     }
@@ -729,27 +869,40 @@ DhcpL2Relay {
         @Override
         public void event(DeviceEvent event) {
             log.trace("Device Event recevived for {} event {}", event.subject(), event.type());
-            if (dhcpServerConnectPoint.get() == null) {
-                switch (event.type()) {
-                    case DEVICE_ADDED:
-                    case DEVICE_AVAILABILITY_CHANGED:
-                        // some device is available check if we can get one
-                        selectServerConnectPoint();
-                        break;
-                    default:
-                        break;
+            if (!useOltUplink) {
+                if (dhcpServerConnectPoint.get() == null) {
+                    switch (event.type()) {
+                        case DEVICE_ADDED:
+                        case DEVICE_AVAILABILITY_CHANGED:
+                            // some device is available check if we can get one
+                            selectServerConnectPoint();
+                            break;
+                        default:
+                            break;
+                    }
+                    return;
                 }
-                return;
-            }
-            if (dhcpServerConnectPoint.get().deviceId().
-                    equals(event.subject().id())) {
+                if (dhcpServerConnectPoint.get().deviceId().
+                        equals(event.subject().id())) {
+                    switch (event.type()) {
+                        case DEVICE_AVAILABILITY_CHANGED:
+                        case DEVICE_REMOVED:
+                        case DEVICE_SUSPENDED:
+                            // state of our device has changed, check if we need
+                            // to re-select
+                            selectServerConnectPoint();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            } else {
                 switch (event.type()) {
-                    case DEVICE_AVAILABILITY_CHANGED:
-                    case DEVICE_REMOVED:
-                    case DEVICE_SUSPENDED:
-                        // state of our device has changed, check if we need
-                        // to re-select
-                        selectServerConnectPoint();
+                    case PORT_ADDED:
+                        if (isUplinkPortOfOlt(event.subject().id(), event.port())) {
+                            requestDhcpPacketsFromConnectPoint(new ConnectPoint(event.subject().id(),
+                                    event.port().number()));
+                        }
                         break;
                     default:
                         break;

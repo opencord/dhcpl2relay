@@ -6,17 +6,24 @@ The DHCP packets sent towards the DHCP Server (DHCP DISCOVER and DHCP REQUEST) a
 
 DHCP Option 82 with CircuitId and RemoteId are added to packets sent to the DHCP server and  Option 82 received from the server are removed before relaying back to the client. The CircuitId and Remote Id are retrieved from `Sadis` Service.
 
+There are two options to packet-in/packet-out to the DHCP Server.
+* To use a SDN controlled switch which can connect to the DHCP Server; using the configuration parameter `dhcpserverConnectPoints`
+* To use the uplink NNI port of the OLT (from which the DHCP Discover/Request was received) for doing the packet-out/packet-in; using the configuration parameter `useOltUplinkForServerPktInOut`
+
 # Configuration
 ```sh
 "org.opencord.dhcpl2relay" : {
       "dhcpl2relay" : {
-        "dhcpserverConnectPoints" : [ "of:00000000000000b2/2" ]
+        "dhcpServerConnectPoints" : [ "of:00000000000000b2/2" ],
+        "useOltUplinkForServerPktInOut" : true
       }
     }
  ```
  ### Configuration Parameters
 ##### dhcpServerConnectPoints
 Port on the switch through which the DHCP Server is reachable
+##### useOltUplinkForServerPktInOut
+The default value of this parameter is **false**. Only if this parameter is false the dhcpServerConnectPoints parameter is used else not
 
 # Example configuration of Sadis
 ```sh

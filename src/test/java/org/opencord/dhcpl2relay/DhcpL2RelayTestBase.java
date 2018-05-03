@@ -18,13 +18,13 @@ package org.opencord.dhcpl2relay;
 
 import org.onlab.packet.BasePacket;
 import org.onlab.packet.DHCP;
-import org.onlab.packet.DHCPOption;
 import org.onlab.packet.DHCPPacketType;
 import org.onlab.packet.Ethernet;
 import org.onlab.packet.IPv4;
 import org.onlab.packet.Ip4Address;
 import org.onlab.packet.MacAddress;
 import org.onlab.packet.UDP;
+import org.onlab.packet.dhcp.DhcpOption;
 import org.onosproject.net.ConnectPoint;
 import org.onosproject.net.packet.DefaultInboundPacket;
 import org.onosproject.net.packet.DefaultPacketContext;
@@ -33,14 +33,11 @@ import org.onosproject.net.packet.OutboundPacket;
 import org.onosproject.net.packet.PacketContext;
 import org.onosproject.net.packet.PacketProcessor;
 import org.onosproject.net.packet.PacketServiceAdapter;
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -267,11 +264,11 @@ public class DhcpL2RelayTestBase {
      *
      * @return Ethernet packet
      */
-    private List<DHCPOption> constructDhcpOptions(DHCPPacketType packetType) {
+    private List<DhcpOption> constructDhcpOptions(DHCPPacketType packetType) {
 
         // DHCP Options.
-        DHCPOption option = new DHCPOption();
-        List<DHCPOption> optionList = new ArrayList<>();
+        DhcpOption option = new DhcpOption();
+        List<DhcpOption> optionList = new ArrayList<>();
 
 
         // DHCP Message Type.
@@ -282,7 +279,7 @@ public class DhcpL2RelayTestBase {
         optionList.add(option);
 
         // DHCP Requested IP.
-        option = new DHCPOption();
+        option = new DhcpOption();
         option.setCode(DHCP.DHCPOptionCode.OptionCode_RequestedIP.getValue());
         option.setLength((byte) 4);
         optionData = Ip4Address.valueOf(EXPECTED_IP).toOctets();
@@ -290,7 +287,7 @@ public class DhcpL2RelayTestBase {
         optionList.add(option);
 
         // End Option.
-        option = new DHCPOption();
+        option = new DhcpOption();
         option.setCode(DHCP.DHCPOptionCode.OptionCode_END.getValue());
         option.setLength((byte) 1);
         optionList.add(option);

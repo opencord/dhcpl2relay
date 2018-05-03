@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.onlab.osgi.ComponentContextAdapter;
 import org.onlab.packet.ChassisId;
 import org.onlab.packet.DHCP;
-import org.onlab.packet.DHCPOption;
 import org.onlab.packet.Ethernet;
 import org.onlab.packet.IPv4;
 import org.onlab.packet.Ip4Address;
@@ -32,6 +31,7 @@ import org.onlab.packet.IpAddress;
 import org.onlab.packet.MacAddress;
 import org.onlab.packet.UDP;
 import org.onlab.packet.VlanId;
+import org.onlab.packet.dhcp.DhcpOption;
 import org.onosproject.cfg.ComponentConfigService;
 import org.onosproject.core.CoreServiceAdapter;
 import org.onosproject.mastership.MastershipServiceAdapter;
@@ -195,11 +195,11 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         UDP udpPacket = (UDP) ipv4Packet.getPayload();
         DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
 
-        List<DHCPOption> options = Lists.newArrayList(dhcpPacket.getOptions());
+        List<DhcpOption> options = Lists.newArrayList(dhcpPacket.getOptions());
         DhcpOption82 option82 = new DhcpOption82();
         option82.setAgentCircuitId(CLIENT_CIRCUIT_ID);
 
-        DHCPOption option = new DHCPOption()
+        DhcpOption option = new DhcpOption()
                 .setCode(DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
                 .setData(option82.toByteArray())
                 .setLength(option82.length());

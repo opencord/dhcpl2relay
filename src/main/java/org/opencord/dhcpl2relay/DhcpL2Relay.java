@@ -27,7 +27,6 @@ import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.ReferenceCardinality;
 import org.onlab.packet.DHCP;
-import org.onlab.packet.DHCPOption;
 import org.onlab.packet.DHCPPacketType;
 import org.onlab.packet.Ethernet;
 import org.onlab.packet.IPv4;
@@ -36,6 +35,7 @@ import org.onlab.packet.MacAddress;
 import org.onlab.packet.TpPort;
 import org.onlab.packet.UDP;
 import org.onlab.packet.VlanId;
+import org.onlab.packet.dhcp.DhcpOption;
 import org.onlab.util.Tools;
 import org.onosproject.cfg.ComponentConfigService;
 import org.onosproject.core.ApplicationId;
@@ -76,8 +76,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.List;
 import java.util.Map;
@@ -574,7 +574,7 @@ DhcpL2Relay {
         // get the type of the DHCP packet
         private DHCPPacketType getDhcpPacketType(DHCP dhcpPayload) {
 
-            for (DHCPOption option : dhcpPayload.getOptions()) {
+            for (DhcpOption option : dhcpPayload.getOptions()) {
                 if (option.getCode() == OptionCode_MessageType.getValue()) {
                     byte[] data = option.getData();
                     return DHCPPacketType.getType(data[0]);
@@ -707,8 +707,8 @@ DhcpL2Relay {
                 String portId = nasPortId(subsCp);
                 SubscriberAndDeviceInformation sub = subsService.get(portId);
                 if (sub != null) {
-                    List<DHCPOption> options = dhcpPayload.getOptions();
-                    List<DHCPOption> circuitIds = options.stream()
+                    List<DhcpOption> options = dhcpPayload.getOptions();
+                    List<DhcpOption> circuitIds = options.stream()
                             .filter(option -> option.getCode() == DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
                             .collect(Collectors.toList());
 
@@ -800,11 +800,11 @@ DhcpL2Relay {
     private DHCP addOption82(DHCP dhcpPacket, SubscriberAndDeviceInformation entry) {
         log.debug("option82data {} ", entry);
 
-        List<DHCPOption> options = Lists.newArrayList(dhcpPacket.getOptions());
+        List<DhcpOption> options = Lists.newArrayList(dhcpPacket.getOptions());
         DhcpOption82 option82 = new DhcpOption82();
         option82.setAgentCircuitId(entry.circuitId());
         option82.setAgentRemoteId(entry.remoteId());
-        DHCPOption option = new DHCPOption()
+        DhcpOption option = new DhcpOption()
                 .setCode(DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
                 .setData(option82.toByteArray())
                 .setLength(option82.length());
@@ -817,8 +817,8 @@ DhcpL2Relay {
     }
 
     private DHCP removeOption82(DHCP dhcpPacket) {
-        List<DHCPOption> options = dhcpPacket.getOptions();
-        List<DHCPOption> newoptions = options.stream()
+        List<DhcpOption> options = dhcpPacket.getOptions();
+        List<DhcpOption> newoptions = options.stream()
                 .filter(option -> option.getCode() != DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
                 .collect(Collectors.toList());
 

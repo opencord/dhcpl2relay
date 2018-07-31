@@ -26,6 +26,7 @@ import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.Service;
 import org.onlab.packet.DHCP;
 import org.onlab.packet.DHCPPacketType;
 import org.onlab.packet.Ethernet;
@@ -40,6 +41,7 @@ import org.onlab.util.Tools;
 import org.onosproject.cfg.ComponentConfigService;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.CoreService;
+import org.onosproject.event.AbstractListenerManager;
 import org.onosproject.mastership.MastershipEvent;
 import org.onosproject.mastership.MastershipListener;
 import org.onosproject.mastership.MastershipService;
@@ -93,9 +95,11 @@ import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FAC
 /**
  * DHCP Relay Agent Application Component.
  */
+@Service
 @Component(immediate = true)
-public class
-DhcpL2Relay {
+public class DhcpL2Relay
+        extends AbstractListenerManager<DhcpL2RelayEvent, DhcpL2RelayListener>
+        implements DhcpL2RelayService {
 
     public static final String DHCP_L2RELAY_APP = "org.opencord.dhcpl2relay";
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -167,6 +171,7 @@ DhcpL2Relay {
         //start the dhcp relay agent
         appId = coreService.registerApplication(DHCP_L2RELAY_APP);
         componentConfigService.registerProperties(getClass());
+        eventDispatcher.addSink(DhcpL2RelayEvent.class, listenerRegistry);
 
         cfgService.addListener(cfgListener);
         mastershipService.addListener(changeListener);
@@ -196,6 +201,7 @@ DhcpL2Relay {
         componentConfigService.unregisterProperties(getClass(), false);
         deviceService.removeListener(deviceListener);
         mastershipService.removeListener(changeListener);
+        eventDispatcher.removeSink(DhcpL2RelayEvent.class);
         log.info("DHCP-L2-RELAY Stopped");
     }
 
@@ -649,24 +655,24 @@ DhcpL2Relay {
                 dhcpPacket.setFlags((short) 0x8000);
             }
 
-            // remove from the allocation map (used for display) as it's is
-            // requesting a fresh allocation
-            if (getDhcpPacketType(dhcpPacket) == DHCPPacketType.DHCPREQUEST) {
+            MacAddress clientMac = MacAddress.valueOf(dhcpPacket.getClientHardwareAddress());
+            IpAddress clientIp = IpAddress.valueOf(dhcpPacket.getClientIPAddress());
 
-                String portId = nasPortId(context.inPacket().receivedFrom());
-                SubscriberAndDeviceInformation sub = subsService.get(portId);
-                if (sub != null) {
-                    allocationMap.remove(sub.nasPortId());
-                }
-            } // end allocation for display
+            SubscriberAndDeviceInformation entry = getSubscriber(context);
+            if (entry == null) {
+                log.info("Dropping packet as subscriber entry is not available");
+                return null;
+            }
+
+            DhcpAllocationInfo info = new DhcpAllocationInfo(
+                    context.inPacket().receivedFrom(), dhcpPacket.getPacketType(),
+                    entry.nasPortId(), clientMac, clientIp);
+
+            allocationMap.put(entry.nasPortId(), info);
+
+            post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info, context.inPacket().receivedFrom()));
 
             if (option82) {
-                SubscriberAndDeviceInformation entry = getSubscriber(context);
-                if (entry == null) {
-                    log.info("Dropping packet as subscriber entry is not available");
-                    return null;
-                }
-
                 DHCP dhcpPacketWithOption82 = addOption82(dhcpPacket, entry);
                 udpPacket.setPayload(dhcpPacketWithOption82);
             }
@@ -725,9 +731,12 @@ DhcpL2Relay {
                     IpAddress ip = IpAddress.valueOf(dhcpPayload.getYourIPAddress());
 
                     //storeDHCPAllocationInfo
-                    DhcpAllocationInfo info = new DhcpAllocationInfo(circuitId, dstMac, ip);
+                    DhcpAllocationInfo info = new DhcpAllocationInfo(subsCp,
+                            dhcpPayload.getPacketType(), circuitId, dstMac, ip);
 
                     allocationMap.put(sub.nasPortId(), info);
+
+                    post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info, subsCp));
                 }
             } // end storing of info
 

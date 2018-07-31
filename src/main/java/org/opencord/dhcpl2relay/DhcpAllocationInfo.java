@@ -15,41 +15,95 @@
  */
 package org.opencord.dhcpl2relay;
 
+import org.onlab.packet.DHCP;
 import org.onlab.packet.IpAddress;
 import org.onlab.packet.MacAddress;
+import org.onosproject.net.ConnectPoint;
 
-import java.util.Date;
+import java.time.Instant;
 
 /**
- * Information about successful DHCP Allocations.
+ * Information about DHCP Allocations.
  */
 public class DhcpAllocationInfo {
 
+    private ConnectPoint location;
     private String circuitId;
     private MacAddress macAddress;
     private IpAddress ip;
-    private Date allocationTime;
+    private Instant allocationTime;
+    private DHCP.MsgType type;
 
-    public DhcpAllocationInfo(String circuitId, MacAddress macAddress, IpAddress ip) {
+    /**
+     * Creates a new DHCP allocation info record.
+     *
+     * @param location connect point the requestor was seen on
+     * @param type last known message type
+     * @param circuitId option 82 information
+     * @param macAddress MAC address of client
+     * @param ip IP of client if allocated
+     */
+    public DhcpAllocationInfo(ConnectPoint location, DHCP.MsgType type,
+                              String circuitId, MacAddress macAddress, IpAddress ip) {
+        this.location = location;
+        this.type = type;
         this.circuitId = circuitId;
         this.macAddress = macAddress;
         this.ip = ip;
-        this.allocationTime = new Date();
+        this.allocationTime = Instant.now();
     }
 
+    /**
+     * Location the requestor was seen on.
+     *
+     * @return connect point
+     */
+    public ConnectPoint location() {
+        return location;
+    }
+
+    /**
+     * Last seen message type of the DHCP exchange.
+     *
+     * @return DHCP message type
+     */
+    public DHCP.MsgType type() {
+        return type;
+    }
+
+    /**
+     * Option 82 information.
+     *
+     * @return circuit ID
+     */
     public String circuitId() {
         return circuitId;
     }
 
+    /**
+     * MAC address of client.
+     *
+     * @return mac address
+     */
     public  MacAddress macAddress() {
         return  macAddress;
     }
 
+    /**
+     * IP address of client if it has one.
+     *
+     * @return client IP
+     */
     public IpAddress ipAddress() {
         return ip;
     }
 
-    public Date allocationTime() {
+    /**
+     * Timestamp when the last DHCP message was seen.
+     *
+     * @return time
+     */
+    public Instant allocationTime() {
         return allocationTime;
     }
 }

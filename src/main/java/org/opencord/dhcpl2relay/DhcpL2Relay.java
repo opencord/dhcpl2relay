@@ -26,6 +26,7 @@ import org.apache.felix.scr.annotations.Modified;
 import org.apache.felix.scr.annotations.Property;
 import org.apache.felix.scr.annotations.Reference;
 import org.apache.felix.scr.annotations.ReferenceCardinality;
+import org.apache.felix.scr.annotations.Service;
 import org.onlab.packet.DHCP;
 import org.onlab.packet.DHCPPacketType;
 import org.onlab.packet.Ethernet;
@@ -40,6 +41,7 @@ import org.onlab.util.Tools;
 import org.onosproject.cfg.ComponentConfigService;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.CoreService;
+import org.onosproject.event.AbstractListenerManager;
 import org.onosproject.mastership.MastershipEvent;
 import org.onosproject.mastership.MastershipListener;
 import org.onosproject.mastership.MastershipService;
@@ -93,9 +95,11 @@ import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FAC
 /**
  * DHCP Relay Agent Application Component.
  */
+@Service
 @Component(immediate = true)
-public class
-DhcpL2Relay {
+public class DhcpL2Relay
+        extends AbstractListenerManager<DhcpL2RelayEvent, DhcpL2RelayListener>
+        implements DhcpL2RelayService {
 
     public static final String DHCP_L2RELAY_APP = "org.opencord.dhcpl2relay";
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -167,6 +171,7 @@ DhcpL2Relay {
         //start the dhcp relay agent
         appId = coreService.registerApplication(DHCP_L2RELAY_APP);
         componentConfigService.registerProperties(getClass());
+        eventDispatcher.addSink(DhcpL2RelayEvent.class, listenerRegistry);
 
         cfgService.addListener(cfgListener);
         mastershipService.addListener(changeListener);
@@ -196,6 +201,7 @@ DhcpL2Relay {
         componentConfigService.unregisterProperties(getClass(), false);
         deviceService.removeListener(deviceListener);
         mastershipService.removeListener(changeListener);
+        eventDispatcher.removeSink(DhcpL2RelayEvent.class);
         log.info("DHCP-L2-RELAY Stopped");
     }
 
@@ -728,6 +734,8 @@ DhcpL2Relay {
                     DhcpAllocationInfo info = new DhcpAllocationInfo(circuitId, dstMac, ip);
 
                     allocationMap.put(sub.nasPortId(), info);
+
+                    post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.LEASE_UPDATED, info, subsCp));
                 }
             } // end storing of info
 
@@ -771,6 +779,27 @@ DhcpL2Relay {
                 }
             }
 
+            return null;
+        }
+
+        private Host getHost(MacAddress dstMac) {
+            Set<Host> hosts = hostService.getHostsByMac(dstMac);
+            if (hosts == null || hosts.isEmpty()) {
+                log.warn("Cannot determine host for DHCP client: {}. Aborting "
+                                + "relay for dhcp packet from server",
+                        dstMac);
+                return null;
+            }
+            for (Host h : hosts) {
+                // if more than one,
+                // find the connect point which has an valid entry in SADIS
+                ConnectPoint cp = new ConnectPoint(h.location().deviceId(),
+                        h.location().port());
+
+                if (sTag(cp) != VlanId.NONE) {
+                    return h;
+                }
+            }
             return null;
         }
 

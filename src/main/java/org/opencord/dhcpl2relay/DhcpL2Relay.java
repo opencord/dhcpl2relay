@@ -15,10 +15,21 @@
  */
 package org.opencord.dhcpl2relay;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
+import static org.onlab.packet.MacAddress.valueOf;
+import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FACTORY;
+
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Dictionary;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
 import org.apache.felix.scr.annotations.Activate;
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Deactivate;
@@ -77,20 +88,10 @@ import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Dictionary;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
-import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
-import static org.onlab.packet.MacAddress.valueOf;
-import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FACTORY;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * DHCP Relay Agent Application Component.
@@ -533,8 +534,6 @@ public class DhcpL2Relay
                 return;
             }
 
-            log.debug("Got a packet ", packet);
-
             if (packet.getEtherType() == Ethernet.TYPE_IPV4) {
                 IPv4 ipv4Packet = (IPv4) packet.getPayload();
 
@@ -568,8 +567,8 @@ public class DhcpL2Relay
                         toSendTo.deviceId(), t,
                         ByteBuffer.wrap(packet.serialize()));
                 if (log.isTraceEnabled()) {
-                    log.trace("Relaying packet to dhcp server {} at {}",
-                            packet, toSendTo);
+                    log.trace("Relaying packet to dhcp server at {} {}",
+                              toSendTo, packet);
                 }
                 packetService.emit(o);
             } else {
@@ -599,7 +598,8 @@ public class DhcpL2Relay
 
             DHCPPacketType incomingPacketType = getDhcpPacketType(dhcpPayload);
 
-            log.info("Received DHCP Packet of type {}", incomingPacketType);
+            log.info("Received DHCP Packet of type {} from {}",
+                     incomingPacketType, context.inPacket().receivedFrom());
 
             switch (incomingPacketType) {
                 case DHCPDISCOVER:
@@ -611,7 +611,8 @@ public class DhcpL2Relay
                     break;
                 case DHCPOFFER:
                     //reply to dhcp client.
-                    Ethernet ethernetPacketOffer = processDhcpPacketFromServer(packet);
+                    Ethernet ethernetPacketOffer =
+                            processDhcpPacketFromServer(context, packet);
                     if (ethernetPacketOffer != null) {
                         sendReply(ethernetPacketOffer, dhcpPayload);
                     }
@@ -625,7 +626,8 @@ public class DhcpL2Relay
                     break;
                 case DHCPACK:
                     //reply to dhcp client.
-                    Ethernet ethernetPacketAck = processDhcpPacketFromServer(packet);
+                    Ethernet ethernetPacketAck =
+                            processDhcpPacketFromServer(context, packet);
                     if (ethernetPacketAck != null) {
                         sendReply(ethernetPacketAck, dhcpPayload);
                     }
@@ -637,6 +639,10 @@ public class DhcpL2Relay
 
         private Ethernet processDhcpPacketFromClient(PacketContext context,
                                                      Ethernet ethernetPacket) {
+            if (log.isTraceEnabled()) {
+                log.trace("DHCP packet received from client at {} {}",
+                          context.inPacket().receivedFrom(), ethernetPacket);
+            }
 
             MacAddress relayAgentMac = relayAgentMacAddress(context);
             if (relayAgentMac == null) {
@@ -660,7 +666,7 @@ public class DhcpL2Relay
 
             SubscriberAndDeviceInformation entry = getSubscriber(context);
             if (entry == null) {
-                log.info("Dropping packet as subscriber entry is not available");
+                log.warn("Dropping packet as subscriber entry is not available");
                 return null;
             }
 
@@ -670,7 +676,8 @@ public class DhcpL2Relay
 
             allocationMap.put(entry.nasPortId(), info);
 
-            post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info, context.inPacket().receivedFrom()));
+            post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info,
+                                      context.inPacket().receivedFrom()));
 
             if (option82) {
                 DHCP dhcpPacketWithOption82 = addOption82(dhcpPacket, entry);
@@ -688,13 +695,17 @@ public class DhcpL2Relay
             etherReply.setVlanID(cTag(context).toShort());
             etherReply.setQinQTPID(Ethernet.TYPE_VLAN);
             etherReply.setQinQVID(sTag(context).toShort());
-
-            log.info("Finished processing packet -- sending packet {}", etherReply);
+            log.info("Finished processing packet.. relaying to dhcpServer");
             return etherReply;
         }
 
         //build the DHCP offer/ack with proper client port.
-        private Ethernet processDhcpPacketFromServer(Ethernet ethernetPacket) {
+        private Ethernet processDhcpPacketFromServer(PacketContext context,
+                                                     Ethernet ethernetPacket) {
+            if (log.isTraceEnabled()) {
+                log.trace("DHCP packet received from server at {} {}",
+                          context.inPacket().receivedFrom(), ethernetPacket);
+            }
             // get dhcp header.
             Ethernet etherReply = (Ethernet) ethernetPacket.clone();
             IPv4 ipv4Packet = (IPv4) etherReply.getPayload();
@@ -754,7 +765,7 @@ public class DhcpL2Relay
             ipv4Packet.setPayload(udpPacket);
             etherReply.setPayload(ipv4Packet);
 
-            log.info("Finished processing packet");
+            log.info("Finished processing packet.. relaying to client");
             return etherReply;
         }
 
@@ -790,16 +801,16 @@ public class DhcpL2Relay
 
             // Send packet out to requester if the host information is available
             if (subCp != null) {
-                log.info("Sending DHCP packet to cp: {}", subCp);
+                log.info("Sending DHCP packet to client at {}", subCp);
                 TrafficTreatment t = DefaultTrafficTreatment.builder()
                         .setOutput(subCp.port()).build();
                 OutboundPacket o = new DefaultOutboundPacket(
                         subCp.deviceId(), t, ByteBuffer.wrap(ethPacket.serialize()));
                 if (log.isTraceEnabled()) {
-                    log.trace("Relaying packet to dhcp client {}", ethPacket);
+                    log.trace("Relaying packet to dhcp client at {} {}", subCp,
+                              ethPacket);
                 }
                 packetService.emit(o);
-                log.info("DHCP Packet sent to {}", subCp);
             } else {
                 log.error("Dropping DHCP packet because can't find host for {}", descMac);
             }
@@ -877,7 +888,11 @@ public class DhcpL2Relay
     private class InnerDeviceListener implements DeviceListener {
         @Override
         public void event(DeviceEvent event) {
-            log.trace("Device Event recevived for {} event {}", event.subject(), event.type());
+            if (log.isTraceEnabled() &&
+                    !event.type().equals(DeviceEvent.Type.PORT_STATS_UPDATED)) {
+                log.trace("Device Event received for {} event {}",
+                          event.subject(), event.type());
+            }
             if (!useOltUplink) {
                 if (dhcpServerConnectPoint.get() == null) {
                     switch (event.type()) {

@@ -40,6 +40,7 @@ import org.apache.felix.scr.annotations.ReferenceCardinality;
 import org.apache.felix.scr.annotations.Service;
 import org.onlab.packet.DHCP;
 import org.onlab.packet.DHCPPacketType;
+import org.onlab.packet.EthType.EtherType;
 import org.onlab.packet.Ethernet;
 import org.onlab.packet.IPv4;
 import org.onlab.packet.IpAddress;
@@ -74,6 +75,9 @@ import org.onosproject.net.flow.DefaultTrafficSelector;
 import org.onosproject.net.flow.DefaultTrafficTreatment;
 import org.onosproject.net.flow.TrafficSelector;
 import org.onosproject.net.flow.TrafficTreatment;
+import org.onosproject.net.flowobjective.DefaultForwardingObjective;
+import org.onosproject.net.flowobjective.FlowObjectiveService;
+import org.onosproject.net.flowobjective.ForwardingObjective;
 import org.onosproject.net.host.HostService;
 import org.onosproject.net.packet.DefaultOutboundPacket;
 import org.onosproject.net.packet.OutboundPacket;
@@ -103,6 +107,8 @@ public class DhcpL2Relay
         implements DhcpL2RelayService {
 
     public static final String DHCP_L2RELAY_APP = "org.opencord.dhcpl2relay";
+    private static final String HOST_LOC_PROVIDER =
+            "org.onosproject.provider.host.impl.HostLocationProvider";
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final InternalConfigListener cfgListener =
             new InternalConfigListener();
@@ -142,6 +148,9 @@ public class DhcpL2Relay
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     protected MastershipService mastershipService;
 
+    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    protected FlowObjectiveService flowObjectiveService;
+
     @Property(name = "option82", boolValue = true,
             label = "Add option 82 to relayed packets")
     protected boolean option82 = true;
@@ -171,6 +180,9 @@ public class DhcpL2Relay
     protected void activate(ComponentContext context) {
         //start the dhcp relay agent
         appId = coreService.registerApplication(DHCP_L2RELAY_APP);
+        // ensure that host-learning via dhcp includes IP addresses
+        componentConfigService.preSetProperty(HOST_LOC_PROVIDER,
+                                              "useDhcp", Boolean.TRUE.toString());
         componentConfigService.registerProperties(getClass());
         eventDispatcher.addSink(DhcpL2RelayEvent.class, listenerRegistry);
 
@@ -184,7 +196,6 @@ public class DhcpL2Relay
         //add the packet services.
         packetService.addProcessor(dhcpRelayPacketProcessor,
                 PacketProcessor.director(0));
-        requestDhcpPackets();
         if (context != null) {
             modified(context);
         }
@@ -197,7 +208,7 @@ public class DhcpL2Relay
         cfgService.removeListener(cfgListener);
         factories.forEach(cfgService::unregisterConfigFactory);
         packetService.removeProcessor(dhcpRelayPacketProcessor);
-        cancelDhcpPackets();
+        cancelDhcpPktsFromServer();
 
         componentConfigService.unregisterProperties(getClass(), false);
         deviceService.removeListener(deviceListener);
@@ -273,13 +284,95 @@ public class DhcpL2Relay
 
         dhcpConnectPoints = Sets.newConcurrentHashSet(cfg.getDhcpServerConnectPoint());
         modifyClientPktsSrcDstMac = cfg.getModifySrcDstMacAddresses();
+        boolean prevUseOltUplink = useOltUplink;
         useOltUplink = cfg.getUseOltUplinkForServerPktInOut();
 
-        if (!useOltUplink) {
+        if (useOltUplink) {
+            for (ConnectPoint cp : getUplinkPortsOfOlts()) {
+                log.debug("requestDhcpPackets: ConnectPoint: {}", cp);
+                requestDhcpPacketsFromConnectPoint(cp);
+            }
+            // check if previous config was different and so trap flows may
+            // need to be removed from other places
+            if (!prevUseOltUplink) {
+                if (dhcpServerConnectPoint.get() == null) {
+                    log.warn("No dhcpServer connectPoint found .. cannot remove"
+                            + " previously installed trap flows");
+                    return;
+                }
+                // XXX change to use packet service when priority can be set
+                DefaultForwardingObjective.Builder bldr =
+                        trapDhcpPktsFromServer(dhcpServerConnectPoint.get().deviceId(),
+                                               dhcpServerConnectPoint.get().port());
+                flowObjectiveService.forward(dhcpServerConnectPoint.get().deviceId(),
+                                             bldr.remove());
+            }
+
+        } else {
             selectServerConnectPoint();
+            log.info("dhcp server connect point: " + dhcpServerConnectPoint);
+            // create flow to trap packets coming from the server to this connectpoint
+            // which is typically not on the OLT (otherwise use the OLT's uplink)
+            if (dhcpServerConnectPoint.get() == null) {
+                log.warn("No dhcpServer connectPoint found, cannot install dhcp"
+                        + " trap flows");
+                return;
+            }
+            // XXX change to use packet service when priority can be set
+            DefaultForwardingObjective.Builder bldr =
+                    trapDhcpPktsFromServer(dhcpServerConnectPoint.get().deviceId(),
+                                           dhcpServerConnectPoint.get().port());
+            flowObjectiveService.forward(dhcpServerConnectPoint.get().deviceId(),
+                                         bldr.add());
+        }
+    }
+
+    private void cancelDhcpPktsFromServer() {
+        if (useOltUplink) {
+            for (ConnectPoint cp : getUplinkPortsOfOlts()) {
+                log.debug("cancelDhcpPackets: ConnectPoint: {}", cp);
+                cancelDhcpPacketsFromConnectPoint(cp);
+            }
+        } else {
+            // delete flow to trap packets coming from the server to this connectpoint
+            // which is typically not on the OLT (otherwise use the OLT's uplink)
+            if (dhcpServerConnectPoint.get() == null) {
+                log.warn("No dhcpServer connectPoint found.. cannot remove dhcp"
+                        + " trap flows");
+                return;
+            }
+            // XXX change to use packet service when priority can be set
+            DefaultForwardingObjective.Builder bldr =
+                    trapDhcpPktsFromServer(dhcpServerConnectPoint.get().deviceId(),
+                                           dhcpServerConnectPoint.get().port());
+            flowObjectiveService.forward(dhcpServerConnectPoint.get().deviceId(),
+                                         bldr.remove());
         }
 
-        log.info("dhcp server connect point: " + dhcpServerConnectPoint);
+    }
+
+    private DefaultForwardingObjective.Builder trapDhcpPktsFromServer(DeviceId devId,
+                                                                      PortNumber port) {
+        TrafficTreatment treatment = DefaultTrafficTreatment.builder()
+                .punt()
+                .wipeDeferred()
+                .build();
+        TrafficSelector downstream = DefaultTrafficSelector.builder()
+                .matchInPort(port)
+                .matchEthType(EtherType.IPV4.ethType().toShort())
+                .matchIPProtocol(IPv4.PROTOCOL_UDP)
+                .matchUdpSrc(TpPort.tpPort(67))
+                .matchUdpDst(TpPort.tpPort(68))
+                .build();
+
+        DefaultForwardingObjective.Builder bldr = DefaultForwardingObjective.builder()
+                .withPriority(61000) // XXX packet service does not allow setting this
+                .withSelector(downstream)
+                .fromApp(appId)
+                .withFlag(ForwardingObjective.Flag.VERSATILE)
+                .withTreatment(treatment)
+                .makePermanent();
+        return bldr;
     }
 
     /**
@@ -380,58 +473,6 @@ public class DhcpL2Relay
                 .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
         packetService.cancelPackets(selectorServer.build(),
                 PacketPriority.CONTROL, appId, Optional.of(cp.deviceId()));
-    }
-
-    /**
-     * Request DHCP packet in via PacketService.
-     */
-    private void requestDhcpPackets() {
-        if (!useOltUplink) {
-            TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
-                    .matchEthType(Ethernet.TYPE_IPV4)
-                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
-            packetService.requestPackets(selectorServer.build(),
-                    PacketPriority.CONTROL, appId);
-
-            TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
-                    .matchEthType(Ethernet.TYPE_IPV4)
-                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
-            packetService.requestPackets(selectorClient.build(),
-                    PacketPriority.CONTROL, appId);
-        } else {
-            for (ConnectPoint cp: getUplinkPortsOfOlts()) {
-                log.debug("requestDhcpPackets: ConnectPoint: {}", cp);
-                requestDhcpPacketsFromConnectPoint(cp);
-            }
-        }
-
-    }
-
-    /**
-     * Cancel requested DHCP packets in via packet service.
-     */
-    private void cancelDhcpPackets() {
-        if (!useOltUplink) {
-            TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
-                    .matchEthType(Ethernet.TYPE_IPV4)
-                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
-            packetService.cancelPackets(selectorServer.build(),
-                    PacketPriority.CONTROL, appId);
-
-            TrafficSelector.Builder selectorClient = DefaultTrafficSelector.builder()
-                    .matchEthType(Ethernet.TYPE_IPV4)
-                    .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                    .matchUdpSrc(TpPort.tpPort(UDP.DHCP_CLIENT_PORT));
-            packetService.cancelPackets(selectorClient.build(),
-                    PacketPriority.CONTROL, appId);
-        } else {
-            for (ConnectPoint cp: getUplinkPortsOfOlts()) {
-                cancelDhcpPacketsFromConnectPoint(cp);
-            }
-        }
     }
 
     public static Map<String, DhcpAllocationInfo> allocationMap() {
@@ -923,7 +964,7 @@ public class DhcpL2Relay
             } else {
                 switch (event.type()) {
                     case PORT_ADDED:
-                        if (isUplinkPortOfOlt(event.subject().id(), event.port())) {
+                        if (useOltUplink && isUplinkPortOfOlt(event.subject().id(), event.port())) {
                             requestDhcpPacketsFromConnectPoint(new ConnectPoint(event.subject().id(),
                                     event.port().number()));
                         }

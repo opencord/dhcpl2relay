@@ -16,6 +16,14 @@
 
 package org.opencord.dhcpl2relay;
 
+import static org.junit.Assert.fail;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.onlab.packet.BasePacket;
 import org.onlab.packet.DHCP;
 import org.onlab.packet.DHCPPacketType;
@@ -25,6 +33,9 @@ import org.onlab.packet.Ip4Address;
 import org.onlab.packet.MacAddress;
 import org.onlab.packet.UDP;
 import org.onlab.packet.dhcp.DhcpOption;
+import org.onosproject.core.ApplicationId;
+import org.onosproject.core.CoreServiceAdapter;
+import org.onosproject.core.DefaultApplicationId;
 import org.onosproject.net.ConnectPoint;
 import org.onosproject.net.packet.DefaultInboundPacket;
 import org.onosproject.net.packet.DefaultPacketContext;
@@ -35,14 +46,6 @@ import org.onosproject.net.packet.PacketProcessor;
 import org.onosproject.net.packet.PacketServiceAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
-import static org.junit.Assert.fail;
 
 
 /**
@@ -70,6 +73,17 @@ public class DhcpL2RelayTestBase {
 
     BasePacket getPacket() {
         return savedPackets.remove(0);
+    }
+
+    /**
+     * Mock core service adaptor that provides an appId.
+     */
+    class MockCoreServiceAdapter extends CoreServiceAdapter {
+
+        @Override
+        public ApplicationId registerApplication(String name) {
+            return new DefaultApplicationId(10, name);
+        }
     }
 
     /**

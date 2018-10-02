@@ -15,8 +15,12 @@
  */
 package org.opencord.dhcpl2relay;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import static org.junit.Assert.assertEquals;
+
+import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Set;
+
 import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.Before;
@@ -35,7 +39,6 @@ import org.onlab.packet.VlanId;
 import org.onlab.packet.dhcp.DhcpOption;
 import org.onosproject.cfg.ComponentConfigService;
 import org.onosproject.common.event.impl.TestEventDispatcher;
-import org.onosproject.core.CoreServiceAdapter;
 import org.onosproject.mastership.MastershipServiceAdapter;
 import org.onosproject.net.AnnotationKeys;
 import org.onosproject.net.Annotations;
@@ -54,6 +57,7 @@ import org.onosproject.net.PortNumber;
 import org.onosproject.net.config.Config;
 import org.onosproject.net.config.NetworkConfigRegistryAdapter;
 import org.onosproject.net.device.DeviceServiceAdapter;
+import org.onosproject.net.flowobjective.FlowObjectiveServiceAdapter;
 import org.onosproject.net.host.HostServiceAdapter;
 import org.onosproject.net.provider.ProviderId;
 import org.opencord.dhcpl2relay.packet.DhcpOption82;
@@ -62,11 +66,8 @@ import org.opencord.sadis.SubscriberAndDeviceInformationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
 
@@ -101,7 +102,8 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     public void setUp() {
         dhcpL2Relay = new DhcpL2Relay();
         dhcpL2Relay.cfgService = new TestNetworkConfigRegistry();
-        dhcpL2Relay.coreService = new CoreServiceAdapter();
+        dhcpL2Relay.coreService = new MockCoreServiceAdapter();
+        dhcpL2Relay.flowObjectiveService = new FlowObjectiveServiceAdapter();
         dhcpL2Relay.packetService = new MockPacketService();
         dhcpL2Relay.componentConfigService = mockConfigService;
         dhcpL2Relay.deviceService = new MockDeviceService();
@@ -269,18 +271,23 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         public boolean isEnabled() {
             return true;
         }
+        @Override
         public long portSpeed() {
             return 1000;
         }
+        @Override
         public Element element() {
             return null;
         }
+        @Override
         public PortNumber number() {
             return null;
         }
+        @Override
         public Annotations annotations() {
             return new MockAnnotations();
         }
+        @Override
         public Type type() {
             return Port.Type.FIBER;
         }
@@ -291,6 +298,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
             public String value(String val) {
                 return "PON 1/1";
             }
+            @Override
             public Set<String> keys() {
                 return null;
             }
@@ -315,7 +323,9 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
 
         @Override
         public void invalidateAll() {}
+        @Override
         public void invalidateId(String id) {}
+        @Override
         public SubscriberAndDeviceInformation getfromCache(String id) {
             return null;
         }

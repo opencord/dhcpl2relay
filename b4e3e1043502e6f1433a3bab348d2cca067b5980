@@ -16,6 +16,24 @@
       "revId": "b4e3e1043502e6f1433a3bab348d2cca067b5980",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ec2962c4_42a498b9",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 311,
+      "author": {
+        "id": 1000068
+      },
+      "writtenOn": "2018-10-12T04:19:20Z",
+      "side": 1,
+      "message": "Yeah I thought about that but then figured that previously it was using olt upllink but now agg-switch uplink, so the latter will intercept the packets from the server before it will reach the olt - so leaving the ones there does no harm. But to be clean, I guess I should remove it. I will do it when I come back to fix this change to use the PacketService instead of the FlowObjectiveService. For now if you have no other issues, I\u0027d prefer to merge this, as we want to do final test tomorrow and tag things",
+      "parentUuid": "71068721_5cff3895",
+      "revId": "b4e3e1043502e6f1433a3bab348d2cca067b5980",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
     }
   ]
 }

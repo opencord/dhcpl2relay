@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "71068721_5cff3895",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 311,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2018-10-12T03:41:31Z",
+      "side": 1,
+      "message": "In the else case don\u0027t we need to check if prevUseOltUplink was true then call cancelDhcpPktsFromServer() ?",
+      "revId": "b4e3e1043502e6f1433a3bab348d2cca067b5980",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

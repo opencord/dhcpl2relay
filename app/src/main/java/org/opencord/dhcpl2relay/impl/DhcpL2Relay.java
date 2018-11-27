@@ -15,31 +15,10 @@
  */
 package org.opencord.dhcpl2relay.impl;
 
-import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
-import static org.onlab.packet.MacAddress.valueOf;
-import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FACTORY;
-import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.ENABLE_DHCP_BROADCAST_REPLIES;
-import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.ENABLE_DHCP_BROADCAST_REPLIES_DEFAULT;
-import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.OPTION_82;
-import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.OPTION_82_DEFAULT;
-
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.commons.io.HexDump;
 import org.onlab.packet.DHCP;
 import org.onlab.packet.Ethernet;
@@ -113,10 +92,30 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import static java.util.concurrent.Executors.newFixedThreadPool;
+import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
+import static org.onlab.packet.MacAddress.valueOf;
+import static org.onlab.util.Tools.groupedThreads;
+import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FACTORY;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.*;
 
 /**
  * DHCP Relay Agent Application Component.
@@ -221,8 +220,13 @@ public class DhcpL2Relay
 
     private DhcpL2RelayStoreDelegate delegate = new InnerDhcpL2RelayStoreDelegate();
 
+    protected ExecutorService eventExecutor;
+
     @Activate
     protected void activate(ComponentContext context) {
+
+        eventExecutor = newFixedThreadPool(10, groupedThreads("onos/dhcp", "events-%d", log));
+
         //start the dhcp relay agent
         appId = coreService.registerApplication(DHCP_L2RELAY_APP);
         // ensure that host-learning via dhcp includes IP addresses
@@ -596,33 +600,45 @@ public class DhcpL2Relay
                 return;
             }
 
-            // process the packet and get the payload
-            Ethernet packet = context.inPacket().parsed();
+            eventExecutor.execute(() -> {
 
-            if (packet == null) {
-                log.warn("Packet is null");
-                return;
-            }
+                // process the packet and get the payload
+                Ethernet packet = context.inPacket().parsed();
 
-            if (packet.getEtherType() == Ethernet.TYPE_IPV4) {
-                IPv4 ipv4Packet = (IPv4) packet.getPayload();
+                if (packet == null) {
+                    log.warn("Packet is null");
+                    return;
+                }
 
-                if (ipv4Packet.getProtocol() == IPv4.PROTOCOL_UDP) {
-                    UDP udpPacket = (UDP) ipv4Packet.getPayload();
-                    if (udpPacket.getSourcePort() == UDP.DHCP_CLIENT_PORT ||
-                            udpPacket.getSourcePort() == UDP.DHCP_SERVER_PORT) {
-                        DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
-                        //This packet is dhcp.
-                        processDhcpPacket(context, packet, dhcpPayload);
+                if (packet.getEtherType() == Ethernet.TYPE_IPV4) {
+                    IPv4 ipv4Packet = (IPv4) packet.getPayload();
+
+                    if (ipv4Packet.getProtocol() == IPv4.PROTOCOL_UDP) {
+                        UDP udpPacket = (UDP) ipv4Packet.getPayload();
+                        if (udpPacket.getSourcePort() == UDP.DHCP_CLIENT_PORT ||
+                                udpPacket.getSourcePort() == UDP.DHCP_SERVER_PORT) {
+                            DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
+                            log.info("Processing with Executor, {} with MAC {}",
+                                     getDhcpPacketType(dhcpPayload),
+                                     MacAddress.valueOf(dhcpPayload.getClientHardwareAddress()));
+                            //This packet is dhcp.
+                            processDhcpPacket(context, packet, dhcpPayload);
+                        }
                     }
                 }
-            }
+            });
         }
 
         //forward the packet to ConnectPoint where the DHCP server is attached.
         private void forwardPacket(Ethernet packet, PacketContext context) {
-            ConnectPoint toSendTo = null;
+            IPv4 ipv4Packet = (IPv4) packet.getPayload();
+            UDP udpPacket = (UDP) ipv4Packet.getPayload();
+            DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
+            log.info("Emitting with Executor to server: packet {}, with MAC {}",
+                     getDhcpPacketType(dhcpPayload),
+                     MacAddress.valueOf(dhcpPayload.getClientHardwareAddress()));
 
+            ConnectPoint toSendTo = null;
             if (!useOltUplink) {
                 toSendTo = dhcpServerConnectPoint.get();
             } else {
@@ -985,9 +1001,13 @@ public class DhcpL2Relay
             MacAddress descMac = valueOf(dhcpPayload.getClientHardwareAddress());
             ConnectPoint subCp = getConnectPointOfClient(descMac, context);
 
+            log.info("Emitting with Executor to client: packet {}, with MAC {}",
+                     getDhcpPacketType(dhcpPayload),
+                     MacAddress.valueOf(dhcpPayload.getClientHardwareAddress()));
+
             // Send packet out to requester if the host information is available
             if (subCp != null) {
-                log.info("Sending DHCP Packet to client at {}", subCp);
+                log.info("Sending DHCP Packet to client at {} with MacAddress", subCp, descMac);
                 TrafficTreatment t = DefaultTrafficTreatment.builder()
                         .setOutput(subCp.port()).build();
                 OutboundPacket o = new DefaultOutboundPacket(

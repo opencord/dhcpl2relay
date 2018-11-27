@@ -16,13 +16,14 @@
 package org.opencord.dhcpl2relay.impl;
 
 import static org.easymock.EasyMock.createMock;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,6 +88,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         store.clusterCommunicationService = new ClusterCommunicationServiceAdapter();
         store.componentConfigService = mockConfigService;
         TestUtils.setField(store, "eventDispatcher", new TestEventDispatcher());
+        TestUtils.setField(dhcpL2Relay, "packetProcessorExecutor", MoreExecutors.newDirectExecutorService());
         store.activate(new MockComponentContext());
         dhcpL2Relay.dhcpL2RelayCounters = this.store;
     }
@@ -101,9 +103,9 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
 
     private void checkAllocation(DHCP.MsgType messageType) {
         ConnectPoint clientCp = ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/"
-                + String.valueOf(CLIENT_PORT));
+                                                                        + String.valueOf(CLIENT_PORT));
         allocs = dhcpL2Relay.getAllocationInfo();
-        assert allocs.size() == 1;
+        assertEquals(1, allocs.size());
         allocs.forEach((k, v) -> {
             log.info("Allocation {} : {}", k, v);
             assertEquals(v.type(), messageType);
@@ -119,33 +121,36 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         MacAddress mac32 = MacAddress.valueOf("b4:96:91:0c:4f:e4");
         VlanId vlan32a = VlanId.vlanId((short) 801);
         Ethernet discover32a = constructDhcpDiscoverPacket(
-                                  mac32, vlan32a, (short) 0);
+                mac32, vlan32a, (short) 0);
         ConnectPoint client32 = ConnectPoint.deviceConnectPoint(
-                                                "of:0000b86a974385f7/32");
+                "of:0000b86a974385f7/32");
         sendPacket(discover32a, client32);
+
         allocs = dhcpL2Relay.getAllocationInfo();
-        assert allocs.size() == 1;
+        assertEquals(1, allocs.size());
 
         //Trigger a discover from another RG on port 4112
         MacAddress mac4112 = MacAddress.valueOf("b4:96:91:0c:4f:c9");
         VlanId vlan4112 = VlanId.vlanId((short) 101);
         Ethernet discover4112 = constructDhcpDiscoverPacket(
-                                                            mac4112, vlan4112,
-                                                            (short) 0);
+                mac4112, vlan4112,
+                (short) 0);
         ConnectPoint client4112 = ConnectPoint.deviceConnectPoint(
                 "of:0000b86a974385f7/4112");
         sendPacket(discover4112, client4112);
+
         allocs = dhcpL2Relay.getAllocationInfo();
-        assert allocs.size() == 2;
+        assertEquals(2, allocs.size());
 
         // Trigger a discover for another service with a different vlan
         // from the same UNI port 32
         VlanId vlan32b = VlanId.vlanId((short) 802);
         Ethernet discover32b = constructDhcpDiscoverPacket(
-                                  mac32, vlan32b, (short) 0);
+                mac32, vlan32b, (short) 0);
         sendPacket(discover32b, client32);
+
         allocs = dhcpL2Relay.getAllocationInfo();
-        assert allocs.size() == 3;
+        assertEquals(3, allocs.size());
 
         allocs.forEach((k, v) -> {
             log.info("Allocation {} : {}", k, v);
@@ -175,12 +180,12 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpDiscover()  throws Exception {
+    public void testDhcpDiscover() throws Exception {
         // Sending DHCP Discover packet
         dhcpL2Relay.clearAllocations();
         Ethernet discoverPacket = constructDhcpDiscoverPacket(CLIENT_MAC);
         ConnectPoint clientCp = ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/"
-                + String.valueOf(CLIENT_PORT));
+                                                                        + String.valueOf(CLIENT_PORT));
         sendPacket(discoverPacket, clientCp);
 
         Ethernet discoverRelayed = (Ethernet) getPacket();
@@ -194,11 +199,11 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpRequest()  throws Exception {
+    public void testDhcpRequest() throws Exception {
         // Sending DHCP Request packet
         Ethernet requestPacket = constructDhcpRequestPacket(CLIENT_MAC);
         ConnectPoint clientCp = ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/"
-                + String.valueOf(CLIENT_PORT));
+                                                                        + String.valueOf(CLIENT_PORT));
         sendPacket(requestPacket, clientCp);
 
         Ethernet requestRelayed = (Ethernet) getPacket();
@@ -212,12 +217,12 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpOffer() {
+    public void testDhcpOffer() throws InterruptedException {
         // Sending DHCP Offer packet
         Ethernet offerPacket = constructDhcpOfferPacket(SERVER_MAC,
-                CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
+                                                        CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
         sendPacket(offerPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/"
-                + String.valueOf(UPLINK_PORT)));
+                                                                        + String.valueOf(UPLINK_PORT)));
 
         Ethernet offerRelayed = (Ethernet) getPacket();
         compareServerPackets(offerPacket, offerRelayed);
@@ -230,13 +235,13 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpAck() {
+    public void testDhcpAck() throws InterruptedException {
 
         Ethernet ackPacket = constructDhcpAckPacket(SERVER_MAC,
-                CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
+                                                    CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
 
         sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/"
-                + String.valueOf(UPLINK_PORT)));
+                                                                      + String.valueOf(UPLINK_PORT)));
 
         Ethernet ackRelayed = (Ethernet) getPacket();
         compareServerPackets(ackPacket, ackRelayed);
@@ -249,10 +254,10 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpNak() {
+    public void testDhcpNak() throws InterruptedException {
 
         Ethernet nakPacket = constructDhcpNakPacket(SERVER_MAC,
-                CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
+                                                    CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
 
         sendPacket(nakPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
 
@@ -267,7 +272,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpDecline() {
+    public void testDhcpDecline() throws InterruptedException {
 
         Ethernet declinePacket = constructDhcpDeclinePacket(CLIENT_MAC);
 
@@ -282,34 +287,30 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * Tests the DHCP global counters.
      */
     @Test
-    public void testDhcpGlobalCounters() {
-        long discoveryValue = 0;
-        long offerValue = 0;
-        long requestValue = 0;
-        long ackValue = 0;
+    public void testDhcpGlobalCounters() throws InterruptedException {
 
         Ethernet discoverPacket = constructDhcpDiscoverPacket(CLIENT_MAC);
         Ethernet offerPacket = constructDhcpOfferPacket(SERVER_MAC,
-                CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
+                                                        CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
         Ethernet requestPacket = constructDhcpRequestPacket(CLIENT_MAC);
         Ethernet ackPacket = constructDhcpAckPacket(SERVER_MAC,
-                CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
+                                                    CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
 
         sendPacket(discoverPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
         sendPacket(offerPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
         sendPacket(requestPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
         sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
 
-        Map<DhcpL2RelayCountersIdentifier, Long> countersMap = store.getCountersMap();
-        discoveryValue = countersMap.get(new DhcpL2RelayCountersIdentifier(DhcpL2RelayEvent.GLOBAL_COUNTER,
-                DhcpL2RelayCounterNames.valueOf("DHCPDISCOVER")));
-        offerValue = countersMap.get(new DhcpL2RelayCountersIdentifier(DhcpL2RelayEvent.GLOBAL_COUNTER,
-                DhcpL2RelayCounterNames.valueOf("DHCPOFFER")));
-        requestValue = countersMap.get(new DhcpL2RelayCountersIdentifier(DhcpL2RelayEvent.GLOBAL_COUNTER,
-                DhcpL2RelayCounterNames.valueOf("DHCPREQUEST")));
-        ackValue = countersMap.get(new DhcpL2RelayCountersIdentifier(DhcpL2RelayEvent.GLOBAL_COUNTER,
-                DhcpL2RelayCounterNames.valueOf("DHCPACK")));
 
+        Map<DhcpL2RelayCountersIdentifier, Long> countersMap = store.getCountersMap();
+        long discoveryValue = countersMap.get(new DhcpL2RelayCountersIdentifier(DhcpL2RelayEvent.GLOBAL_COUNTER,
+                                                  DhcpL2RelayCounterNames.valueOf("DHCPDISCOVER")));
+        long offerValue = countersMap.get(new DhcpL2RelayCountersIdentifier(DhcpL2RelayEvent.GLOBAL_COUNTER,
+                                              DhcpL2RelayCounterNames.valueOf("DHCPOFFER")));
+        long requestValue = countersMap.get(new DhcpL2RelayCountersIdentifier(DhcpL2RelayEvent.GLOBAL_COUNTER,
+                                                DhcpL2RelayCounterNames.valueOf("DHCPREQUEST")));
+        long ackValue = countersMap.get(new DhcpL2RelayCountersIdentifier(DhcpL2RelayEvent.GLOBAL_COUNTER,
+                                            DhcpL2RelayCounterNames.valueOf("DHCPACK")));
         assertEquals(1, discoveryValue);
         assertEquals(1, offerValue);
         assertEquals(1, requestValue);
@@ -318,14 +319,9 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
 
     /**
      * Tests the DHCP per subscriber counters.
-     *
      */
     @Test
-    public void testDhcpPerSubscriberCounters() {
-        long discoveryValue;
-        long offerValue;
-        long requestValue;
-        long ackValue;
+    public void testDhcpPerSubscriberCounters() throws Exception {
 
         Ethernet discoverPacket = constructDhcpDiscoverPacket(CLIENT_MAC);
         Ethernet offerPacket = constructDhcpOfferPacket(SERVER_MAC,
@@ -339,16 +335,16 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         sendPacket(requestPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
         sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
 
-        Map<DhcpL2RelayCountersIdentifier, Long> countersMap = store.getCountersMap();
-        discoveryValue = countersMap.get(new DhcpL2RelayCountersIdentifier(CLIENT_ID_1,
-                DhcpL2RelayCounterNames.valueOf("DHCPDISCOVER")));
-        offerValue = countersMap.get(new DhcpL2RelayCountersIdentifier(CLIENT_ID_1,
-                DhcpL2RelayCounterNames.valueOf("DHCPOFFER")));
-        requestValue = countersMap.get(new DhcpL2RelayCountersIdentifier(CLIENT_ID_1,
-                DhcpL2RelayCounterNames.valueOf("DHCPREQUEST")));
-        ackValue = countersMap.get(new DhcpL2RelayCountersIdentifier(CLIENT_ID_1,
-                DhcpL2RelayCounterNames.valueOf("DHCPACK")));
 
+        Map<DhcpL2RelayCountersIdentifier, Long> countersMap = store.getCountersMap();
+        long discoveryValue = countersMap.get(new DhcpL2RelayCountersIdentifier(CLIENT_ID_1,
+                                                  DhcpL2RelayCounterNames.valueOf("DHCPDISCOVER")));
+        long offerValue = countersMap.get(new DhcpL2RelayCountersIdentifier(CLIENT_ID_1,
+                                              DhcpL2RelayCounterNames.valueOf("DHCPOFFER")));
+        long requestValue = countersMap.get(new DhcpL2RelayCountersIdentifier(CLIENT_ID_1,
+                                                DhcpL2RelayCounterNames.valueOf("DHCPREQUEST")));
+        long ackValue = countersMap.get(new DhcpL2RelayCountersIdentifier(CLIENT_ID_1,
+                                            DhcpL2RelayCounterNames.valueOf("DHCPACK")));
         assertEquals(1, discoveryValue);
         assertEquals(1, offerValue);
         assertEquals(1, requestValue);
@@ -381,19 +377,21 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     }
 
     public void compareServerPackets(Ethernet sent, Ethernet relayed) {
-        sent.setDestinationMACAddress(CLIENT_MAC);
-        sent.setQinQVID(NOT_PROVIDED);
-        sent.setQinQPriorityCode((byte) NOT_PROVIDED);
-        sent.setVlanID(CLIENT_C_TAG.toShort());
 
-        final ByteBuffer byteBuffer = ByteBuffer.wrap(sent.serialize());
-        Ethernet expectedPacket = null;
         try {
-            expectedPacket = Ethernet.deserializer().deserialize(byteBuffer.array(),
-                    0, byteBuffer.array().length);
+            sent.setDestinationMACAddress(CLIENT_MAC);
+            sent.setQinQVID(NOT_PROVIDED);
+            sent.setQinQPriorityCode((byte) NOT_PROVIDED);
+            sent.setVlanID(CLIENT_C_TAG.toShort());
+
+            final ByteBuffer byteBuffer = ByteBuffer.wrap(sent.serialize());
+            Ethernet expectedPacket = Ethernet.deserializer().deserialize(byteBuffer.array(),
+                                                                          0, byteBuffer.array().length);
+            assertEquals(expectedPacket, relayed);
         } catch (Exception e) {
+            log.error(e.getMessage());
+            fail();
         }
-        assertEquals(expectedPacket, relayed);
 
     }
 

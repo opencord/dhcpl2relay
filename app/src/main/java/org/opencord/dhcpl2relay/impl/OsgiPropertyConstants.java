@@ -33,6 +33,9 @@ public final class OsgiPropertyConstants {
     public static final String PUBLISH_COUNTERS_RATE = "publishCountersRate";
     public static final int PUBLISH_COUNTERS_RATE_DEFAULT = 10;
 
+    public static final String PACKET_PROCESSOR_THREADS = "packetProcessorThreads";
+    public static final int PACKET_PROCESSOR_THREADS_DEFAULT = 10;
+
     public static final String SYNC_COUNTERS_RATE = "syncCountersRate";
     public static final int SYNC_COUNTERS_RATE_DEFAULT = 5;
 }

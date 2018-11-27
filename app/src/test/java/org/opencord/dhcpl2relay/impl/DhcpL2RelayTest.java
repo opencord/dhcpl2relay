@@ -22,6 +22,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -123,6 +124,9 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         ConnectPoint client32 = ConnectPoint.deviceConnectPoint(
                                                 "of:0000b86a974385f7/32");
         sendPacket(discover32a, client32);
+
+        TimeUnit.SECONDS.sleep(1);
+
         allocs = dhcpL2Relay.getAllocationInfo();
         assert allocs.size() == 1;
 
@@ -135,6 +139,9 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         ConnectPoint client4112 = ConnectPoint.deviceConnectPoint(
                 "of:0000b86a974385f7/4112");
         sendPacket(discover4112, client4112);
+
+        TimeUnit.SECONDS.sleep(1);
+
         allocs = dhcpL2Relay.getAllocationInfo();
         assert allocs.size() == 2;
 
@@ -144,6 +151,9 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         Ethernet discover32b = constructDhcpDiscoverPacket(
                                   mac32, vlan32b, (short) 0);
         sendPacket(discover32b, client32);
+
+        TimeUnit.SECONDS.sleep(1);
+
         allocs = dhcpL2Relay.getAllocationInfo();
         assert allocs.size() == 3;
 
@@ -183,6 +193,8 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
                 + String.valueOf(CLIENT_PORT));
         sendPacket(discoverPacket, clientCp);
 
+        TimeUnit.SECONDS.sleep(1);
+
         Ethernet discoverRelayed = (Ethernet) getPacket();
         compareClientPackets(discoverPacket, discoverRelayed);
         checkAllocation(DHCP.MsgType.DHCPDISCOVER);
@@ -201,6 +213,8 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
                 + String.valueOf(CLIENT_PORT));
         sendPacket(requestPacket, clientCp);
 
+        TimeUnit.SECONDS.sleep(1);
+
         Ethernet requestRelayed = (Ethernet) getPacket();
         compareClientPackets(requestPacket, requestRelayed);
         checkAllocation(DHCP.MsgType.DHCPREQUEST);
@@ -212,12 +226,14 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpOffer() {
+    public void testDhcpOffer() throws InterruptedException {
         // Sending DHCP Offer packet
         Ethernet offerPacket = constructDhcpOfferPacket(SERVER_MAC,
                 CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
         sendPacket(offerPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/"
                 + String.valueOf(UPLINK_PORT)));
+
+        TimeUnit.SECONDS.sleep(1);
 
         Ethernet offerRelayed = (Ethernet) getPacket();
         compareServerPackets(offerPacket, offerRelayed);
@@ -230,13 +246,15 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpAck() {
+    public void testDhcpAck() throws InterruptedException {
 
         Ethernet ackPacket = constructDhcpAckPacket(SERVER_MAC,
                 CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
 
         sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/"
                 + String.valueOf(UPLINK_PORT)));
+
+        TimeUnit.SECONDS.sleep(1);
 
         Ethernet ackRelayed = (Ethernet) getPacket();
         compareServerPackets(ackPacket, ackRelayed);
@@ -249,12 +267,14 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpNak() {
+    public void testDhcpNak() throws InterruptedException {
 
         Ethernet nakPacket = constructDhcpNakPacket(SERVER_MAC,
                 CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
 
         sendPacket(nakPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        TimeUnit.SECONDS.sleep(1);
 
         Ethernet nakRelayed = (Ethernet) getPacket();
         compareServerPackets(nakPacket, nakRelayed);
@@ -267,11 +287,13 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpDecline() {
+    public void testDhcpDecline() throws InterruptedException {
 
         Ethernet declinePacket = constructDhcpDeclinePacket(CLIENT_MAC);
 
         sendPacket(declinePacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        TimeUnit.SECONDS.sleep(1);
 
         Ethernet declineRelayed = (Ethernet) getPacket();
         compareClientPackets(declinePacket, declineRelayed);
@@ -282,7 +304,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * Tests the DHCP global counters.
      */
     @Test
-    public void testDhcpGlobalCounters() {
+    public void testDhcpGlobalCounters() throws InterruptedException {
         long discoveryValue = 0;
         long offerValue = 0;
         long requestValue = 0;
@@ -299,6 +321,8 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         sendPacket(offerPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
         sendPacket(requestPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
         sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        TimeUnit.SECONDS.sleep(1);
 
         Map<DhcpL2RelayCountersIdentifier, Long> countersMap = store.getCountersMap();
         discoveryValue = countersMap.get(new DhcpL2RelayCountersIdentifier(DhcpL2RelayEvent.GLOBAL_COUNTER,
@@ -321,7 +345,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      *
      */
     @Test
-    public void testDhcpPerSubscriberCounters() {
+    public void testDhcpPerSubscriberCounters() throws Exception {
         long discoveryValue;
         long offerValue;
         long requestValue;
@@ -338,6 +362,8 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         sendPacket(offerPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
         sendPacket(requestPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
         sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        TimeUnit.SECONDS.sleep(1);
 
         Map<DhcpL2RelayCountersIdentifier, Long> countersMap = store.getCountersMap();
         discoveryValue = countersMap.get(new DhcpL2RelayCountersIdentifier(CLIENT_ID_1,

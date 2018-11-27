@@ -91,11 +91,15 @@ import org.opencord.sadis.SubscriberAndDeviceInformationService;
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.concurrent.ExecutorService;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+import static org.onlab.util.Tools.groupedThreads;
 
 /**
  * DHCP Relay Agent Application Component.
@@ -176,8 +180,13 @@ public class DhcpL2Relay
     //Whether to use the uplink port of the OLTs to send/receive messages to the DHCP server
     private boolean useOltUplink = false;
 
+    protected ExecutorService eventExecutor;
+
     @Activate
     protected void activate(ComponentContext context) {
+
+        eventExecutor = newSingleThreadScheduledExecutor(groupedThreads("onos/dhcp", "events-%d", log));
+
         //start the dhcp relay agent
         appId = coreService.registerApplication(DHCP_L2RELAY_APP);
         // ensure that host-learning via dhcp includes IP addresses
@@ -567,27 +576,29 @@ public class DhcpL2Relay
                 return;
             }
 
-            // process the packet and get the payload
-            Ethernet packet = context.inPacket().parsed();
+            eventExecutor.execute(() -> {
+                // process the packet and get the payload
+                Ethernet packet = context.inPacket().parsed();
 
-            if (packet == null) {
-                log.warn("Packet is null");
-                return;
-            }
+                if (packet == null) {
+                    log.warn("Packet is null");
+                    return;
+                }
 
-            if (packet.getEtherType() == Ethernet.TYPE_IPV4) {
-                IPv4 ipv4Packet = (IPv4) packet.getPayload();
+                if (packet.getEtherType() == Ethernet.TYPE_IPV4) {
+                    IPv4 ipv4Packet = (IPv4) packet.getPayload();
 
-                if (ipv4Packet.getProtocol() == IPv4.PROTOCOL_UDP) {
-                    UDP udpPacket = (UDP) ipv4Packet.getPayload();
-                    if (udpPacket.getSourcePort() == UDP.DHCP_CLIENT_PORT ||
-                            udpPacket.getSourcePort() == UDP.DHCP_SERVER_PORT) {
-                        DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
-                        //This packet is dhcp.
-                        processDhcpPacket(context, packet, dhcpPayload);
+                    if (ipv4Packet.getProtocol() == IPv4.PROTOCOL_UDP) {
+                        UDP udpPacket = (UDP) ipv4Packet.getPayload();
+                        if (udpPacket.getSourcePort() == UDP.DHCP_CLIENT_PORT ||
+                                udpPacket.getSourcePort() == UDP.DHCP_SERVER_PORT) {
+                            DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
+                            //This packet is dhcp.
+                            processDhcpPacket(context, packet, dhcpPayload);
+                        }
                     }
                 }
-            }
+            });
         }
 
         //forward the packet to ConnectPoint where the DHCP server is attached.
@@ -759,6 +770,12 @@ public class DhcpL2Relay
             if (subsCp == null) {
                 return null;
             }
+
+            String circuitId = "None";
+            IpAddress ip = IpAddress.valueOf(dhcpPayload.getYourIPAddress());
+            DhcpAllocationInfo info = new DhcpAllocationInfo(subsCp,
+                                                             dhcpPayload.getPacketType(), circuitId, dstMac, ip);
+
             // if it's an ACK packet store the information for display purpose
             if (getDhcpPacketType(dhcpPayload) == DHCPPacketType.DHCPACK) {
 
@@ -770,7 +787,6 @@ public class DhcpL2Relay
                             .filter(option -> option.getCode() == DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
                             .collect(Collectors.toList());
 
-                    String circuitId = "None";
                     if (circuitIds.size() == 1) {
                         byte[] array = circuitIds.get(0).getData();
 
@@ -780,17 +796,14 @@ public class DhcpL2Relay
                         } catch (Exception e) { }
                     }
 
-                    IpAddress ip = IpAddress.valueOf(dhcpPayload.getYourIPAddress());
-
                     //storeDHCPAllocationInfo
-                    DhcpAllocationInfo info = new DhcpAllocationInfo(subsCp,
-                            dhcpPayload.getPacketType(), circuitId, dstMac, ip);
-
+                    info = new DhcpAllocationInfo(subsCp, dhcpPayload.getPacketType(), circuitId, dstMac, ip);
                     allocationMap.put(sub.nasPortId(), info);
-
-                    post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info, subsCp));
                 }
             } // end storing of info
+
+            log.info("Posting DhcpL2RelayEvent of type {}", info.type());
+            post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info, subsCp));
 
             // we leave the srcMac from the original packet
             etherReply.setDestinationMACAddress(dstMac);

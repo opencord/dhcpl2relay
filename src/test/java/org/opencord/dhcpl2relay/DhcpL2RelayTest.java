@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.easymock.EasyMock;
 import org.junit.After;
@@ -135,6 +136,8 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
 
         sendPacket(discoverPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
 
+        TimeUnit.SECONDS.sleep(1);
+
         Ethernet discoverRelayed = (Ethernet) getPacket();
         compareClientPackets(discoverPacket, discoverRelayed);
     }
@@ -145,12 +148,14 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpRequest()  throws Exception {
+    public void testDhcpRequest() throws Exception {
         //  (1) Sending DHCP discover packet
         System.out.println("Sending pakcet");
         Ethernet requestPacket = constructDhcpRequestPacket(CLIENT_MAC);
 
         sendPacket(requestPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        TimeUnit.SECONDS.sleep(1);
 
         Ethernet requestRelayed = (Ethernet) getPacket();
         compareClientPackets(requestPacket, requestRelayed);
@@ -162,13 +167,15 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpOffer() {
+    public void testDhcpOffer() throws Exception {
         //  (1) Sending DHCP discover packet
         System.out.println("Sending pakcet");
         Ethernet offerPacket = constructDhcpOfferPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
                 CLIENT_MAC, "1.1.1.1", "2.2.2.2");
 
         sendPacket(offerPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        TimeUnit.SECONDS.sleep(1);
 
         Ethernet offerRelayed = (Ethernet) getPacket();
         compareServerPackets(offerPacket, offerRelayed);
@@ -180,12 +187,14 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      * @throws Exception when an unhandled error occurs
      */
     @Test
-    public void testDhcpAck() {
+    public void testDhcpAck() throws Exception {
 
         Ethernet ackPacket = constructDhcpAckPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
                 CLIENT_MAC, "1.1.1.1", "2.2.2.2");
 
         sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        TimeUnit.SECONDS.sleep(1);
 
         Ethernet ackRelayed = (Ethernet) getPacket();
         compareServerPackets(ackPacket, ackRelayed);

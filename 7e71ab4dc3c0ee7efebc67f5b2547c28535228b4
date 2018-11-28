@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "27d0740b_29b74b26",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 776,
+      "author": {
+        "id": 1000068
+      },
+      "writtenOn": "2018-11-28T21:04:16Z",
+      "side": 1,
+      "message": "This assignment should also happen inside the if statement below, so that circuit id is updated",
+      "revId": "7e71ab4dc3c0ee7efebc67f5b2547c28535228b4",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "083d6d5c_cc34b5ce",
+        "filename": "src/main/java/org/opencord/dhcpl2relay/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 804,
+      "author": {
+        "id": 1000068
+      },
+      "writtenOn": "2018-11-28T21:04:16Z",
+      "side": 1,
+      "message": "You are missing the {} placeholders inside the string",
+      "revId": "7e71ab4dc3c0ee7efebc67f5b2547c28535228b4",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

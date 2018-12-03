@@ -86,8 +86,9 @@ import org.onosproject.net.packet.PacketPriority;
 import org.onosproject.net.packet.PacketProcessor;
 import org.onosproject.net.packet.PacketService;
 import org.opencord.dhcpl2relay.packet.DhcpOption82;
+import org.opencord.sadis.BaseInformationService;
+import org.opencord.sadis.SadisService;
 import org.opencord.sadis.SubscriberAndDeviceInformation;
-import org.opencord.sadis.SubscriberAndDeviceInformationService;
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,7 +141,7 @@ public class DhcpL2Relay
     protected ComponentConfigService componentConfigService;
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
-    protected SubscriberAndDeviceInformationService subsService;
+    protected SadisService sadisService;
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
     protected DeviceService deviceService;
@@ -176,6 +177,8 @@ public class DhcpL2Relay
     //Whether to use the uplink port of the OLTs to send/receive messages to the DHCP server
     private boolean useOltUplink = false;
 
+    private BaseInformationService<SubscriberAndDeviceInformation> subsService;
+
     @Activate
     protected void activate(ComponentContext context) {
         //start the dhcp relay agent
@@ -199,6 +202,8 @@ public class DhcpL2Relay
         if (context != null) {
             modified(context);
         }
+
+        subsService = sadisService.getSubscriberInfoService();
 
         log.info("DHCP-L2-RELAY Started");
     }

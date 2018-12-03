@@ -62,7 +62,9 @@ import org.onosproject.net.host.HostServiceAdapter;
 import org.onosproject.net.provider.ProviderId;
 import org.opencord.dhcpl2relay.packet.DhcpOption82;
 import org.opencord.sadis.SubscriberAndDeviceInformation;
-import org.opencord.sadis.SubscriberAndDeviceInformationService;
+import org.opencord.sadis.BandwidthProfileInformation;
+import org.opencord.sadis.BaseInformationService;
+import org.opencord.sadis.SadisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,7 +109,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         dhcpL2Relay.packetService = new MockPacketService();
         dhcpL2Relay.componentConfigService = mockConfigService;
         dhcpL2Relay.deviceService = new MockDeviceService();
-        dhcpL2Relay.subsService = new MockSubService();
+        dhcpL2Relay.sadisService = new MockSadisService();
         dhcpL2Relay.hostService = new MockHostService();
         dhcpL2Relay.mastershipService = new MockMastershipService();
         TestUtils.setField(dhcpL2Relay, "eventDispatcher", new TestEventDispatcher());
@@ -305,7 +307,19 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         }
     }
 
-    private class MockSubService implements SubscriberAndDeviceInformationService {
+    private class MockSadisService implements SadisService {
+        @Override
+        public BaseInformationService<SubscriberAndDeviceInformation> getSubscriberInfoService() {
+            return new MockSubService();
+        }
+
+        @Override
+        public BaseInformationService<BandwidthProfileInformation> getBandwidthProfileService() {
+            return null;
+        }
+    }
+
+    private class MockSubService implements BaseInformationService<SubscriberAndDeviceInformation> {
         MockSubscriberAndDeviceInformation device =
                 new MockSubscriberAndDeviceInformation(OLT_DEV_ID, VlanId.NONE, VlanId.NONE, null, null,
                         OLT_MAC_ADDRESS, Ip4Address.valueOf("10.10.10.10"));

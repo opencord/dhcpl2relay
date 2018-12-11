@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "32d51017_933be1d3",
+        "filename": "pom.xml",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2018-12-11T09:45:39Z",
+      "side": 1,
+      "message": "I think we should bump the version to 1.6.0-SNAPSHOT",
+      "revId": "1ac4fe9949d436fae7f5c06869e0b8efbb7b683c",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

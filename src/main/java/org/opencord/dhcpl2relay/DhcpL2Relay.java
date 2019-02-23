@@ -40,7 +40,6 @@ import org.apache.felix.scr.annotations.ReferenceCardinality;
 import org.apache.felix.scr.annotations.Service;
 import org.onlab.packet.DHCP;
 import org.onlab.packet.DHCPPacketType;
-import org.onlab.packet.EthType.EtherType;
 import org.onlab.packet.Ethernet;
 import org.onlab.packet.IPv4;
 import org.onlab.packet.IpAddress;
@@ -75,9 +74,7 @@ import org.onosproject.net.flow.DefaultTrafficSelector;
 import org.onosproject.net.flow.DefaultTrafficTreatment;
 import org.onosproject.net.flow.TrafficSelector;
 import org.onosproject.net.flow.TrafficTreatment;
-import org.onosproject.net.flowobjective.DefaultForwardingObjective;
 import org.onosproject.net.flowobjective.FlowObjectiveService;
-import org.onosproject.net.flowobjective.ForwardingObjective;
 import org.onosproject.net.host.HostService;
 import org.onosproject.net.packet.DefaultOutboundPacket;
 import org.onosproject.net.packet.OutboundPacket;
@@ -295,40 +292,16 @@ public class DhcpL2Relay
         if (useOltUplink) {
             for (ConnectPoint cp : getUplinkPortsOfOlts()) {
                 log.debug("requestDhcpPackets: ConnectPoint: {}", cp);
-                requestDhcpPacketsFromConnectPoint(cp);
+                requestDhcpPacketsFromConnectPoint(cp, null);
             }
             // check if previous config was different and so trap flows may
-            // need to be removed from other places
+            // need to be removed from other places like AGG switches
             if (!prevUseOltUplink) {
-                if (dhcpServerConnectPoint.get() == null) {
-                    log.warn("No dhcpServer connectPoint found .. cannot remove"
-                            + " previously installed trap flows");
-                    return;
-                }
-                // XXX change to use packet service when priority can be set
-                DefaultForwardingObjective.Builder bldr =
-                        trapDhcpPktsFromServer(dhcpServerConnectPoint.get().deviceId(),
-                                               dhcpServerConnectPoint.get().port());
-                flowObjectiveService.forward(dhcpServerConnectPoint.get().deviceId(),
-                                             bldr.remove());
+                addOrRemoveDhcpTrapFromServer(false);
             }
-
         } else {
-            selectServerConnectPoint();
-            log.info("dhcp server connect point: " + dhcpServerConnectPoint);
-            // create flow to trap packets coming from the server to this connectpoint
-            // which is typically not on the OLT (otherwise use the OLT's uplink)
-            if (dhcpServerConnectPoint.get() == null) {
-                log.warn("No dhcpServer connectPoint found, cannot install dhcp"
-                        + " trap flows");
-                return;
-            }
-            // XXX change to use packet service when priority can be set
-            DefaultForwardingObjective.Builder bldr =
-                    trapDhcpPktsFromServer(dhcpServerConnectPoint.get().deviceId(),
-                                           dhcpServerConnectPoint.get().port());
-            flowObjectiveService.forward(dhcpServerConnectPoint.get().deviceId(),
-                                         bldr.add());
+            // uplink on AGG switch
+            addOrRemoveDhcpTrapFromServer(true);
         }
     }
 
@@ -336,48 +309,43 @@ public class DhcpL2Relay
         if (useOltUplink) {
             for (ConnectPoint cp : getUplinkPortsOfOlts()) {
                 log.debug("cancelDhcpPackets: ConnectPoint: {}", cp);
-                cancelDhcpPacketsFromConnectPoint(cp);
+                cancelDhcpPacketsFromConnectPoint(cp, null);
             }
         } else {
-            // delete flow to trap packets coming from the server to this connectpoint
-            // which is typically not on the OLT (otherwise use the OLT's uplink)
-            if (dhcpServerConnectPoint.get() == null) {
-                log.warn("No dhcpServer connectPoint found.. cannot remove dhcp"
-                        + " trap flows");
-                return;
-            }
-            // XXX change to use packet service when priority can be set
-            DefaultForwardingObjective.Builder bldr =
-                    trapDhcpPktsFromServer(dhcpServerConnectPoint.get().deviceId(),
-                                           dhcpServerConnectPoint.get().port());
-            flowObjectiveService.forward(dhcpServerConnectPoint.get().deviceId(),
-                                         bldr.remove());
+            // uplink on AGG switch
+            addOrRemoveDhcpTrapFromServer(false);
         }
-
     }
 
-    private DefaultForwardingObjective.Builder trapDhcpPktsFromServer(DeviceId devId,
-                                                                      PortNumber port) {
-        TrafficTreatment treatment = DefaultTrafficTreatment.builder()
-                .punt()
-                .wipeDeferred()
-                .build();
-        TrafficSelector downstream = DefaultTrafficSelector.builder()
-                .matchInPort(port)
-                .matchEthType(EtherType.IPV4.ethType().toShort())
-                .matchIPProtocol(IPv4.PROTOCOL_UDP)
-                .matchUdpSrc(TpPort.tpPort(67))
-                .matchUdpDst(TpPort.tpPort(68))
-                .build();
-
-        DefaultForwardingObjective.Builder bldr = DefaultForwardingObjective.builder()
-                .withPriority(61000) // XXX packet service does not allow setting this
-                .withSelector(downstream)
-                .fromApp(appId)
-                .withFlag(ForwardingObjective.Flag.VERSATILE)
-                .withTreatment(treatment)
-                .makePermanent();
-        return bldr;
+    /**
+     * Used to add or remove DHCP trap flow for packets received from DHCP server.
+     * Typically used on a non OLT device, like an AGG switch. When adding, a
+     * new dhcp server connect point is selected from the configured options.
+     *
+     * @param add true if dhcp trap flow is to be added, false to remove the
+     *            trap flow
+     */
+    private void addOrRemoveDhcpTrapFromServer(boolean add) {
+        if (add) {
+            selectServerConnectPoint();
+            log.debug("dhcp server connect point: " + dhcpServerConnectPoint);
+        }
+        if (dhcpServerConnectPoint.get() == null) {
+            log.warn("No dhcpServer connectPoint found, cannot {} dhcp trap flows",
+                     (add) ? "install" : "remove");
+            return;
+        }
+        if (add) {
+            log.info("Adding trap to dhcp server connect point: "
+                    + dhcpServerConnectPoint);
+            requestDhcpPacketsFromConnectPoint(dhcpServerConnectPoint.get(),
+                                               Optional.of(PacketPriority.HIGH1));
+        } else {
+            log.info("Removing trap from dhcp server connect point: "
+                    + dhcpServerConnectPoint);
+            cancelDhcpPacketsFromConnectPoint(dhcpServerConnectPoint.get(),
+                                              Optional.of(PacketPriority.HIGH1));
+        }
     }
 
     /**
@@ -456,28 +424,43 @@ public class DhcpL2Relay
 
     /**
      * Request DHCP packet from particular connect point via PacketService.
+     * Optionally provide a priority for the trap flow. If no such priority is
+     * provided, the default priority will be used.
+     *
+     * @param cp the connect point to trap dhcp packets from
+     * @param priority of the trap flow, null to use default priority
      */
-    private void requestDhcpPacketsFromConnectPoint(ConnectPoint cp) {
+    private void requestDhcpPacketsFromConnectPoint(ConnectPoint cp,
+                                                    Optional<PacketPriority> priority) {
         TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
                 .matchEthType(Ethernet.TYPE_IPV4)
                 .matchInPort(cp.port())
                 .matchIPProtocol(IPv4.PROTOCOL_UDP)
                 .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
         packetService.requestPackets(selectorServer.build(),
-                PacketPriority.CONTROL, appId, Optional.of(cp.deviceId()));
+                priority.isPresent() ? priority.get() : PacketPriority.CONTROL,
+                appId, Optional.of(cp.deviceId()));
     }
 
     /**
-     * Cancel DHCP packet from particular connect point via PacketService.
+     * Cancel DHCP packet from particular connect point via PacketService. If
+     * the request was made with a specific packet priority, then the same
+     * priority should be used in this call.
+     *
+     * @param cp the connect point for the trap flow
+     * @param priority with which the trap flow was requested; if request
+     *            priority was not specified, this param should also be null
      */
-    private void cancelDhcpPacketsFromConnectPoint(ConnectPoint cp) {
+    private void cancelDhcpPacketsFromConnectPoint(ConnectPoint cp,
+                                                   Optional<PacketPriority> priority) {
         TrafficSelector.Builder selectorServer = DefaultTrafficSelector.builder()
                 .matchEthType(Ethernet.TYPE_IPV4)
                 .matchInPort(cp.port())
                 .matchIPProtocol(IPv4.PROTOCOL_UDP)
                 .matchUdpSrc(TpPort.tpPort(UDP.DHCP_SERVER_PORT));
         packetService.cancelPackets(selectorServer.build(),
-                PacketPriority.CONTROL, appId, Optional.of(cp.deviceId()));
+                priority.isPresent() ? priority.get() : PacketPriority.CONTROL,
+                appId, Optional.of(cp.deviceId()));
     }
 
     public static Map<String, DhcpAllocationInfo> allocationMap() {
@@ -944,8 +927,9 @@ public class DhcpL2Relay
                     switch (event.type()) {
                         case DEVICE_ADDED:
                         case DEVICE_AVAILABILITY_CHANGED:
-                            // some device is available check if we can get one
-                            selectServerConnectPoint();
+                            // some device is available check if we can get a
+                            // connect point we can use
+                            addOrRemoveDhcpTrapFromServer(true);
                             break;
                         default:
                             break;
@@ -959,8 +943,8 @@ public class DhcpL2Relay
                         case DEVICE_REMOVED:
                         case DEVICE_SUSPENDED:
                             // state of our device has changed, check if we need
-                            // to re-select
-                            selectServerConnectPoint();
+                            // to re-select a connectpoint
+                            addOrRemoveDhcpTrapFromServer(true);
                             break;
                         default:
                             break;
@@ -970,8 +954,9 @@ public class DhcpL2Relay
                 switch (event.type()) {
                     case PORT_ADDED:
                         if (useOltUplink && isUplinkPortOfOlt(event.subject().id(), event.port())) {
-                            requestDhcpPacketsFromConnectPoint(new ConnectPoint(event.subject().id(),
-                                    event.port().number()));
+                            requestDhcpPacketsFromConnectPoint(
+                                new ConnectPoint(event.subject().id(), event.port().number()),
+                                null);
                         }
                         break;
                     default:

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.opencord.dhcpl2relay.packet;
+package org.opencord.dhcpl2relay.impl.packet;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;

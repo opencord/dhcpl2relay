@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.opencord.dhcpl2relay;
+package org.opencord.dhcpl2relay.impl;
 
 import static org.junit.Assert.fail;
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.opencord.dhcpl2relay;
+package org.opencord.dhcpl2relay.impl;
 
 import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
 import static org.onlab.packet.MacAddress.valueOf;
@@ -82,7 +82,11 @@ import org.onosproject.net.packet.PacketContext;
 import org.onosproject.net.packet.PacketPriority;
 import org.onosproject.net.packet.PacketProcessor;
 import org.onosproject.net.packet.PacketService;
-import org.opencord.dhcpl2relay.packet.DhcpOption82;
+import org.opencord.dhcpl2relay.DhcpAllocationInfo;
+import org.opencord.dhcpl2relay.DhcpL2RelayEvent;
+import org.opencord.dhcpl2relay.DhcpL2RelayListener;
+import org.opencord.dhcpl2relay.DhcpL2RelayService;
+import org.opencord.dhcpl2relay.impl.packet.DhcpOption82;
 import org.opencord.sadis.BaseInformationService;
 import org.opencord.sadis.SadisService;
 import org.opencord.sadis.SubscriberAndDeviceInformation;

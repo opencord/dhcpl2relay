@@ -27,25 +27,24 @@
     <groupId>org.opencord</groupId>
     <artifactId>dhcpl2relay</artifactId>
     <version>1.6.0-SNAPSHOT</version>
-    <packaging>bundle</packaging>
+    <packaging>pom</packaging>
 
     <description>DHCP L2 Relay Agent</description>
     <url>http://opencord.org</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <onos.app.name>org.opencord.dhcpl2relay</onos.app.name>
-        <onos.app.title>DHCP Relay Agent App</onos.app.title>
-        <onos.app.origin>ON.Lab</onos.app.origin>
-        <onos.app.category>default</onos.app.category>
-        <onos.app.url>http://opencord.org</onos.app.url>
-        <onos.app.readme>DHCP L2 Relay Agent Application.</onos.app.readme>
+        <onos.version>1.13.9-rc4</onos.version>
         <onos.app.requires>
             org.opencord.sadis
         </onos.app.requires>
-        <onos.version>1.13.8</onos.version>
         <sadis.api.version>3.0.0</sadis.api.version>
     </properties>
+
+    <modules>
+        <module>app</module>
+        <module>api</module>
+    </modules>
 
     <dependencies>
         <dependency>
@@ -53,31 +52,26 @@
             <artifactId>onos-api</artifactId>
             <version>${onos.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.opencord</groupId>
             <artifactId>sadis-api</artifactId>
-	    <version>${sadis.api.version}</version>
+           <version>${sadis.api.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.onosproject</groupId>
             <artifactId>onos-incubator-api</artifactId>
             <version>${onos.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.onosproject</groupId>
             <artifactId>onlab-osgi</artifactId>
             <version>${onos.version}</version>
         </dependency>
-
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.onosproject</groupId>
             <artifactId>onlab-junit</artifactId>
@@ -89,7 +83,6 @@
             <artifactId>onos-cli</artifactId>
             <version>${onos.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.onosproject</groupId>
             <artifactId>onos-api</artifactId>
@@ -97,7 +90,6 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
-
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.scr.annotations</artifactId>
@@ -117,19 +109,6 @@
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.karaf.shell</groupId>
-            <artifactId>org.apache.karaf.shell.console</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.onosproject</groupId>
-            <artifactId>onos-core-common</artifactId>
-            <version>${onos.version}</version>
-            <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
     </dependencies>

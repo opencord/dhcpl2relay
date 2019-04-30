@@ -17,4 +17,4 @@
 /**
  * Utilities for decoding and encoding DHCP options.
  */
-package org.opencord.dhcpl2relay.packet;
+package org.opencord.dhcpl2relay.impl.packet;

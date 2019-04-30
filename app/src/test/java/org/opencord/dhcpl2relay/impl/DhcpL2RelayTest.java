@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.opencord.dhcpl2relay;
+package org.opencord.dhcpl2relay.impl;
 
 import static org.junit.Assert.assertEquals;
 
@@ -60,7 +60,7 @@ import org.onosproject.net.device.DeviceServiceAdapter;
 import org.onosproject.net.flowobjective.FlowObjectiveServiceAdapter;
 import org.onosproject.net.host.HostServiceAdapter;
 import org.onosproject.net.provider.ProviderId;
-import org.opencord.dhcpl2relay.packet.DhcpOption82;
+import org.opencord.dhcpl2relay.impl.packet.DhcpOption82;
 import org.opencord.sadis.SubscriberAndDeviceInformation;
 import org.opencord.sadis.BandwidthProfileInformation;
 import org.opencord.sadis.BaseInformationService;

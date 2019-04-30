@@ -14,37 +14,33 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>dhcpl2relay</artifactId>
+        <groupId>org.opencord</groupId>
+        <version>1.6.0-SNAPSHOT</version>
+    </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.onosproject</groupId>
-        <artifactId>onos-dependencies</artifactId>
-        <version>1.13.9-rc4</version>
-        <relativePath></relativePath>
-    </parent>
+    <artifactId>dhcpl2relay-app</artifactId>
 
-    <groupId>org.opencord</groupId>
-    <artifactId>dhcpl2relay</artifactId>
-    <version>1.6.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
-
-    <description>DHCP L2 Relay Agent</description>
-    <url>http://opencord.org</url>
+    <packaging>bundle</packaging>
+    <description>DHCP L2 Realy application for CORD</description>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <onos.app.name>org.opencord.dhcpl2relay</onos.app.name>
         <onos.version>1.13.9-rc4</onos.version>
+        <onos.app.title>DHCP Relay Agent App</onos.app.title>
+        <onos.app.category>default</onos.app.category>
+        <onos.app.url>http://opencord.org</onos.app.url>
+        <onos.app.readme>DHCP L2 Relay Agent Application.</onos.app.readme>
         <onos.app.requires>
             org.opencord.sadis
         </onos.app.requires>
         <sadis.api.version>3.0.0</sadis.api.version>
     </properties>
-
-    <modules>
-        <module>app</module>
-        <module>api</module>
-    </modules>
 
     <dependencies>
         <dependency>
@@ -52,26 +48,38 @@
             <artifactId>onos-api</artifactId>
             <version>${onos.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.opencord</groupId>
             <artifactId>sadis-api</artifactId>
-           <version>${sadis.api.version}</version>
+            <version>${sadis.api.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.opencord</groupId>
+            <artifactId>dhcpl2relay-api</artifactId>
+            <version>1.6.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.onosproject</groupId>
             <artifactId>onos-incubator-api</artifactId>
             <version>${onos.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.onosproject</groupId>
             <artifactId>onlab-osgi</artifactId>
             <version>${onos.version}</version>
         </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.onosproject</groupId>
             <artifactId>onlab-junit</artifactId>
@@ -83,6 +91,7 @@
             <artifactId>onos-cli</artifactId>
             <version>${onos.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.onosproject</groupId>
             <artifactId>onos-api</artifactId>
@@ -90,6 +99,7 @@
             <scope>test</scope>
             <classifier>tests</classifier>
         </dependency>
+
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.scr.annotations</artifactId>
@@ -109,6 +119,19 @@
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.karaf.shell</groupId>
+            <artifactId>org.apache.karaf.shell.console</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.onosproject</groupId>
+            <artifactId>onos-core-common</artifactId>
+            <version>${onos.version}</version>
+            <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -159,4 +182,5 @@
             </snapshots>
         </repository>
     </repositories>
+
 </project>

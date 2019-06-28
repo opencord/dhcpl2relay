@@ -17,8 +17,11 @@ package org.opencord.dhcpl2relay.impl;
 
 import static org.junit.Assert.assertEquals;
 
+import com.google.common.collect.Maps;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.easymock.EasyMock;
@@ -97,6 +100,9 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     ComponentConfigService mockConfigService =
             EasyMock.createMock(ComponentConfigService.class);
 
+    // Create a mock store to be used by the Unittest
+    private MockDhcpL2RelayCountersStore mockDhcpL2RelayCountersStore;
+
     /**
      * Sets up the services required by the dhcpl2relay app.
      */
@@ -112,6 +118,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         dhcpL2Relay.sadisService = new MockSadisService();
         dhcpL2Relay.hostService = new MockHostService();
         dhcpL2Relay.mastershipService = new MockMastershipService();
+        dhcpL2Relay.dhcpL2RelayCountersStore = new MockDhcpL2RelayCountersStore();
         TestUtils.setField(dhcpL2Relay, "eventDispatcher", new TestEventDispatcher());
         dhcpL2Relay.activate(new ComponentContextAdapter());
     }
@@ -132,7 +139,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     @Test
     public void testDhcpDiscover()  throws Exception {
         //  (1) Sending DHCP discover packet
-        System.out.println("Sending pakcet");
+        System.out.println("Sending packet");
         Ethernet discoverPacket = constructDhcpDiscoverPacket(CLIENT_MAC);
 
         sendPacket(discoverPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
@@ -149,7 +156,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     @Test
     public void testDhcpRequest()  throws Exception {
         //  (1) Sending DHCP discover packet
-        System.out.println("Sending pakcet");
+        System.out.println("Sending packet");
         Ethernet requestPacket = constructDhcpRequestPacket(CLIENT_MAC);
 
         sendPacket(requestPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
@@ -166,7 +173,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     @Test
     public void testDhcpOffer() {
         //  (1) Sending DHCP discover packet
-        System.out.println("Sending pakcet");
+        System.out.println("Sending packet");
         Ethernet offerPacket = constructDhcpOfferPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
                 CLIENT_MAC, "1.1.1.1", "2.2.2.2");
 
@@ -191,6 +198,80 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
 
         Ethernet ackRelayed = (Ethernet) getPacket();
         compareServerPackets(ackPacket, ackRelayed);
+    }
+
+    /**
+     * Tests the DHCP global counters.
+     *
+     */
+    @Test
+    public void testDhcpGlobalCounters() {
+        System.out.println("Tests DHCP global counters");
+        long discoveryValue = 0;
+        long offerValue = 0;
+        long requestValue = 0;
+        long ackValue = 0;
+
+        Ethernet discoverPacket = constructDhcpDiscoverPacket(CLIENT_MAC);
+        Ethernet offerPacket = constructDhcpOfferPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
+                CLIENT_MAC, "1.1.1.1", "2.2.2.2");
+        Ethernet requestPacket = constructDhcpRequestPacket(CLIENT_MAC);
+        Ethernet ackPacket = constructDhcpAckPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
+                CLIENT_MAC, "1.1.1.1", "2.2.2.2");
+
+        sendPacket(discoverPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+        sendPacket(offerPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+        sendPacket(requestPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+        sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        Optional<DhcpL2RelayCounters> perClassCounters =
+                dhcpL2Relay.dhcpL2RelayCountersStore.getCounters(dhcpL2Relay.GLOBAL_COUNTER);
+        discoveryValue = getCounterValue(perClassCounters, DhcpL2RelayCounters.DHCPDISCOVER);
+        offerValue = getCounterValue(perClassCounters, DhcpL2RelayCounters.DHCPOFFER);
+        requestValue = getCounterValue(perClassCounters, DhcpL2RelayCounters.DHCPREQUEST);
+        ackValue = getCounterValue(perClassCounters, DhcpL2RelayCounters.DHCPACK);
+
+        assertEquals((long) 1, discoveryValue);
+        assertEquals((long) 1, offerValue);
+        assertEquals((long) 1, requestValue);
+        assertEquals((long) 1, ackValue);
+    }
+
+    /**
+     * Tests the DHCP per subscriber counters.
+     *
+     */
+    @Test
+    public void testDhcpPerSubscriberCounters() {
+        System.out.println("Tests DHCP per subscriber counters");
+        long discoveryValue;
+        long offerValue;
+        long requestValue;
+        long ackValue;
+
+        Ethernet discoverPacket = constructDhcpDiscoverPacket(CLIENT_MAC);
+        Ethernet offerPacket = constructDhcpOfferPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
+                CLIENT_MAC, "1.1.1.1", "2.2.2.2");
+        Ethernet requestPacket = constructDhcpRequestPacket(CLIENT_MAC);
+        Ethernet ackPacket = constructDhcpAckPacket(MacAddress.valueOf("bb:bb:bb:bb:bb:bb"),
+                CLIENT_MAC, "1.1.1.1", "2.2.2.2");
+
+        sendPacket(discoverPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+        sendPacket(offerPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+        sendPacket(requestPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+        sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        Optional<DhcpL2RelayCounters> perClassCounters =
+                dhcpL2Relay.dhcpL2RelayCountersStore.getCounters(CLIENT_NAS_PORT_ID);
+        discoveryValue = getCounterValue(perClassCounters, DhcpL2RelayCounters.DHCPDISCOVER);
+        offerValue = getCounterValue(perClassCounters, DhcpL2RelayCounters.DHCPOFFER);
+        requestValue = getCounterValue(perClassCounters, DhcpL2RelayCounters.DHCPREQUEST);
+        ackValue = getCounterValue(perClassCounters, DhcpL2RelayCounters.DHCPACK);
+
+        assertEquals((long) 1, discoveryValue);
+        assertEquals((long) 1, offerValue);
+        assertEquals((long) 1, requestValue);
+        assertEquals((long) 1, ackValue);
     }
 
     public void compareClientPackets(Ethernet sent, Ethernet relayed) {
@@ -398,6 +479,62 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         @Override
         public boolean getModifySrcDstMacAddresses() {
             return true;
+        }
+    }
+
+
+    /**
+     * A mock implementation of the DhcpL2RelayCountersStore that is used only for the Unittest purpose.
+     */
+    private class MockDhcpL2RelayCountersStore implements DhcpL2RelayCountersStore {
+        private Map<String, DhcpL2RelayCounters> counters = Maps.newHashMap();
+
+        public void incrementCounter(String coutnerClass, String counterName) {
+            DhcpL2RelayCounters countersRecord;
+
+            DhcpL2RelayCounters classCounters = counters.get(coutnerClass);
+            if (classCounters == null) {
+                classCounters = new DhcpL2RelayCounters();
+            }
+            classCounters.incrementCounter(counterName);
+            counters.put(coutnerClass, classCounters);
+        }
+
+        public void setCounter(String coutnerClass, String counterName, Long value) {
+            DhcpL2RelayCounters countersRecord;
+
+            DhcpL2RelayCounters classCounters = counters.get(coutnerClass);
+            if (classCounters == null) {
+                classCounters = new DhcpL2RelayCounters();
+            }
+            classCounters.setCounter(counterName, value);
+            counters.put(coutnerClass, classCounters);
+        }
+
+        @Override
+        public Set<Map.Entry<String, DhcpL2RelayCounters>> getAllCounters() {
+            return counters.entrySet();
+        }
+
+        @Override
+        public Optional<DhcpL2RelayCounters> getCounters(String counterClass) {
+            DhcpL2RelayCounters classCounters = counters.get(counterClass);
+            if (classCounters == null) {
+                return Optional.empty();
+            }
+            return Optional.of(classCounters);
+        }
+
+        @Override
+        public void resetAllCounters() {
+            counters.clear();
+        }
+
+        @Override
+        public void resetCounters(String counterClass) {
+            DhcpL2RelayCounters classCounters = counters.get(counterClass);
+            classCounters.resetCounters();
+            counters.put(counterClass, classCounters);
         }
     }
 

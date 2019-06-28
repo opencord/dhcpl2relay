@@ -19,12 +19,21 @@ package org.opencord.dhcpl2relay;
 import org.onosproject.event.AbstractEvent;
 import org.onosproject.net.ConnectPoint;
 
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.Map;
+
 /**
  * Dhcp L2 relay event.
  */
 public class DhcpL2RelayEvent extends AbstractEvent<DhcpL2RelayEvent.Type, DhcpAllocationInfo> {
 
     private final ConnectPoint connectPoint;
+
+    private final Map<String, AtomicLong> countersMap;
+
+    private final String dhcpCountersTopic;
+
+    private final String subscriberId;
 
     /**
      * Type of the event.
@@ -38,7 +47,12 @@ public class DhcpL2RelayEvent extends AbstractEvent<DhcpL2RelayEvent.Type, DhcpA
         /**
          * DHCP lease was removed.
          */
-        REMOVED
+        REMOVED,
+
+        /**
+         * DHCP stats update.
+         */
+        STATS_UPDATE
     }
 
     /**
@@ -47,10 +61,17 @@ public class DhcpL2RelayEvent extends AbstractEvent<DhcpL2RelayEvent.Type, DhcpA
      * @param type type of the event
      * @param allocationInfo DHCP allocation info
      * @param connectPoint connect point the client is on
+     * @param countersMap the map of counters (used for STATS events)
+     * @param dhcpCountersTopic Kafka topic where the dhcp counters are published
+     * @param subscriberId the subscriber identifier information
      */
-    public DhcpL2RelayEvent(Type type, DhcpAllocationInfo allocationInfo, ConnectPoint connectPoint) {
+    public DhcpL2RelayEvent(Type type, DhcpAllocationInfo allocationInfo, ConnectPoint connectPoint,
+                            Map<String, AtomicLong> countersMap,  String dhcpCountersTopic, String subscriberId) {
         super(type, allocationInfo);
         this.connectPoint = connectPoint;
+        this.countersMap = countersMap;
+        this.dhcpCountersTopic = dhcpCountersTopic;
+        this.subscriberId = subscriberId;
     }
 
     /**
@@ -60,5 +81,17 @@ public class DhcpL2RelayEvent extends AbstractEvent<DhcpL2RelayEvent.Type, DhcpA
      */
     public ConnectPoint connectPoint() {
         return connectPoint;
+    }
+
+    public Map<String, AtomicLong> getCountersMap() {
+        return countersMap;
+    }
+
+    public String getDhcpCountersTopic() {
+        return dhcpCountersTopic;
+    }
+
+    public String getSubscriberId() {
+        return subscriberId;
     }
 }

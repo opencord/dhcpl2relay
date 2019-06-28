@@ -21,8 +21,11 @@ import static org.junit.Assert.fail;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.onlab.packet.BasePacket;
 import org.onlab.packet.DHCP;
@@ -307,5 +310,19 @@ public class DhcpL2RelayTestBase {
         optionList.add(option);
 
         return optionList;
+    }
+
+    /**
+     * Global counter hash.
+     *
+     * @return counter value
+     */
+    long getCounterValue(Optional<DhcpL2RelayCounters> perClassCounters, String counter) {
+        if (perClassCounters.isPresent()) {
+            Map<String, AtomicLong> counters = perClassCounters.get().getCounters();
+            return counters.get(counter).get();
+        } else {
+            return 0;
+        }
     }
 }

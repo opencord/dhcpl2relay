@@ -20,7 +20,7 @@
     <parent>
         <artifactId>dhcpl2relay</artifactId>
         <groupId>org.opencord</groupId>
-        <version>1.6.0-SNAPSHOT</version>
+        <version>1.6.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -58,7 +58,7 @@
         <dependency>
             <groupId>org.opencord</groupId>
             <artifactId>dhcpl2relay-api</artifactId>
-            <version>1.6.0-SNAPSHOT</version>
+            <version>1.6.0</version>
             <scope>compile</scope>
         </dependency>
 

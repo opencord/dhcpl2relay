@@ -1,0 +1,159 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "127fbcb1_75890501",
+        "filename": "api/src/main/java/org/opencord/dhcpl2relay/DhcpL2RelayEvent.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2019-07-15T20:47:20Z",
+      "side": 1,
+      "message": "for backwards compatibility reasons we tend not to change APIs without a deprecation period. This mean that the old creator method needs to stay in with an @Deprecated tag both on the method and in the java dock outlining the version of the app it was deprecated.",
+      "range": {
+        "startLine": 68,
+        "startChar": 4,
+        "endLine": 69,
+        "endChar": 114
+      },
+      "revId": "c38b063a9949e28d49c00bc1a0ab9a78f2d3b2a9",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "30bc6840_bf030215",
+        "filename": "api/src/main/java/org/opencord/dhcpl2relay/DhcpL2RelayEvent.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2019-07-15T20:47:20Z",
+      "side": 1,
+      "message": "missing java doc",
+      "range": {
+        "startLine": 86,
+        "startChar": 4,
+        "endLine": 96,
+        "endChar": 5
+      },
+      "revId": "c38b063a9949e28d49c00bc1a0ab9a78f2d3b2a9",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "881c98ad_fe14a076",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 265,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2019-07-15T20:47:20Z",
+      "side": 1,
+      "message": "by doing this you are overriding any previously set property. I would fail in the case is null.",
+      "range": {
+        "startLine": 265,
+        "startChar": 82,
+        "endLine": 265,
+        "endChar": 98
+      },
+      "revId": "c38b063a9949e28d49c00bc1a0ab9a78f2d3b2a9",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c3bfb12f_27da7721",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCounters.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2019-07-15T20:47:20Z",
+      "side": 1,
+      "message": "all missing java doc",
+      "range": {
+        "startLine": 28,
+        "startChar": 0,
+        "endLine": 110,
+        "endChar": 1
+      },
+      "revId": "c38b063a9949e28d49c00bc1a0ab9a78f2d3b2a9",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7f0958a6_5d8957ec",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DistributedDhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2019-07-15T20:47:20Z",
+      "side": 1,
+      "message": "javadoc",
+      "revId": "c38b063a9949e28d49c00bc1a0ab9a78f2d3b2a9",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "38df0770_0fde364e",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DistributedDhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2019-07-15T20:47:20Z",
+      "side": 1,
+      "message": "do you still want to put the counter if there was an error in the set ?",
+      "range": {
+        "startLine": 108,
+        "startChar": 8,
+        "endLine": 108,
+        "endChar": 51
+      },
+      "revId": "c38b063a9949e28d49c00bc1a0ab9a78f2d3b2a9",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d71dc88c_7d9595b1",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 216,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2019-07-15T20:47:20Z",
+      "side": 1,
+      "message": "extract these as constant and reuse all over this class",
+      "range": {
+        "startLine": 215,
+        "startChar": 75,
+        "endLine": 216,
+        "endChar": 48
+      },
+      "revId": "c38b063a9949e28d49c00bc1a0ab9a78f2d3b2a9",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

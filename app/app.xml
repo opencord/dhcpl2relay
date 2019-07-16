@@ -14,7 +14,8 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<app name="org.opencord.dhcpl2relay" origin="ON.Lab" version="${project.version}"
+<app name="org.opencord.dhcpl2relay" origin="Open Networking Foundation"
+     version="${project.version}"
      category="default" url="http://onosproject.org" title="DHCP L2 Relay"
      featuresRepo="mvn:${project.groupId}/${project.artifactId}/${project.version}/xml/features"
      features="${project.artifactId}" apps="org.opencord.sadis">

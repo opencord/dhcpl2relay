@@ -17,16 +17,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.onosproject</groupId>
-        <artifactId>onos-dependencies</artifactId>
-        <version>1.13.9</version>
-        <relativePath></relativePath>
-    </parent>
-
     <groupId>org.opencord</groupId>
     <artifactId>dhcpl2relay</artifactId>
-    <version>1.6.0</version>
+    <!-- TODO: Should the version be bumped since we are now producing
+            classes for JRE 11? -->
+    <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <description>DHCP L2 Relay Agent</description>
@@ -34,11 +29,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <onos.version>1.13.9</onos.version>
-        <onos.app.requires>
-            org.opencord.sadis
-        </onos.app.requires>
-        <sadis.api.version>3.1.0</sadis.api.version>
+        <onos.version>2.2.0</onos.version>
+        <sadis.api.version>4.0.0-SNAPSHOT</sadis.api.version>
     </properties>
 
     <modules>
@@ -46,89 +38,24 @@
         <module>api</module>
     </modules>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.onosproject</groupId>
-            <artifactId>onos-api</artifactId>
-            <version>${onos.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.opencord</groupId>
-            <artifactId>sadis-api</artifactId>
-           <version>${sadis.api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.onosproject</groupId>
-            <artifactId>onos-incubator-api</artifactId>
-            <version>${onos.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.onosproject</groupId>
-            <artifactId>onlab-osgi</artifactId>
-            <version>${onos.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.onosproject</groupId>
-            <artifactId>onlab-junit</artifactId>
-            <version>${onos.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.onosproject</groupId>
-            <artifactId>onos-cli</artifactId>
-            <version>${onos.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.onosproject</groupId>
-            <artifactId>onos-api</artifactId>
-            <version>${onos.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.scr.annotations</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.compendium</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.onosproject</groupId>
-            <artifactId>onlab-osgi</artifactId>
-            <version>${onos.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymock</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
+                <version>4.1.0</version>
+                <extensions>true</extensions>
+                <inherited>true</inherited>
             </plugin>
 
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-scr-plugin</artifactId>
-            </plugin>
-
-            <plugin>
-                <groupId>org.onosproject</groupId>
-                <artifactId>onos-maven-plugin</artifactId>
-                <version>1.11</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <release>11</release>
+                </configuration>
+                <inherited>true</inherited>
             </plugin>
         </plugins>
     </build>
@@ -159,4 +86,10 @@
             </snapshots>
         </repository>
     </repositories>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

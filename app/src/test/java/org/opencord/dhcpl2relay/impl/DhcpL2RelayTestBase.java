@@ -16,17 +16,8 @@
 
 package org.opencord.dhcpl2relay.impl;
 
-import static org.junit.Assert.fail;
-
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.onlab.packet.BasePacket;
 import org.onlab.packet.DHCP;
-import org.onlab.packet.DHCPPacketType;
 import org.onlab.packet.Ethernet;
 import org.onlab.packet.IPv4;
 import org.onlab.packet.Ip4Address;
@@ -46,6 +37,14 @@ import org.onosproject.net.packet.PacketProcessor;
 import org.onosproject.net.packet.PacketServiceAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+import static org.junit.Assert.fail;
 
 
 /**
@@ -208,7 +207,7 @@ public class DhcpL2RelayTestBase {
         UDP udpPacket = (UDP) ipv4Packet.getPayload();
         DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
 
-        dhcpPacket.setOptions(constructDhcpOptions(DHCPPacketType.DHCPDISCOVER));
+        dhcpPacket.setOptions(constructDhcpOptions(DHCP.MsgType.DHCPDISCOVER));
 
         return pkt;
     }
@@ -228,7 +227,7 @@ public class DhcpL2RelayTestBase {
         UDP udpPacket = (UDP) ipv4Packet.getPayload();
         DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
 
-        dhcpPacket.setOptions(constructDhcpOptions(DHCPPacketType.DHCPREQUEST));
+        dhcpPacket.setOptions(constructDhcpOptions(DHCP.MsgType.DHCPREQUEST));
 
         return pkt;
     }
@@ -248,7 +247,7 @@ public class DhcpL2RelayTestBase {
         UDP udpPacket = (UDP) ipv4Packet.getPayload();
         DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
 
-        dhcpPacket.setOptions(constructDhcpOptions(DHCPPacketType.DHCPOFFER));
+        dhcpPacket.setOptions(constructDhcpOptions(DHCP.MsgType.DHCPOFFER));
 
         return pkt;
     }
@@ -268,7 +267,7 @@ public class DhcpL2RelayTestBase {
         UDP udpPacket = (UDP) ipv4Packet.getPayload();
         DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
 
-        dhcpPacket.setOptions(constructDhcpOptions(DHCPPacketType.DHCPACK));
+        dhcpPacket.setOptions(constructDhcpOptions(DHCP.MsgType.DHCPACK));
 
         return pkt;
     }
@@ -278,7 +277,7 @@ public class DhcpL2RelayTestBase {
      *
      * @return Ethernet packet
      */
-    private List<DhcpOption> constructDhcpOptions(DHCPPacketType packetType) {
+    private List<DhcpOption> constructDhcpOptions(DHCP.MsgType packetType) {
 
         // DHCP Options.
         DhcpOption option = new DhcpOption();

@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.opencord.dhcpl2relay.impl;
+package org.opencord.dhcpl2relay.cli;
 
-import org.apache.karaf.shell.commands.Command;
+import org.apache.karaf.shell.api.action.Command;
+import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.onosproject.cli.AbstractShellCommand;
+import org.opencord.dhcpl2relay.impl.DhcpL2Relay;
 
 /**
  *  Shows the Successful DHCP allocations relayed by the dhcpl2relay.
  */
+@Service
 @Command(scope = "onos", name = "dhcpl2relay-allocations",
         description = "Shows the Successful DHCP allocations relayed by the dhcpl2relay")
 public class DhcpL2RelayAllocationsCommand extends AbstractShellCommand {
     @Override
-    protected void execute() {
+    protected void doExecute() {
         DhcpL2Relay.allocationMap().forEach((key, value) -> {
             print("SubscriberId=%s,ConnectPoint=%s,State=%s,MAC=%s,CircuitId=%s" +
                             ",IP Allocated=%s,Allocation Timestamp=%s",

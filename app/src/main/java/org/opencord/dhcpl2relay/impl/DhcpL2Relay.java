@@ -15,31 +15,11 @@
  */
 package org.opencord.dhcpl2relay.impl;
 
-import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
-import static org.onlab.packet.MacAddress.valueOf;
-import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FACTORY;
-
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Dictionary;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
-import org.apache.felix.scr.annotations.Activate;
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Deactivate;
-import org.apache.felix.scr.annotations.Modified;
-import org.apache.felix.scr.annotations.Property;
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
-import org.apache.felix.scr.annotations.Service;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.onlab.packet.DHCP;
-import org.onlab.packet.DHCPPacketType;
 import org.onlab.packet.Ethernet;
 import org.onlab.packet.IPv4;
 import org.onlab.packet.IpAddress;
@@ -91,19 +71,42 @@ import org.opencord.sadis.BaseInformationService;
 import org.opencord.sadis.SadisService;
 import org.opencord.sadis.SubscriberAndDeviceInformation;
 import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Dictionary;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
+import static org.onlab.packet.MacAddress.valueOf;
+import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FACTORY;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.ENABLE_DHCP_BROADCAST_REPLIES;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.ENABLE_DHCP_BROADCAST_REPLIES_DEFAULT;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.OPTION_82;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.OPTION_82_DEFAULT;
 
 /**
  * DHCP Relay Agent Application Component.
  */
-@Service
-@Component(immediate = true)
+@Component(immediate = true,
+property = {
+        OPTION_82 + ":Boolean=" + OPTION_82_DEFAULT,
+        ENABLE_DHCP_BROADCAST_REPLIES + ":Boolean=" + ENABLE_DHCP_BROADCAST_REPLIES_DEFAULT,
+})
 public class DhcpL2Relay
         extends AbstractListenerManager<DhcpL2RelayEvent, DhcpL2RelayListener>
         implements DhcpL2RelayService {
@@ -126,40 +129,38 @@ public class DhcpL2Relay
             }
     );
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected NetworkConfigRegistry cfgService;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected CoreService coreService;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected PacketService packetService;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected HostService hostService;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected ComponentConfigService componentConfigService;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected SadisService sadisService;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected DeviceService deviceService;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected MastershipService mastershipService;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY_UNARY)
+    @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected FlowObjectiveService flowObjectiveService;
 
-    @Property(name = "option82", boolValue = true,
-            label = "Add option 82 to relayed packets")
-    protected boolean option82 = true;
+    /** Add option 82 to relayed packets */
+    protected boolean option82 = OPTION_82_DEFAULT;
 
-    @Property(name = "enableDhcpBroadcastReplies", boolValue = false,
-            label = "Ask the DHCP Server to send back replies as L2 broadcast")
-    protected boolean enableDhcpBroadcastReplies = false;
+    /** Ask the DHCP Server to send back replies as L2 broadcast */
+    protected boolean enableDhcpBroadcastReplies = ENABLE_DHCP_BROADCAST_REPLIES_DEFAULT;
 
     private DhcpRelayPacketProcessor dhcpRelayPacketProcessor =
             new DhcpRelayPacketProcessor();
@@ -228,12 +229,12 @@ public class DhcpL2Relay
 
         Dictionary<?, ?> properties = context.getProperties();
 
-        Boolean o = Tools.isPropertyEnabled(properties, "option82");
+        Boolean o = Tools.isPropertyEnabled(properties, OPTION_82);
         if (o != null) {
             option82 = o;
         }
 
-        o = Tools.isPropertyEnabled(properties, "enableDhcpBroadcastReplies");
+        o = Tools.isPropertyEnabled(properties, ENABLE_DHCP_BROADCAST_REPLIES);
         if (o != null) {
             enableDhcpBroadcastReplies = o;
         }
@@ -610,12 +611,12 @@ public class DhcpL2Relay
         }
 
         // get the type of the DHCP packet
-        private DHCPPacketType getDhcpPacketType(DHCP dhcpPayload) {
+        private DHCP.MsgType getDhcpPacketType(DHCP dhcpPayload) {
 
             for (DhcpOption option : dhcpPayload.getOptions()) {
                 if (option.getCode() == OptionCode_MessageType.getValue()) {
                     byte[] data = option.getData();
-                    return DHCPPacketType.getType(data[0]);
+                    return DHCP.MsgType.getType(data[0]);
                 }
             }
             return null;
@@ -629,7 +630,7 @@ public class DhcpL2Relay
                 return;
             }
 
-            DHCPPacketType incomingPacketType = getDhcpPacketType(dhcpPayload);
+            DHCP.MsgType incomingPacketType = getDhcpPacketType(dhcpPayload);
 
             log.info("Received DHCP Packet of type {} from {}",
                      incomingPacketType, context.inPacket().receivedFrom());
@@ -749,10 +750,11 @@ public class DhcpL2Relay
             ConnectPoint subsCp = getConnectPointOfClient(dstMac);
             // If we can't find the subscriber, can't process further
             if (subsCp == null) {
+                log.warn("Couldn't find connection point for mac address {} DHCPOFFERs won't be delivered", dstMac);
                 return null;
             }
             // if it's an ACK packet store the information for display purpose
-            if (getDhcpPacketType(dhcpPayload) == DHCPPacketType.DHCPACK) {
+            if (getDhcpPacketType(dhcpPayload) == DHCP.MsgType.DHCPACK) {
 
                 String portId = nasPortId(subsCp);
                 SubscriberAndDeviceInformation sub = subsService.get(portId);

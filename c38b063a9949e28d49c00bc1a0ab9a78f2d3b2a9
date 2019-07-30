@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "696a79f6_be27cf17",
+        "filename": "api/src/main/java/org/opencord/dhcpl2relay/DhcpL2RelayEvent.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 1000589
+      },
+      "writtenOn": "2019-07-30T14:38:34Z",
+      "side": 1,
+      "message": "In java doc, is correct to mention that it was deprecated in 1.6.0 version?",
+      "parentUuid": "127fbcb1_75890501",
+      "range": {
+        "startLine": 68,
+        "startChar": 4,
+        "endLine": 69,
+        "endChar": 114
+      },
+      "revId": "c38b063a9949e28d49c00bc1a0ab9a78f2d3b2a9",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "30bc6840_bf030215",
         "filename": "api/src/main/java/org/opencord/dhcpl2relay/DhcpL2RelayEvent.java",
         "patchSetId": 3

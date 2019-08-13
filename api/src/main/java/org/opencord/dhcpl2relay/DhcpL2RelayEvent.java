@@ -19,12 +19,21 @@ package org.opencord.dhcpl2relay;
 import org.onosproject.event.AbstractEvent;
 import org.onosproject.net.ConnectPoint;
 
+import java.util.AbstractMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * Dhcp L2 relay event.
  */
 public class DhcpL2RelayEvent extends AbstractEvent<DhcpL2RelayEvent.Type, DhcpAllocationInfo> {
 
     private final ConnectPoint connectPoint;
+
+    private final AbstractMap.SimpleEntry<String, AtomicLong> countersMap;
+
+    private final String dhcpCountersTopic;
+
+    private final String subscriberId;
 
     /**
      * Type of the event.
@@ -38,7 +47,12 @@ public class DhcpL2RelayEvent extends AbstractEvent<DhcpL2RelayEvent.Type, DhcpA
         /**
          * DHCP lease was removed.
          */
-        REMOVED
+        REMOVED,
+
+        /**
+         * DHCP stats update.
+         */
+        STATS_UPDATE
     }
 
     /**
@@ -47,10 +61,31 @@ public class DhcpL2RelayEvent extends AbstractEvent<DhcpL2RelayEvent.Type, DhcpA
      * @param type type of the event
      * @param allocationInfo DHCP allocation info
      * @param connectPoint connect point the client is on
+     * @param countersMap the map of counters (used for STATS events)
+     * @param dhcpCountersTopic Kafka topic where the dhcp counters are published
+     * @param subscriberId the subscriber identifier information
      */
-    public DhcpL2RelayEvent(Type type, DhcpAllocationInfo allocationInfo, ConnectPoint connectPoint) {
+    public DhcpL2RelayEvent(Type type, DhcpAllocationInfo allocationInfo, ConnectPoint connectPoint,
+                            AbstractMap.SimpleEntry<String, AtomicLong> countersMap,
+                            String dhcpCountersTopic, String subscriberId) {
         super(type, allocationInfo);
         this.connectPoint = connectPoint;
+        this.countersMap = countersMap;
+        this.dhcpCountersTopic = dhcpCountersTopic;
+        this.subscriberId = subscriberId;
+    }
+
+    /**
+     * Creates a new event.
+     *
+     * @param type type of the event
+     * @param allocationInfo DHCP allocation info
+     * @param connectPoint connect point the client is on
+     * @deprecated in 1.6.0 release
+     */
+    @Deprecated
+    public DhcpL2RelayEvent(Type type, DhcpAllocationInfo allocationInfo, ConnectPoint connectPoint) {
+        this(type, allocationInfo, connectPoint, null, null, null);
     }
 
     /**
@@ -60,5 +95,32 @@ public class DhcpL2RelayEvent extends AbstractEvent<DhcpL2RelayEvent.Type, DhcpA
      */
     public ConnectPoint connectPoint() {
         return connectPoint;
+    }
+
+    /**
+     * Gets the map of counter of STATS events.
+     *
+     * @return map of counters
+     */
+    public AbstractMap.SimpleEntry<String, AtomicLong> getCountersMap() {
+        return countersMap;
+    }
+
+    /**
+     * Gets the Kafka topic where the dhcp counters are published.
+     *
+     * @return the dhcp kafic topic
+     */
+    public String getDhcpCountersTopic() {
+        return dhcpCountersTopic;
+    }
+
+    /**
+     * Gets the subscriber identifier information.
+     *
+     * @return the Id from subscriber
+     */
+    public String getSubscriberId() {
+        return subscriberId;
     }
 }

@@ -1,0 +1,527 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0a05e111_f7d04b27",
+        "filename": "api/src/main/java/org/opencord/dhcpl2relay/DhcpL2RelayEvent.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "Map.Entry ? Also please update the name - it is a bit misleading",
+      "range": {
+        "startLine": 32,
+        "startChar": 18,
+        "endLine": 32,
+        "endChar": 74
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f0e27ad6_b6742d75",
+        "filename": "api/src/main/java/org/opencord/dhcpl2relay/DhcpL2RelayEvent.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "It seems the new changes are not mandatory. We can keep this constructor with the default values and no need to deprecate it",
+      "range": {
+        "startLine": 84,
+        "startChar": 0,
+        "endLine": 84,
+        "endChar": 35
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ed609d74_01089cc3",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "why this change ?",
+      "range": {
+        "startLine": 205,
+        "startChar": 63,
+        "endLine": 205,
+        "endChar": 70
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5cbb5f6c_9950ad9f",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 876,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "if we maintain the old constructor no need to change this",
+      "range": {
+        "startLine": 875,
+        "startChar": 12,
+        "endLine": 876,
+        "endChar": 105
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "02759652_2ef8ca5d",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 947,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "same as above",
+      "range": {
+        "startLine": 946,
+        "startChar": 0,
+        "endLine": 947,
+        "endChar": 104
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "0e72c679_cba50e09",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCounters.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "java doc please",
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7b05c83a_6e62c93b",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCounters.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "Can it be just an enum type ?",
+      "range": {
+        "startLine": 23,
+        "startChar": 31,
+        "endLine": 23,
+        "endChar": 32
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4180a306_eaf10bac",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCounters.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "java doc",
+      "range": {
+        "startLine": 30,
+        "startChar": 8,
+        "endLine": 38,
+        "endChar": 51
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c42a1a09_66cb5423",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCounters.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "probably there is no need for this",
+      "range": {
+        "startLine": 40,
+        "startChar": 0,
+        "endLine": 40,
+        "endChar": 35
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "62ece827_7f4bf8c8",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCounters.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "you should not need this",
+      "range": {
+        "startLine": 42,
+        "startChar": 0,
+        "endLine": 44,
+        "endChar": 9
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "984add9e_db11b448",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCounters.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "java doc",
+      "range": {
+        "startLine": 51,
+        "startChar": 4,
+        "endLine": 51,
+        "endChar": 10
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "388c4cd5_e8e92674",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersIdentifier.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "java doc is needed. Class can be final at this point",
+      "range": {
+        "startLine": 20,
+        "startChar": 0,
+        "endLine": 20,
+        "endChar": 6
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b38fe967_4a280312",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersIdentifier.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "please add some non java-doc comments. It is not very clear the difference between counterClass and counterType. Also can we use conuterType as enum at this point ?",
+      "range": {
+        "startLine": 21,
+        "startChar": 0,
+        "endLine": 22,
+        "endChar": 32
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d40dc45b_6b385126",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersManager.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "I would call it SimpleDhcpL2RelayCountersStore to be aligned with the no-distributed stores naming.",
+      "range": {
+        "startLine": 39,
+        "startChar": 13,
+        "endLine": 39,
+        "endChar": 39
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7d681a9c_c8012b1b",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersManager.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "I would use Long and concurrenthashmap for thread safety purposes",
+      "range": {
+        "startLine": 42,
+        "startChar": 47,
+        "endLine": 42,
+        "endChar": 57
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ebc6b273_9034ed2d",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersManager.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "please update also the interface",
+      "range": {
+        "startLine": 56,
+        "startChar": 46,
+        "endLine": 56,
+        "endChar": 56
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "62b98aba_d51acad5",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersManager.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "ImmutableMap in they interface.  The caller knows what can or cannot do with the map",
+      "range": {
+        "startLine": 56,
+        "startChar": 11,
+        "endLine": 56,
+        "endChar": 14
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "27372ee0_4a017990",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersManager.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "ImmutableMap.copyof",
+      "range": {
+        "startLine": 57,
+        "startChar": 15,
+        "endLine": 57,
+        "endChar": 26
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5605a106_696c1b46",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersManager.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "Potentially this is not thread-safe access. We can solve using a single compute call",
+      "range": {
+        "startLine": 72,
+        "startChar": 12,
+        "endLine": 79,
+        "endChar": 13
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "cf5426fd_0ec8f784",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersManager.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "Here I suggest to use removeIf which does not throw ConcurrentModificationException",
+      "range": {
+        "startLine": 87,
+        "startChar": 8,
+        "endLine": 91,
+        "endChar": 11
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f03f0165_ab195e4d",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersManager.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "same suggestion of incrementCounter",
+      "range": {
+        "startLine": 94,
+        "startChar": 4,
+        "endLine": 110,
+        "endChar": 5
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a060b06d_0b5b0ddc",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersSet.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "To be improved",
+      "range": {
+        "startLine": 23,
+        "startChar": 0,
+        "endLine": 23,
+        "endChar": 43
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8334e234_ae0bb061",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersSet.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-08-26T18:45:37Z",
+      "side": 1,
+      "message": "I would prefer use DhcpL2RelayCountersStore in order to be aligned with the rest of the ONOS apps",
+      "range": {
+        "startLine": 25,
+        "startChar": 17,
+        "endLine": 25,
+        "endChar": 39
+      },
+      "revId": "bcc97762f842003875fffac5d5808ecc18189fb6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

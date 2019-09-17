@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "75028705_8841bf71",
+        "filename": "api/src/main/java/org/opencord/dhcpl2relay/DhcpL2RelayEvent.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-09-17T17:04:52Z",
+      "side": 1,
+      "message": "Can you use Map.Entry ?",
+      "range": {
+        "startLine": 32,
+        "startChar": 18,
+        "endLine": 32,
+        "endChar": 41
+      },
+      "revId": "8d572eebec2e20c6ad0df5cb094afd0ab5ae2e38",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "69fc660e_163838e9",
+        "filename": "api/src/main/java/org/opencord/dhcpl2relay/DhcpL2RelayEvent.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-09-17T17:04:52Z",
+      "side": 1,
+      "message": "Map.Entry",
+      "range": {
+        "startLine": 107,
+        "startChar": 11,
+        "endLine": 107,
+        "endChar": 34
+      },
+      "revId": "8d572eebec2e20c6ad0df5cb094afd0ab5ae2e38",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "91b59f3a_d822fa01",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCounters.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-09-17T17:04:52Z",
+      "side": 1,
+      "message": "You have to provide java doc for each enum type",
+      "range": {
+        "startLine": 27,
+        "startChar": 0,
+        "endLine": 35,
+        "endChar": 24
+      },
+      "revId": "8d572eebec2e20c6ad0df5cb094afd0ab5ae2e38",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da66f84b_a33f0853",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-09-17T17:04:52Z",
+      "side": 1,
+      "message": "this can throw ConcurrentModificationException",
+      "range": {
+        "startLine": 96,
+        "startChar": 0,
+        "endLine": 100,
+        "endChar": 11
+      },
+      "revId": "8d572eebec2e20c6ad0df5cb094afd0ab5ae2e38",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "54911094_464f4b67",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-09-17T17:04:52Z",
+      "side": 1,
+      "message": "At this point this can be a simple put operation",
+      "range": {
+        "startLine": 114,
+        "startChar": 24,
+        "endLine": 114,
+        "endChar": 31
+      },
+      "revId": "8d572eebec2e20c6ad0df5cb094afd0ab5ae2e38",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

@@ -16,6 +16,24 @@
       "revId": "b9ba703f0981777350cb4c41c5bc25397bc757e3",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4bd91a55_25a23c17",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 764,
+      "author": {
+        "id": 1000589
+      },
+      "writtenOn": "2019-09-20T20:10:13Z",
+      "side": 1,
+      "message": "Do you mean to print the ethernet packet in wireshark hex dump format?",
+      "parentUuid": "45550bc6_6426ba73",
+      "revId": "b9ba703f0981777350cb4c41c5bc25397bc757e3",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
     }
   ]
 }

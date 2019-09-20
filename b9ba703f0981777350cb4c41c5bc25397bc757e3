@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "45550bc6_6426ba73",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 764,
+      "author": {
+        "id": 1000438
+      },
+      "writtenOn": "2019-09-20T16:21:23Z",
+      "side": 1,
+      "message": "Please print out the byte[] of the ethernet packet and the dhcpPayload to facilitate troubleshooting how we got here without a valid dhcpPayload.  I assume we should never get here, but if we do, without additional logging, the only way to troubleshoot would be to setup wireshark.",
+      "revId": "b9ba703f0981777350cb4c41c5bc25397bc757e3",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

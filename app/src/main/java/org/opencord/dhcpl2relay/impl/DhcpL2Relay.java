@@ -195,6 +195,8 @@ public class DhcpL2Relay
         mastershipService.addListener(changeListener);
         deviceService.addListener(deviceListener);
 
+        subsService = sadisService.getSubscriberInfoService();
+
         factories.forEach(cfgService::registerConfigFactory);
         //update the dhcp server configuration.
         updateConfig();
@@ -205,7 +207,6 @@ public class DhcpL2Relay
             modified(context);
         }
 
-        subsService = sadisService.getSubscriberInfoService();
 
         log.info("DHCP-L2-RELAY Started");
     }
@@ -297,7 +298,7 @@ public class DhcpL2Relay
         if (useOltUplink) {
             for (ConnectPoint cp : getUplinkPortsOfOlts()) {
                 log.debug("requestDhcpPackets: ConnectPoint: {}", cp);
-                requestDhcpPacketsFromConnectPoint(cp, null);
+                requestDhcpPacketsFromConnectPoint(cp, Optional.ofNullable(null));
             }
             // check if previous config was different and so trap flows may
             // need to be removed from other places like AGG switches
@@ -314,7 +315,7 @@ public class DhcpL2Relay
         if (useOltUplink) {
             for (ConnectPoint cp : getUplinkPortsOfOlts()) {
                 log.debug("cancelDhcpPackets: ConnectPoint: {}", cp);
-                cancelDhcpPacketsFromConnectPoint(cp, null);
+                cancelDhcpPacketsFromConnectPoint(cp, Optional.ofNullable(null));
             }
         } else {
             // uplink on AGG switch

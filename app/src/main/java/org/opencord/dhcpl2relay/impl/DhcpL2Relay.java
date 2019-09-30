@@ -194,6 +194,8 @@ public class DhcpL2Relay
         mastershipService.addListener(changeListener);
         deviceService.addListener(deviceListener);
 
+        subsService = sadisService.getSubscriberInfoService();
+
         factories.forEach(cfgService::registerConfigFactory);
         //update the dhcp server configuration.
         updateConfig();
@@ -204,7 +206,6 @@ public class DhcpL2Relay
             modified(context);
         }
 
-        subsService = sadisService.getSubscriberInfoService();
 
         log.info("DHCP-L2-RELAY Started");
     }

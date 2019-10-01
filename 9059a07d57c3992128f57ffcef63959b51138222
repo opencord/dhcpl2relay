@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "7e102ab0_163a7cf5",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1000589
+      },
+      "writtenOn": "2019-10-01T21:15:08Z",
+      "side": 1,
+      "message": "Having this in DhcpL2RelayCountersIdentifier class, I think that I could develop another constructor that assigns the GLOBAL_COUNTER by default. Something like this:\n\npublic DhcpL2RelayCountersIdentifier(DhcpL2RelayCounters counterTypeKey) {\n    this.counterClassKey \u003d GLOBAL_COUNTER;\n    this.counterTypeKey \u003d counterTypeKey;\n}\n\nWhat do you think?",
+      "parentUuid": "e67753ec_bc014c4f",
+      "range": {
+        "startLine": 127,
+        "startChar": 0,
+        "endLine": 127,
+        "endChar": 57
+      },
+      "revId": "9059a07d57c3992128f57ffcef63959b51138222",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a49404f_36fd0535",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
         "patchSetId": 5
@@ -36,6 +60,30 @@
       "writtenOn": "2019-10-01T08:31:54Z",
       "side": 1,
       "message": "I think you can just log the ethernet packet. Btw use trace log",
+      "range": {
+        "startLine": 766,
+        "startChar": 16,
+        "endLine": 773,
+        "endChar": 23
+      },
+      "revId": "9059a07d57c3992128f57ffcef63959b51138222",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d8e80403_26d8681c",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 773,
+      "author": {
+        "id": 1000589
+      },
+      "writtenOn": "2019-10-01T21:15:08Z",
+      "side": 1,
+      "message": "I agree to change to trace log. Otherwise, why dumping the overall packet could not be good?",
+      "parentUuid": "1a49404f_36fd0535",
       "range": {
         "startLine": 766,
         "startChar": 16,

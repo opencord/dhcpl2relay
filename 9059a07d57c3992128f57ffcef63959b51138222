@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "cb31b133_65569705",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-02T12:26:33Z",
+      "side": 1,
+      "message": "Sounds good",
+      "parentUuid": "7e102ab0_163a7cf5",
+      "range": {
+        "startLine": 127,
+        "startChar": 0,
+        "endLine": 127,
+        "endChar": 57
+      },
+      "revId": "9059a07d57c3992128f57ffcef63959b51138222",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a49404f_36fd0535",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
         "patchSetId": 5
@@ -84,6 +108,30 @@
       "side": 1,
       "message": "I agree to change to trace log. Otherwise, why dumping the overall packet could not be good?",
       "parentUuid": "1a49404f_36fd0535",
+      "range": {
+        "startLine": 766,
+        "startChar": 16,
+        "endLine": 773,
+        "endChar": 23
+      },
+      "revId": "9059a07d57c3992128f57ffcef63959b51138222",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a21fb953_d114d640",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 773,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-02T12:26:33Z",
+      "side": 1,
+      "message": "Check the toString method of the Ethernet class - it should provide a nicer formatting. If something is missing we can still augment that method.",
+      "parentUuid": "d8e80403_26d8681c",
       "range": {
         "startLine": 766,
         "startChar": 16,

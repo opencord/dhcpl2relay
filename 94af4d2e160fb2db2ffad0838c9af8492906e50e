@@ -1,0 +1,188 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "28ca08d6_6fa2a18e",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 315,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-04T13:34:14Z",
+      "side": 1,
+      "message": "Is this part covered by the tests ?",
+      "range": {
+        "startLine": 315,
+        "startChar": 17,
+        "endLine": 315,
+        "endChar": 39
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "252763ca_6c4d39ee",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayConfig.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-04T13:34:14Z",
+      "side": 1,
+      "message": "I think it is better without protected package private",
+      "range": {
+        "startLine": 40,
+        "startChar": 4,
+        "endLine": 40,
+        "endChar": 13
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "43f9e4ee_29b5c019",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersIdentifier.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-04T13:34:14Z",
+      "side": 1,
+      "message": "package private.",
+      "range": {
+        "startLine": 26,
+        "startChar": 4,
+        "endLine": 26,
+        "endChar": 10
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "aeb28083_874c9263",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersIdentifier.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-04T13:34:14Z",
+      "side": 1,
+      "message": "java doc needs to be more clear. This constructor will build only global counters identifier",
+      "range": {
+        "startLine": 28,
+        "startChar": 0,
+        "endLine": 33,
+        "endChar": 7
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5edc13a8_d52cdd66",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-04T13:34:14Z",
+      "side": 1,
+      "message": "I would suggest to create a test file for the store and create tests for the functionality not used by the manager",
+      "range": {
+        "startLine": 41,
+        "startChar": 13,
+        "endLine": 41,
+        "endChar": 43
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4289f307_20cebcb8",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-04T13:34:14Z",
+      "side": 1,
+      "message": "move this to testbase ?",
+      "range": {
+        "startLine": 57,
+        "startChar": 0,
+        "endLine": 60,
+        "endChar": 67
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1265ed53_38891459",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-04T13:34:14Z",
+      "side": 1,
+      "message": "if not needed remove",
+      "range": {
+        "startLine": 61,
+        "startChar": 0,
+        "endLine": 61,
+        "endChar": 70
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f6ae208b_2ea3621c",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 295,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-04T13:34:14Z",
+      "side": 1,
+      "message": "Can we reuse the one in the config test ? Or at least have just one",
+      "range": {
+        "startLine": 285,
+        "startChar": 4,
+        "endLine": 295,
+        "endChar": 5
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

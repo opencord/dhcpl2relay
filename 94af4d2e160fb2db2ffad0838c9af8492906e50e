@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "fd11ecf8_b7c958dd",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 315,
+      "author": {
+        "id": 1000589
+      },
+      "writtenOn": "2019-10-08T14:54:34Z",
+      "side": 1,
+      "message": "Not yeat. Created a new unit test to cover this functionality.",
+      "parentUuid": "28ca08d6_6fa2a18e",
+      "range": {
+        "startLine": 315,
+        "startChar": 17,
+        "endLine": 315,
+        "endChar": 39
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "252763ca_6c4d39ee",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayConfig.java",
         "patchSetId": 6
@@ -36,6 +60,30 @@
       "writtenOn": "2019-10-04T13:34:14Z",
       "side": 1,
       "message": "I think it is better without protected package private",
+      "range": {
+        "startLine": 40,
+        "startChar": 4,
+        "endLine": 40,
+        "endChar": 13
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dd464cac_0d64e0d5",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayConfig.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1000589
+      },
+      "writtenOn": "2019-10-08T14:54:34Z",
+      "side": 1,
+      "message": "Agree. Done.",
+      "parentUuid": "252763ca_6c4d39ee",
       "range": {
         "startLine": 40,
         "startChar": 4,
@@ -94,6 +142,30 @@
     },
     {
       "key": {
+        "uuid": "135f44f9_73259fca",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersIdentifier.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1000589
+      },
+      "writtenOn": "2019-10-08T14:54:34Z",
+      "side": 1,
+      "message": "Done.",
+      "parentUuid": "aeb28083_874c9263",
+      "range": {
+        "startLine": 28,
+        "startChar": 0,
+        "endLine": 33,
+        "endChar": 7
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5edc13a8_d52cdd66",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
         "patchSetId": 6
@@ -105,6 +177,30 @@
       "writtenOn": "2019-10-04T13:34:14Z",
       "side": 1,
       "message": "I would suggest to create a test file for the store and create tests for the functionality not used by the manager",
+      "range": {
+        "startLine": 41,
+        "startChar": 13,
+        "endLine": 41,
+        "endChar": 43
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "38d6e674_4ab68f73",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 1000589
+      },
+      "writtenOn": "2019-10-08T14:54:34Z",
+      "side": 1,
+      "message": "I agree. Created new tests for the store functionality.",
+      "parentUuid": "5edc13a8_d52cdd66",
       "range": {
         "startLine": 41,
         "startChar": 13,
@@ -140,6 +236,30 @@
     },
     {
       "key": {
+        "uuid": "1f02cb3f_31754780",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 1000589
+      },
+      "writtenOn": "2019-10-08T14:54:34Z",
+      "side": 1,
+      "message": "Moved.",
+      "parentUuid": "4289f307_20cebcb8",
+      "range": {
+        "startLine": 57,
+        "startChar": 0,
+        "endLine": 60,
+        "endChar": 67
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1265ed53_38891459",
         "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
         "patchSetId": 6
@@ -163,6 +283,30 @@
     },
     {
       "key": {
+        "uuid": "76bbcf48_9a728e1b",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 1000589
+      },
+      "writtenOn": "2019-10-08T14:54:34Z",
+      "side": 1,
+      "message": "Removed.",
+      "parentUuid": "1265ed53_38891459",
+      "range": {
+        "startLine": 61,
+        "startChar": 0,
+        "endLine": 61,
+        "endChar": 70
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f6ae208b_2ea3621c",
         "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
         "patchSetId": 6
@@ -174,6 +318,30 @@
       "writtenOn": "2019-10-04T13:34:14Z",
       "side": 1,
       "message": "Can we reuse the one in the config test ? Or at least have just one",
+      "range": {
+        "startLine": 285,
+        "startChar": 4,
+        "endLine": 295,
+        "endChar": 5
+      },
+      "revId": "94af4d2e160fb2db2ffad0838c9af8492906e50e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7ed9758e_6c410edc",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 295,
+      "author": {
+        "id": 1000589
+      },
+      "writtenOn": "2019-10-08T14:54:34Z",
+      "side": 1,
+      "message": "Reused the one in config test.",
+      "parentUuid": "f6ae208b_2ea3621c",
       "range": {
         "startLine": 285,
         "startChar": 4,

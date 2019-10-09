@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "40948dba_1c4ad740",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 311,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-09T15:22:26Z",
+      "side": 1,
+      "message": "IIRC if an exception is thrown the task is cancelled and no more scheduled - can you please check ?",
+      "range": {
+        "startLine": 311,
+        "startChar": 41,
+        "endLine": 311,
+        "endChar": 63
+      },
+      "revId": "706db8aaa894a5e42d577e1d83b70eedcf5b485a",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f78104fc_95f6e3e2",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-09T15:22:26Z",
+      "side": 1,
+      "message": "is this a duplicate ?",
+      "range": {
+        "startLine": 66,
+        "startChar": 0,
+        "endLine": 66,
+        "endChar": 86
+      },
+      "revId": "706db8aaa894a5e42d577e1d83b70eedcf5b485a",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "25754d5b_82570695",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 230,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-09T15:22:26Z",
+      "side": 1,
+      "message": "I don\u0027t like this test - I do believe we should be able to create a mock listener that stores internally the events and then do some assert on the stats delivered to the listener",
+      "range": {
+        "startLine": 230,
+        "startChar": 16,
+        "endLine": 230,
+        "endChar": 34
+      },
+      "revId": "706db8aaa894a5e42d577e1d83b70eedcf5b485a",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

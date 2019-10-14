@@ -68,6 +68,30 @@
       "revId": "706db8aaa894a5e42d577e1d83b70eedcf5b485a",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e8f5ee71_3a228840",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 230,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-14T06:54:23Z",
+      "side": 1,
+      "message": "I do believe we can even try to use assertAfter in this way we can test also the multithreading",
+      "parentUuid": "25754d5b_82570695",
+      "range": {
+        "startLine": 230,
+        "startChar": 16,
+        "endLine": 230,
+        "endChar": 34
+      },
+      "revId": "706db8aaa894a5e42d577e1d83b70eedcf5b485a",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
     }
   ]
 }

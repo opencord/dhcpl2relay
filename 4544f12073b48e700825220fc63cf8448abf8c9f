@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6da12359_f09ab6a5",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 172,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-18T13:39:58Z",
+      "side": 1,
+      "message": "why do you need this ?",
+      "range": {
+        "startLine": 172,
+        "startChar": 0,
+        "endLine": 172,
+        "endChar": 60
+      },
+      "revId": "4544f12073b48e700825220fc63cf8448abf8c9f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d4ebf810_45158cde",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 314,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2019-10-18T13:39:58Z",
+      "side": 1,
+      "message": "can you just do new PublishCountersToKafka() ?",
+      "range": {
+        "startLine": 314,
+        "startChar": 87,
+        "endLine": 314,
+        "endChar": 109
+      },
+      "revId": "4544f12073b48e700825220fc63cf8448abf8c9f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

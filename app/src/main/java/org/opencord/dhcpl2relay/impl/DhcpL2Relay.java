@@ -156,10 +156,10 @@ public class DhcpL2Relay
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected FlowObjectiveService flowObjectiveService;
 
-    /** Add option 82 to relayed packets */
+    /** Add option 82 to relayed packets. */
     protected boolean option82 = OPTION_82_DEFAULT;
 
-    /** Ask the DHCP Server to send back replies as L2 broadcast */
+    /** Ask the DHCP Server to send back replies as L2 broadcast. */
     protected boolean enableDhcpBroadcastReplies = ENABLE_DHCP_BROADCAST_REPLIES_DEFAULT;
 
     private DhcpRelayPacketProcessor dhcpRelayPacketProcessor =

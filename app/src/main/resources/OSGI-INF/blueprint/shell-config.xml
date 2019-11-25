@@ -19,5 +19,8 @@
         <command>
             <action class="org.opencord.dhcpl2relay.impl.DhcpL2RelayAllocationsCommand"/>
         </command>
+        <command>
+            <action class="org.opencord.dhcpl2relay.impl.DhcpL2RelayStatsCommand"/>
+        </command>
     </command-bundle>
 </blueprint>

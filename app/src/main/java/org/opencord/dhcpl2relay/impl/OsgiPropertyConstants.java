@@ -29,4 +29,10 @@ public final class OsgiPropertyConstants {
 
     public static final String ENABLE_DHCP_BROADCAST_REPLIES = "enableDhcpBroadcastReplies";
     public static final boolean ENABLE_DHCP_BROADCAST_REPLIES_DEFAULT = false;
+
+    public static final String PUBLISH_COUNTERS_RATE = "publishCountersRate";
+    public static final int PUBLISH_COUNTERS_RATE_DEFAULT = 10;
+
+    public static final String DHCP_COUNTERS_TOPIC = "dhcpCountersTopic";
+    public static final String DHCP_COUNTERS_TOPIC_DEFAULT = "onos_traffic.stats";
 }

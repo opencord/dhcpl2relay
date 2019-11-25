@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Represents a stored DHCP Relay Counters. A counter entry is defined by the pair <counterClass, counterType>,
+ * Represents a stored DHCP Relay Counters. A counter entry is defined by the pair &lt;counterClass, counterType&gt;,
  * where counterClass can be maybe global or subscriber ID and counterType is the DHCP message type.
  */
 public interface DhcpL2RelayCountersStore {

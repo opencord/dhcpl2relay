@@ -36,7 +36,7 @@ public final class DhcpL2RelayCountersIdentifier {
     }
 
     /**
-     * Creates a counter identifier. A counter is defined by the key pair <counterClass, counterType>,
+     * Creates a counter identifier. A counter is defined by the key pair &lt;counterClass, counterType&gt;,
      * where counterClass can be maybe global or the subscriber ID and counterType is the supported DHCP message type.
      *
      * @param counterClassKey Identifies which class the counter is assigned (global or per subscriber)

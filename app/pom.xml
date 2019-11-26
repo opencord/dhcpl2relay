@@ -27,7 +27,7 @@
     <artifactId>dhcpl2relay-app</artifactId>
 
     <packaging>bundle</packaging>
-    <description>DHCP L2 Realy application for CORD</description>
+    <description>DHCP L2 Relay application for CORD</description>
 
     <properties>
         <onos.app.name>org.opencord.dhcpl2relay</onos.app.name>
@@ -90,6 +90,12 @@
             <version>${onos.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.karaf.shell</groupId>
+            <artifactId>org.apache.karaf.shell.core</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>

@@ -37,8 +37,8 @@ public class DhcpL2RelayConfig extends Config<ApplicationId> {
     private static final String MODIFY_SRC_DST_MAC  = "modifyUlPacketsSrcDstMacAddresses";
     private static final String USE_OLT_ULPORT_FOR_PKT_INOUT = "useOltUplinkForServerPktInOut";
 
-    private static final Boolean DEFAULT_MODIFY_SRC_DST_MAC = false;
-    private static final Boolean DEFAULT_USE_OLT_ULPORT_FOR_PKT_INOUT = false;
+    protected static final Boolean DEFAULT_MODIFY_SRC_DST_MAC = false;
+    protected static final Boolean DEFAULT_USE_OLT_ULPORT_FOR_PKT_INOUT = false;
 
     @Override
     public boolean isValid() {

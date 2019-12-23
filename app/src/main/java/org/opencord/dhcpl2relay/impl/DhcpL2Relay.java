@@ -1088,6 +1088,17 @@ public class DhcpL2Relay
     private class InnerDeviceListener implements DeviceListener {
         @Override
         public void event(DeviceEvent event) {
+            switch (event.type()) {
+                case DEVICE_AVAILABILITY_CHANGED:
+                    log.info("Dev Avail Changed {}", event.subject().id());
+                    DeviceId deviceId = event.subject().id();
+                    allocationMap.entrySet().removeIf(entry -> deviceId.equals(entry.getValue().
+                            location().deviceId()));
+                    log.info("Device {} is removed from DHCP allocationmap ", deviceId);
+                    break;
+                default:
+                    break;
+            }
             if (log.isTraceEnabled() &&
                     !event.type().equals(DeviceEvent.Type.PORT_STATS_UPDATED)) {
                 log.trace("Device Event received for {} event {}",

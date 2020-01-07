@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2e1b2416_1dadb198",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1093,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2020-01-07T16:42:43Z",
+      "side": 1,
+      "message": "should use substitution and not string addition",
+      "range": {
+        "startLine": 1093,
+        "startChar": 0,
+        "endLine": 1093,
+        "endChar": 74
+      },
+      "revId": "8327b877807144298cb5816774d4d69afebc9256",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ae6a604f_3c11b4e5",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1096,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2020-01-07T16:42:43Z",
+      "side": 1,
+      "message": "should use substitution and not string addition",
+      "revId": "8327b877807144298cb5816774d4d69afebc9256",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e1e61c59_4ccc0b22",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1100,
+      "author": {
+        "id": 1000003
+      },
+      "writtenOn": "2020-01-07T16:42:43Z",
+      "side": 1,
+      "message": "is it safe to remove an item while iterating over the map? some languages / types support this, others don\u0027t.",
+      "range": {
+        "startLine": 1100,
+        "startChar": 0,
+        "endLine": 1100,
+        "endChar": 56
+      },
+      "revId": "8327b877807144298cb5816774d4d69afebc9256",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

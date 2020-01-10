@@ -1099,6 +1099,14 @@ public class DhcpL2Relay
                         log.info("Device {} is removed from DHCP allocationmap ", deviceId);
                     }
                     break;
+                case PORT_REMOVED:
+                    Port port = event.port();
+                    deviceId = event.subject().id();
+                    log.info("Port {} is deleted on device {}", port, deviceId);
+                    allocationMap.entrySet().removeIf(entry -> port.number().equals(entry.getValue().
+                            location().port()) && deviceId.equals(entry.getValue().location().deviceId()));
+                    log.info("Port {} on device {} is removed from DHCP allocationmap", event.port(), deviceId);
+                    break;
                 default:
                     break;
             }

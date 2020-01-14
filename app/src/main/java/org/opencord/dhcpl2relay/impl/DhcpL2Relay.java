@@ -29,7 +29,6 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.List;
 import java.util.Map;
@@ -793,6 +792,11 @@ public class DhcpL2Relay
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPNACK"));
                     break;
                 case DHCPRELEASE:
+                    Ethernet ethernetPacketRelease =
+                            processDhcpPacketFromClient(context, packet);
+                    if (ethernetPacketRelease != null) {
+                        forwardPacket(ethernetPacketRelease, context);
+                    }
                     entry = getSubscriberInfoFromClient(context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPRELEASE"));
                     break;
@@ -841,16 +845,14 @@ public class DhcpL2Relay
                 return null;
             }
 
-
             DhcpAllocationInfo info = new DhcpAllocationInfo(
                     context.inPacket().receivedFrom(), dhcpPacket.getPacketType(),
-                    entry.nasPortId(), clientMac, clientIp);
+                    entry.circuitId(), clientMac, clientIp);
 
             allocationMap.put(entry.id(), info);
 
             post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info,
                                       context.inPacket().receivedFrom()));
-
             if (option82) {
                 DHCP dhcpPacketWithOption82 = addOption82(dhcpPacket, entry);
                 udpPacket.setPayload(dhcpPacketWithOption82);
@@ -870,7 +872,8 @@ public class DhcpL2Relay
             if (uniTagInformation.getUsPonSTagPriority() != -1) {
                 etherReply.setQinQPriorityCode((byte) uniTagInformation.getUsPonSTagPriority());
             }
-            log.info("Finished processing packet.. relaying to dhcpServer {}");
+            log.info("Finished processing DHCP packet of type {} from {} and relaying to dhcpServer",
+                    dhcpPacket.getPacketType(), entry.id());
             return etherReply;
         }
 
@@ -894,40 +897,22 @@ public class DhcpL2Relay
                 log.warn("Couldn't find connection point for mac address {} DHCPOFFERs won't be delivered", dstMac);
                 return null;
             }
-            // if it's an ACK packet store the information for display purpose
-            if (getDhcpPacketType(dhcpPayload) == DHCP.MsgType.DHCPACK) {
-
-                String portId = nasPortId(subsCp);
-                SubscriberAndDeviceInformation sub = subsService.get(portId);
-                if (sub != null) {
-                    List<DhcpOption> options = dhcpPayload.getOptions();
-                    List<DhcpOption> circuitIds = options.stream()
-                            .filter(option -> option.getCode() == DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
-                            .collect(Collectors.toList());
-
-                    String circuitId = "None";
-                    if (circuitIds.size() == 1) {
-                        byte[] array = circuitIds.get(0).getData();
-
-                        try {
-                            // we leave the first two bytes as they are the id and length
-                            circuitId = new String(Arrays.copyOfRange(array, 2, array.length), "UTF-8");
-                        } catch (Exception e) { }
-                    }
-
-                    IpAddress ip = IpAddress.valueOf(dhcpPayload.getYourIPAddress());
-
-                    //storeDHCPAllocationInfo
-                    DhcpAllocationInfo info = new DhcpAllocationInfo(subsCp,
-                            dhcpPayload.getPacketType(), circuitId, dstMac, ip);
-
-                    allocationMap.put(sub.id(), info);
-
-                    post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info, subsCp));
-                }
-            } // end storing of info
 
             SubscriberAndDeviceInformation entry = getSubscriberInfoFromServer(dhcpPayload, context);
+
+            // if it's an ACK packet store the information for display purpose
+            if ((getDhcpPacketType(dhcpPayload) == DHCP.MsgType.DHCPACK) && (entry != null)) {
+
+                IpAddress ip = IpAddress.valueOf(dhcpPayload.getYourIPAddress());
+                //storeDHCPAllocationInfo
+                DhcpAllocationInfo info = new DhcpAllocationInfo(subsCp,
+                        dhcpPayload.getPacketType(), entry.circuitId(), dstMac, ip);
+                allocationMap.put(entry.id(), info);
+                log.debug("DHCP Allocation Map {} is updated", allocationMap);
+
+                post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info, subsCp));
+            } // end storing of info
+
 
             UniTagInformation uniTagInformation = getUnitagInformationFromPacketContext(context, entry);
             if (uniTagInformation == null) {

@@ -827,10 +827,40 @@ public class DhcpL2Relay
                 case DHCPRELEASE:
                     entry = getSubscriberInfoFromClient(context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPRELEASE"));
+                    processDhcpReleasePacket(context, packet);
                     break;
                 default:
                     break;
             }
+        }
+        private void processDhcpReleasePacket(PacketContext context, Ethernet ethernetPacket) {
+            if (log.isTraceEnabled()) {
+                log.trace("DHCP release packet received from client at {} {}",
+                        context.inPacket().receivedFrom(), ethernetPacket);
+            }
+
+            IPv4 ipv4Packet = (IPv4) ethernetPacket.getPayload();
+            UDP udpPacket = (UDP) ipv4Packet.getPayload();
+            DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
+
+            MacAddress clientMac = MacAddress.valueOf(dhcpPacket.getClientHardwareAddress());
+            IpAddress clientIp = IpAddress.valueOf(dhcpPacket.getClientIPAddress());
+            SubscriberAndDeviceInformation entry = getSubscriber(context);
+            if (entry == null) {
+                log.warn("Dropping packet as subscriber entry is not available");
+                return;
+            }
+
+            DhcpAllocationInfo info = new DhcpAllocationInfo(
+                    context.inPacket().receivedFrom(), dhcpPacket.getPacketType(),
+                    entry.nasPortId(), clientMac, clientIp);
+
+            if (log.isTraceEnabled()) {
+                log.trace("Allocation Map is updated with {}", allocationMap);
+            }
+            allocationMap.put(entry.nasPortId(), info);
+            post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info,
+                    context.inPacket().receivedFrom()));
         }
 
         private Ethernet processDhcpPacketFromClient(PacketContext context,

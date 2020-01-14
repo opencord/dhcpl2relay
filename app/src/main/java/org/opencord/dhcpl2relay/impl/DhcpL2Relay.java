@@ -26,6 +26,7 @@ import static org.onlab.util.Tools.getIntegerProperty;
 import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FACTORY;
 
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -741,9 +742,10 @@ public class DhcpL2Relay
             }
 
             SubscriberAndDeviceInformation entry = null;
+            ConnectPoint connectPoint = context.inPacket().receivedFrom();
 
             log.info("Received DHCP Packet of type {} from {}",
-                     incomingPacketType, context.inPacket().receivedFrom());
+                     incomingPacketType, connectPoint);
 
             switch (incomingPacketType) {
                 case DHCPDISCOVER:
@@ -795,10 +797,82 @@ public class DhcpL2Relay
                 case DHCPRELEASE:
                     entry = getSubscriberInfoFromClient(context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPRELEASE"));
+                    updateAllocationMap(entry, connectPoint, packet);
                     break;
                 default:
                     break;
             }
+        }
+
+        private void updateAllocationMap(SubscriberAndDeviceInformation entry,
+                                         ConnectPoint connectPoint, Ethernet ethernetPacket) {
+
+            if (ethernetPacket == null) {
+                log.error("Ethernet packet is null");
+                return;
+            }
+
+            if (entry == null) {
+                log.warn("Dropping packet as subscriber entry is not available");
+                return;
+            }
+
+            if (log.isTraceEnabled()) {
+                log.trace("DHCP release packet received from client at {} {}", connectPoint, ethernetPacket);
+            }
+
+            IPv4 ipv4Packet = (IPv4) ethernetPacket.getPayload();
+            UDP udpPacket = (UDP) ipv4Packet.getPayload();
+            DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
+
+            MacAddress clientMac = MacAddress.valueOf(dhcpPacket.getClientHardwareAddress());
+            IpAddress clientIp = IpAddress.valueOf(dhcpPacket.getClientIPAddress());
+
+            String portId = nasPortId(connectPoint);
+            SubscriberAndDeviceInformation sub = subsService.get(portId);
+
+            DhcpAllocationInfo info = null;
+
+            // if it's an ACK packet get the circuitid and your ip address
+            if ((getDhcpPacketType(dhcpPacket) == DHCP.MsgType.DHCPACK) && sub != null) {
+
+                    List<DhcpOption> options = dhcpPacket.getOptions();
+                    List<DhcpOption> circuitIds = options.stream()
+                            .filter(option -> option.getCode() == DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
+                            .collect(Collectors.toList());
+
+                    String circuitId = "";
+                    if (circuitIds.size() == 1) {
+                        byte[] array = circuitIds.get(0).getData();
+
+                        try {
+                            // we leave the first two bytes as they are the id and length
+                            circuitId = new String(Arrays.copyOfRange(array, 2, array.length), "UTF-8");
+                            if (circuitId == "") {
+                                log.error("Circuit ID is not fetched from the DHCP packet");
+                                return;
+                            }
+                        } catch (UnsupportedEncodingException e) {
+                            log.error("Circuit ID cannot be fetched due to exception {}", e);
+                        }
+                    }
+
+                    IpAddress yourIp = IpAddress.valueOf(dhcpPacket.getYourIPAddress());
+                    //storeDHCPAllocationInfo
+                    info = new DhcpAllocationInfo(connectPoint,
+                            dhcpPacket.getPacketType(), circuitId, clientMac, yourIp);
+
+            } else {
+                info = new DhcpAllocationInfo(connectPoint, dhcpPacket.getPacketType(),
+                        entry.circuitId(), clientMac, clientIp);
+            }
+
+            allocationMap.put(entry.id(), info);
+
+            if (log.isTraceEnabled()) {
+                log.trace("Allocation Map is updated with {}", allocationMap);
+            }
+            post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info, connectPoint));
         }
 
         private Ethernet processDhcpPacketFromClient(PacketContext context,
@@ -841,15 +915,8 @@ public class DhcpL2Relay
                 return null;
             }
 
-
-            DhcpAllocationInfo info = new DhcpAllocationInfo(
-                    context.inPacket().receivedFrom(), dhcpPacket.getPacketType(),
-                    entry.nasPortId(), clientMac, clientIp);
-
-            allocationMap.put(entry.id(), info);
-
-            post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info,
-                                      context.inPacket().receivedFrom()));
+            ConnectPoint connectPoint = context.inPacket().receivedFrom();
+            updateAllocationMap(entry, connectPoint, ethernetPacket);
 
             if (option82) {
                 DHCP dhcpPacketWithOption82 = addOption82(dhcpPacket, entry);
@@ -894,40 +961,13 @@ public class DhcpL2Relay
                 log.warn("Couldn't find connection point for mac address {} DHCPOFFERs won't be delivered", dstMac);
                 return null;
             }
-            // if it's an ACK packet store the information for display purpose
-            if (getDhcpPacketType(dhcpPayload) == DHCP.MsgType.DHCPACK) {
-
-                String portId = nasPortId(subsCp);
-                SubscriberAndDeviceInformation sub = subsService.get(portId);
-                if (sub != null) {
-                    List<DhcpOption> options = dhcpPayload.getOptions();
-                    List<DhcpOption> circuitIds = options.stream()
-                            .filter(option -> option.getCode() == DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
-                            .collect(Collectors.toList());
-
-                    String circuitId = "None";
-                    if (circuitIds.size() == 1) {
-                        byte[] array = circuitIds.get(0).getData();
-
-                        try {
-                            // we leave the first two bytes as they are the id and length
-                            circuitId = new String(Arrays.copyOfRange(array, 2, array.length), "UTF-8");
-                        } catch (Exception e) { }
-                    }
-
-                    IpAddress ip = IpAddress.valueOf(dhcpPayload.getYourIPAddress());
-
-                    //storeDHCPAllocationInfo
-                    DhcpAllocationInfo info = new DhcpAllocationInfo(subsCp,
-                            dhcpPayload.getPacketType(), circuitId, dstMac, ip);
-
-                    allocationMap.put(sub.id(), info);
-
-                    post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info, subsCp));
-                }
-            } // end storing of info
 
             SubscriberAndDeviceInformation entry = getSubscriberInfoFromServer(dhcpPayload, context);
+
+            // if it's an ACK packet store the information for display purpose
+            if (getDhcpPacketType(dhcpPayload) == DHCP.MsgType.DHCPACK) {
+                updateAllocationMap(entry, subsCp, ethernetPacket);
+            }
 
             UniTagInformation uniTagInformation = getUnitagInformationFromPacketContext(context, entry);
             if (uniTagInformation == null) {

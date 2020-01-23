@@ -1131,7 +1131,7 @@ public class DhcpL2Relay
                         if (useOltUplink && isUplinkPortOfOlt(event.subject().id(), event.port())) {
                             requestDhcpPacketsFromConnectPoint(
                                 new ConnectPoint(event.subject().id(), event.port().number()),
-                                null);
+                                        Optional.ofNullable(null));
                         }
                         break;
                     default:

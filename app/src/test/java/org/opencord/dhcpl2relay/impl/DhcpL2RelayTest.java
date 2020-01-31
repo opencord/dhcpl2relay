@@ -18,6 +18,7 @@ package org.opencord.dhcpl2relay.impl;
 import static org.junit.Assert.assertEquals;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -65,6 +66,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         dhcpL2Relay.sadisService = new MockSadisService();
         dhcpL2Relay.hostService = new MockHostService();
         dhcpL2Relay.mastershipService = new MockMastershipService();
+        dhcpL2Relay.dhcpL2RelayCounters = new MockDhcpL2RelayCountersStore();
         TestUtils.setField(dhcpL2Relay, "eventDispatcher", new TestEventDispatcher());
         dhcpL2Relay.refreshService = new MockExecutor(dhcpL2Relay.refreshService);
         dhcpL2Relay.activate(new DhcpL2RelayTestBase.MockComponentContext());
@@ -241,6 +243,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         sent.setSourceMACAddress(OLT_MAC_ADDRESS);
         sent.setQinQVID(CLIENT_S_TAG.toShort());
         sent.setVlanID(CLIENT_C_TAG.toShort());
+        sent.setPriorityCode((byte) CLIENT_C_PBIT);
 
         IPv4 ipv4Packet = (IPv4) sent.getPayload();
         UDP udpPacket = (UDP) ipv4Packet.getPayload();
@@ -263,7 +266,8 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
 
     public void compareServerPackets(Ethernet sent, Ethernet relayed) {
         sent.setDestinationMACAddress(CLIENT_MAC);
-        sent.setQinQVID(CLIENT_S_TAG.toShort());
+        sent.setQinQVID(NOT_PROVIDED);
+        sent.setQinQPriorityCode((byte) NOT_PROVIDED);
         sent.setVlanID(CLIENT_C_TAG.toShort());
 
         final ByteBuffer byteBuffer = ByteBuffer.wrap(sent.serialize());
@@ -275,5 +279,32 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         }
         assertEquals(expectedPacket, relayed);
 
+    }
+
+    private class MockDhcpL2RelayCountersStore implements DhcpL2RelayCountersStore {
+        @Override
+        public void initCounters(String counterClass) {
+
+        }
+
+        @Override
+        public void incrementCounter(String counterClass, DhcpL2RelayCounters counterType) {
+
+        }
+
+        @Override
+        public void setCounter(String counterClass, DhcpL2RelayCounters counterType, Long value) {
+
+        }
+
+        @Override
+        public Map<DhcpL2RelayCountersIdentifier, AtomicLong> getCountersMap() {
+            return new HashMap<>();
+        }
+
+        @Override
+        public void resetCounters(String counterClass) {
+
+        }
     }
 }

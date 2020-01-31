@@ -85,6 +85,7 @@ import org.opencord.sadis.BandwidthProfileInformation;
 import org.opencord.sadis.BaseInformationService;
 import org.opencord.sadis.SadisService;
 import org.opencord.sadis.SubscriberAndDeviceInformation;
+import org.opencord.sadis.UniTagInformation;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -100,11 +101,13 @@ import org.slf4j.LoggerFactory;
 public class DhcpL2RelayTestBase {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    static final VlanId CLIENT_C_TAG = VlanId.vlanId((short) 999);
-    static final VlanId CLIENT_S_TAG = VlanId.vlanId((short) 111);
+    static final VlanId CLIENT_C_TAG = VlanId.vlanId((short) 2);
+    static final VlanId CLIENT_S_TAG = VlanId.vlanId((short) 4);
+    static final short CLIENT_C_PBIT = 7;
     static final String CLIENT_ID_1 = "SUBSCRIBER_ID_1";
     static final String CLIENT_NAS_PORT_ID = "PON 1/1";
     static final String CLIENT_CIRCUIT_ID = "CIR-PON 1/1";
+    static final short NOT_PROVIDED = 0;
 
     static final MacAddress CLIENT_MAC = MacAddress.valueOf("00:00:00:00:00:01");
     static final MacAddress SERVER_MAC = MacAddress.valueOf("bb:bb:bb:bb:bb:bb");
@@ -317,18 +320,27 @@ public class DhcpL2RelayTestBase {
 
     class MockSubscriberAndDeviceInformation extends SubscriberAndDeviceInformation {
 
-        MockSubscriberAndDeviceInformation(String id, VlanId ctag,
-                                           VlanId stag, String nasPortId,
+        MockSubscriberAndDeviceInformation(String id, VlanId cTag,
+                                           VlanId sTag, String nasPortId,
                                            String circuitId, MacAddress hardId,
                                            Ip4Address ipAddress, int uplinkPort) {
-            this.setCTag(ctag);
             this.setHardwareIdentifier(hardId);
             this.setId(id);
             this.setIPAddress(ipAddress);
-            this.setSTag(stag);
             this.setNasPortId(nasPortId);
             this.setCircuitId(circuitId);
             this.setUplinkPort(uplinkPort);
+
+            List<UniTagInformation> uniTagInformationList = new ArrayList<>();
+
+            UniTagInformation uniTagInformation = new UniTagInformation.Builder()
+                    .setPonCTag(cTag)
+                    .setPonSTag(sTag)
+                    .setUsPonCTagPriority(CLIENT_C_PBIT)
+                    .setIsDhcpRequired(true)
+                    .build();
+            uniTagInformationList.add(uniTagInformation);
+            this.setUniTagList(uniTagInformationList);
         }
     }
 
@@ -589,8 +601,13 @@ public class DhcpL2RelayTestBase {
         ethPkt.setSourceMACAddress(srcMac);
         ethPkt.setDestinationMACAddress(dstMac);
         ethPkt.setEtherType(Ethernet.TYPE_IPV4);
-        ethPkt.setVlanID((short) 2);
-        ethPkt.setPriorityCode((byte) 6);
+        ethPkt.setVlanID(CLIENT_C_TAG.toShort());
+        ethPkt.setPriorityCode((byte) CLIENT_C_PBIT);
+
+        if (DHCP.OPCODE_REPLY == dhcpReqRsp) {
+            ethPkt.setQinQPriorityCode((byte) 3);
+            ethPkt.setQinQVID((short) 4);
+        }
 
         // IP Packet
         IPv4 ipv4Reply = new IPv4();

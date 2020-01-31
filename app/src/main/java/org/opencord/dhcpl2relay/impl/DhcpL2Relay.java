@@ -101,6 +101,7 @@ import org.opencord.dhcpl2relay.impl.packet.DhcpOption82;
 import org.opencord.sadis.BaseInformationService;
 import org.opencord.sadis.SadisService;
 import org.opencord.sadis.SubscriberAndDeviceInformation;
+import org.opencord.sadis.UniTagInformation;
 import org.osgi.service.component.ComponentContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -236,7 +237,6 @@ public class DhcpL2Relay
         }
 
         publishCountersToKafka = new PublishCountersToKafka();
-        subsService = sadisService.getSubscriberInfoService();
         restartPublishCountersTask();
 
         log.info("DHCP-L2-RELAY Started");
@@ -573,13 +573,6 @@ public class DhcpL2Relay
         return subsService.get(serialNo);
     }
 
-    private SubscriberAndDeviceInformation getDevice(ConnectPoint cp) {
-        String serialNo = deviceService.getDevice(cp.deviceId()).
-                serialNumber();
-
-        return subsService.get(serialNo);
-    }
-
     private MacAddress relayAgentMacAddress(PacketContext context) {
 
         SubscriberAndDeviceInformation device = this.getDevice(context);
@@ -605,44 +598,19 @@ public class DhcpL2Relay
         return subsService.get(nasPortId(context));
     }
 
-    private VlanId cTag(PacketContext context) {
-        SubscriberAndDeviceInformation sub = getSubscriber(context);
-        if (sub == null) {
-            log.warn("Subscriber info not found for {}", context.inPacket().
-                    receivedFrom());
-            return VlanId.NONE;
+    private UniTagInformation getUnitagInformationFromPacketContext(PacketContext context,
+                                                                    SubscriberAndDeviceInformation sub) {
+        //If the ctag is defined in the tagList and dhcp is required, return the service info
+        List<UniTagInformation> tagList = sub.uniTagList();
+        for (UniTagInformation uniServiceInformation : tagList) {
+            if (uniServiceInformation.getPonCTag().toShort() == context.inPacket().parsed().getVlanID()) {
+                if (uniServiceInformation.getIsDhcpRequired()) {
+                    return uniServiceInformation;
+                }
+            }
         }
-        return sub.cTag();
-    }
 
-    private VlanId cTag(ConnectPoint cp) {
-        String portId = nasPortId(cp);
-        SubscriberAndDeviceInformation sub = subsService.get(portId);
-        if (sub == null) {
-            log.warn("Subscriber info not found for {} looking for C-TAG", cp);
-            return VlanId.NONE;
-        }
-        return sub.cTag();
-    }
-
-    private VlanId sTag(ConnectPoint cp) {
-        String portId = nasPortId(cp);
-        SubscriberAndDeviceInformation sub = subsService.get(portId);
-        if (sub == null) {
-            log.warn("Subscriber info not found for {} looking for S-TAG", cp);
-            return VlanId.NONE;
-        }
-        return sub.sTag();
-    }
-
-    private VlanId sTag(PacketContext context) {
-        SubscriberAndDeviceInformation sub = getSubscriber(context);
-        if (sub == null) {
-            log.warn("Subscriber info not found for {}", context.inPacket().
-                    receivedFrom());
-            return VlanId.NONE;
-        }
-        return sub.sTag();
+        return null;
     }
 
     private class DhcpRelayPacketProcessor implements PacketProcessor {
@@ -744,10 +712,10 @@ public class DhcpL2Relay
         /*
          * Get subscriber information based on it's DHCP payload.
          */
-        private SubscriberAndDeviceInformation getSubscriberInfoFromServer(DHCP dhcpPayload) {
+        private SubscriberAndDeviceInformation getSubscriberInfoFromServer(DHCP dhcpPayload, PacketContext context) {
             if (dhcpPayload != null) {
                 MacAddress descMac = valueOf(dhcpPayload.getClientHardwareAddress());
-                ConnectPoint subsCp = getConnectPointOfClient(descMac);
+                ConnectPoint subsCp = getConnectPointOfClient(descMac, context);
 
                 if (subsCp != null) {
                     String portId = nasPortId(subsCp);
@@ -797,9 +765,9 @@ public class DhcpL2Relay
                     Ethernet ethernetPacketOffer =
                             processDhcpPacketFromServer(context, packet);
                     if (ethernetPacketOffer != null) {
-                        sendReply(ethernetPacketOffer, dhcpPayload);
+                        sendReply(ethernetPacketOffer, dhcpPayload, context);
                     }
-                    entry = getSubscriberInfoFromServer(dhcpPayload);
+                    entry = getSubscriberInfoFromServer(dhcpPayload, context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPOFFER"));
                     break;
                 case DHCPREQUEST:
@@ -816,9 +784,9 @@ public class DhcpL2Relay
                     Ethernet ethernetPacketAck =
                             processDhcpPacketFromServer(context, packet);
                     if (ethernetPacketAck != null) {
-                        sendReply(ethernetPacketAck, dhcpPayload);
+                        sendReply(ethernetPacketAck, dhcpPayload, context);
                     }
-                    entry = getSubscriberInfoFromServer(dhcpPayload);
+                    entry = getSubscriberInfoFromServer(dhcpPayload, context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPACK"));
                     break;
                 case DHCPDECLINE:
@@ -826,7 +794,7 @@ public class DhcpL2Relay
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPDECLINE"));
                     break;
                 case DHCPNAK:
-                    entry = getSubscriberInfoFromServer(dhcpPayload);
+                    entry = getSubscriberInfoFromServer(dhcpPayload, context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPNACK"));
                     break;
                 case DHCPRELEASE:
@@ -871,6 +839,14 @@ public class DhcpL2Relay
                 return null;
             }
 
+            UniTagInformation uniTagInformation = getUnitagInformationFromPacketContext(context, entry);
+            if (uniTagInformation == null) {
+                log.warn("Missing service information for connectPoint {} / cTag {}",
+                        context.inPacket().receivedFrom(),  context.inPacket().parsed().getVlanID());
+                return null;
+            }
+
+
             DhcpAllocationInfo info = new DhcpAllocationInfo(
                     context.inPacket().receivedFrom(), dhcpPacket.getPacketType(),
                     entry.nasPortId(), clientMac, clientIp);
@@ -893,10 +869,13 @@ public class DhcpL2Relay
             }
 
             etherReply.setPriorityCode(ethernetPacket.getPriorityCode());
-            etherReply.setVlanID(cTag(context).toShort());
+            etherReply.setVlanID(uniTagInformation.getPonCTag().toShort());
             etherReply.setQinQTPID(Ethernet.TYPE_VLAN);
-            etherReply.setQinQVID(sTag(context).toShort());
-            log.info("Finished processing packet.. relaying to dhcpServer");
+            etherReply.setQinQVID(uniTagInformation.getPonSTag().toShort());
+            if (uniTagInformation.getUsPonSTagPriority() != -1) {
+                etherReply.setQinQPriorityCode((byte) uniTagInformation.getUsPonSTagPriority());
+            }
+            log.info("Finished processing packet.. relaying to dhcpServer {}");
             return etherReply;
         }
 
@@ -914,7 +893,7 @@ public class DhcpL2Relay
             DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
 
             MacAddress dstMac = valueOf(dhcpPayload.getClientHardwareAddress());
-            ConnectPoint subsCp = getConnectPointOfClient(dstMac);
+            ConnectPoint subsCp = getConnectPointOfClient(dstMac, context);
             // If we can't find the subscriber, can't process further
             if (subsCp == null) {
                 return null;
@@ -952,14 +931,25 @@ public class DhcpL2Relay
                 }
             } // end storing of info
 
-            SubscriberAndDeviceInformation entry = getSubscriberInfoFromServer(dhcpPayload);
+            SubscriberAndDeviceInformation entry = getSubscriberInfoFromServer(dhcpPayload, context);
+
+            UniTagInformation uniTagInformation = getUnitagInformationFromPacketContext(context, entry);
+            if (uniTagInformation == null) {
+                log.warn("Missing service information for connectPoint {} / cTag {}",
+                        context.inPacket().receivedFrom(),  context.inPacket().parsed().getVlanID());
+                return null;
+            }
+
             updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("PACKETS_FROM_SERVER"));
 
             // we leave the srcMac from the original packet
+            etherReply.setQinQVID(VlanId.NO_VID);
+            etherReply.setQinQPriorityCode((byte) 0);
             etherReply.setDestinationMACAddress(dstMac);
-            etherReply.setQinQVID(sTag(subsCp).toShort());
-            etherReply.setPriorityCode(ethernetPacket.getPriorityCode());
-            etherReply.setVlanID((cTag(subsCp).toShort()));
+            etherReply.setVlanID(uniTagInformation.getPonCTag().toShort());
+            if (uniTagInformation.getUsPonCTagPriority() != -1) {
+                etherReply.setPriorityCode((byte) uniTagInformation.getUsPonCTagPriority());
+            }
 
             if (option82) {
                 udpPacket.setPayload(removeOption82(dhcpPayload));
@@ -976,7 +966,7 @@ public class DhcpL2Relay
         /*
          * Get ConnectPoint of the Client based on it's MAC address
          */
-        private ConnectPoint getConnectPointOfClient(MacAddress dstMac) {
+        private ConnectPoint getConnectPointOfClient(MacAddress dstMac, PacketContext context) {
             Set<Host> hosts = hostService.getHostsByMac(dstMac);
             if (hosts == null || hosts.isEmpty()) {
                 log.warn("Cannot determine host for DHCP client: {}. Aborting "
@@ -990,18 +980,28 @@ public class DhcpL2Relay
                 ConnectPoint cp = new ConnectPoint(h.location().deviceId(),
                         h.location().port());
 
-                if (sTag(cp) != VlanId.NONE) {
-                    return cp;
+                String portId = nasPortId(cp);
+                SubscriberAndDeviceInformation sub = subsService.get(portId);
+                if (sub == null) {
+                    log.warn("Subscriber info not found for {}", cp);
+                    return null;
                 }
-            }
 
+                UniTagInformation uniTagInformation = getUnitagInformationFromPacketContext(context, sub);
+                if (uniTagInformation == null) {
+                    log.warn("Missing service information for connectPoint {} / cTag {}",
+                            context.inPacket().receivedFrom(),  context.inPacket().parsed().getVlanID());
+                    return null;
+                }
+                return cp;
+            }
             return null;
         }
 
         //send the response to the requester host.
-        private void sendReply(Ethernet ethPacket, DHCP dhcpPayload) {
+        private void sendReply(Ethernet ethPacket, DHCP dhcpPayload, PacketContext context) {
             MacAddress descMac = valueOf(dhcpPayload.getClientHardwareAddress());
-            ConnectPoint subCp = getConnectPointOfClient(descMac);
+            ConnectPoint subCp = getConnectPointOfClient(descMac, context);
 
             // Send packet out to requester if the host information is available
             if (subCp != null) {

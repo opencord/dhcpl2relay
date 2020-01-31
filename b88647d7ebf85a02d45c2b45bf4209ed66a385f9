@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e5e74009_44f278cc",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 603,
+      "author": {
+        "id": 1000068
+      },
+      "writtenOn": "2020-01-31T23:15:46Z",
+      "side": 1,
+      "message": "Gamze, we chose to not call this \u0027serviceList\u0027 in sadis and just call it tagList because it does not necessarily correspond to a service in DT FTTB case. It would be nice if the variables were consistent too",
+      "revId": "b88647d7ebf85a02d45c2b45bf4209ed66a385f9",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "742e94f0_2e2e92f5",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 874,
+      "author": {
+        "id": 1000068
+      },
+      "writtenOn": "2020-01-31T23:15:46Z",
+      "side": 1,
+      "message": "It is possible that uniTagInfo may not have pbit information for S-tag  (for example in ATT case) - it is best to check this first and if it exists then set it",
+      "revId": "b88647d7ebf85a02d45c2b45bf4209ed66a385f9",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "42d5134d_e3c7f7fd",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 944,
+      "author": {
+        "id": 1000068
+      },
+      "writtenOn": "2020-01-31T23:15:46Z",
+      "side": 1,
+      "message": "This is setting to 0, not removing the S-Tag, which is ok for now (I think).\n\nFor now having the S-Tag be sent by ONOS may be necessary because there is code in openolt adaptor that removes the S-Tag. Putting it another way, because ONOS is sending the S-tag here, openolt-adaptor is forced to remove it.\n\nIdeally we should remove the code in openolt adaptor, and  remove the S-tag here. I will coordinate that move in the future as it has to be done carefully across versions",
+      "revId": "b88647d7ebf85a02d45c2b45bf4209ed66a385f9",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

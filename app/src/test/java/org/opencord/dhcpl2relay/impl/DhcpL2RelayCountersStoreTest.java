@@ -22,8 +22,9 @@ import org.junit.Test;
 import org.onlab.junit.TestUtils;
 import org.onlab.osgi.ComponentContextAdapter;
 import org.onosproject.cfg.ComponentConfigService;
-import org.onosproject.common.event.impl.TestEventDispatcher;
+import org.onosproject.cluster.LeadershipServiceAdapter;
 import org.onosproject.net.flowobjective.FlowObjectiveServiceAdapter;
+import org.onosproject.store.service.TestStorageService;
 import org.opencord.dhcpl2relay.DhcpL2RelayEvent;
 
 import java.util.Iterator;
@@ -55,6 +56,8 @@ public class DhcpL2RelayCountersStoreTest extends DhcpL2RelayTestBase {
         dhcpL2Relay.deviceService = new MockDeviceService();
         dhcpL2Relay.sadisService = new MockSadisService();
         dhcpL2Relay.mastershipService = new MockMastershipService();
+        dhcpL2Relay.storageService = new TestStorageService();
+        dhcpL2Relay.leadershipService = new LeadershipServiceAdapter();
         TestUtils.setField(dhcpL2Relay, "eventDispatcher", new TestEventDispatcher());
         dhcpL2Relay.activate(new ComponentContextAdapter());
         store = new SimpleDhcpL2RelayCountersStore();

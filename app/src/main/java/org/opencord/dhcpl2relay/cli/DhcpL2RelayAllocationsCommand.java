@@ -18,7 +18,7 @@ package org.opencord.dhcpl2relay.cli;
 import org.apache.karaf.shell.api.action.Command;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.onosproject.cli.AbstractShellCommand;
-import org.opencord.dhcpl2relay.impl.DhcpL2Relay;
+import org.opencord.dhcpl2relay.DhcpL2RelayService;
 
 /**
  *  Shows the Successful DHCP allocations relayed by the dhcpl2relay.
@@ -29,7 +29,9 @@ import org.opencord.dhcpl2relay.impl.DhcpL2Relay;
 public class DhcpL2RelayAllocationsCommand extends AbstractShellCommand {
     @Override
     protected void doExecute() {
-        DhcpL2Relay.allocationMap().forEach((key, value) -> {
+        DhcpL2RelayService service = get(DhcpL2RelayService.class);
+
+        service.getAllocationInfo().forEach((key, value) -> {
             print("SubscriberId=%s,ConnectPoint=%s,State=%s,MAC=%s,CircuitId=%s" +
                             ",IP Allocated=%s,Allocation Timestamp=%s",
                     key, value.location(), value.type(), value.macAddress().toString(), value.circuitId(),

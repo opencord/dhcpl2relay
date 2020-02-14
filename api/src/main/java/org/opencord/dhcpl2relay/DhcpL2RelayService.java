@@ -18,9 +18,18 @@ package org.opencord.dhcpl2relay;
 
 import org.onosproject.event.ListenerService;
 
+import java.util.Map;
+
 /**
  * DHCP L2 relay service.
  */
 public interface DhcpL2RelayService extends
         ListenerService<DhcpL2RelayEvent, DhcpL2RelayListener> {
+
+    /**
+     * Returns information about DHCP leases that have been allocated.
+     *
+     * @return map of subscriber ID to DHCP allocation information
+     */
+    Map<String, DhcpAllocationInfo> getAllocationInfo();
 }

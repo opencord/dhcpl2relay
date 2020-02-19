@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a0dc93b9_4e8241b7",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 798,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2020-02-19T16:41:37Z",
+      "side": 1,
+      "message": "Instead of creating this new function here... why don\u0027t we create a function which takes as input the subscriber.id, connectPoint and DHCP packet. This function can crate the DhcpAllocationInfo and put it in the allocationMap.\n\nThis same function can then be called from the other places where we are creating the DhcpAllocationInfo and inserting into the map.",
+      "revId": "84670de4ab8f1608a91bb246109aa5c608762ef6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "22dac61b_b7437f58",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 824,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2020-02-19T16:41:37Z",
+      "side": 1,
+      "message": "There is inconsistency in the code... in one place we are storing nasPortId() in the AllocationInfo and in another case we are storing the circuitId. It should be the circuitId I guess. Can you please check and fix it",
+      "revId": "84670de4ab8f1608a91bb246109aa5c608762ef6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7b396014_228ea39e",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 829,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2020-02-19T16:41:37Z",
+      "side": 1,
+      "message": "The key to the map should be entry.id() and not nasPortId()",
+      "revId": "84670de4ab8f1608a91bb246109aa5c608762ef6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

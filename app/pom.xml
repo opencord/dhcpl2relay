@@ -31,7 +31,7 @@
 
     <properties>
         <onos.app.name>org.opencord.dhcpl2relay</onos.app.name>
-        <onos.version>1.13.10-rc2</onos.version>
+        <onos.version>1.13.10</onos.version>
         <onos.app.title>DHCP Relay Agent App</onos.app.title>
         <onos.app.category>default</onos.app.category>
         <onos.app.url>http://opencord.org</onos.app.url>

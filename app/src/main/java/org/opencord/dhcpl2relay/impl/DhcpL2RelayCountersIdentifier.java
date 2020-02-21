@@ -24,14 +24,14 @@ import java.util.Objects;
  */
 public final class DhcpL2RelayCountersIdentifier {
     final String counterClassKey;
-    final Enum<DhcpL2RelayCounters> counterTypeKey;
+    final Enum<DhcpL2RelayCounterNames> counterTypeKey;
 
     /**
      * Creates a default global counter identifier for a given counterType.
      *
      * @param counterTypeKey Identifies the supported type of DHCP relay counters
      */
-    public DhcpL2RelayCountersIdentifier(DhcpL2RelayCounters counterTypeKey) {
+    public DhcpL2RelayCountersIdentifier(DhcpL2RelayCounterNames counterTypeKey) {
         this.counterClassKey = DhcpL2RelayEvent.GLOBAL_COUNTER;
         this.counterTypeKey = counterTypeKey;
     }
@@ -43,7 +43,7 @@ public final class DhcpL2RelayCountersIdentifier {
      * @param counterClassKey Identifies which class the counter is assigned (global or per subscriber)
      * @param counterTypeKey Identifies the supported type of DHCP relay counters
      */
-    public DhcpL2RelayCountersIdentifier(String counterClassKey, DhcpL2RelayCounters counterTypeKey) {
+    public DhcpL2RelayCountersIdentifier(String counterClassKey, DhcpL2RelayCounterNames counterTypeKey) {
         this.counterClassKey = counterClassKey;
         this.counterTypeKey = counterTypeKey;
     }
@@ -65,5 +65,9 @@ public final class DhcpL2RelayCountersIdentifier {
     @Override
     public int hashCode() {
         return Objects.hash(counterClassKey, counterTypeKey);
+    }
+
+    public String toString() {
+        return this.counterClassKey + "/" + this.counterTypeKey;
     }
 }

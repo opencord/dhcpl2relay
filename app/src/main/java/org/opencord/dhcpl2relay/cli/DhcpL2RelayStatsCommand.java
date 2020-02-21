@@ -19,17 +19,16 @@ package org.opencord.dhcpl2relay.cli;
 
 import org.apache.karaf.shell.api.action.Argument;
 import org.apache.karaf.shell.api.action.Command;
-import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.apache.karaf.shell.api.action.Option;
+import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.onosproject.cli.AbstractShellCommand;
 import org.opencord.dhcpl2relay.DhcpL2RelayEvent;
-import org.opencord.dhcpl2relay.impl.DhcpL2RelayCounters;
+import org.opencord.dhcpl2relay.impl.DhcpL2RelayCounterNames;
 import org.opencord.dhcpl2relay.impl.DhcpL2RelayCountersIdentifier;
 import org.opencord.dhcpl2relay.impl.DhcpL2RelayCountersStore;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Display/Reset the DHCP L2 relay application statistics.
@@ -57,7 +56,7 @@ public class DhcpL2RelayStatsCommand extends AbstractShellCommand {
             description = "The counter to display (or reset). In case not specified, all counters\nwill be " +
                     "displayed (or reset in case the -r option is specified).",
             required = false, multiValued = false)
-    DhcpL2RelayCounters counter = null;
+    DhcpL2RelayCounterNames counter = null;
 
     @Override
     protected void doExecute() {
@@ -69,7 +68,7 @@ public class DhcpL2RelayStatsCommand extends AbstractShellCommand {
             subscriberId = DhcpL2RelayEvent.GLOBAL_COUNTER;
         }
 
-       if (reset) {
+        if (reset) {
             if (please == null || !please.equals(CONFIRM_PHRASE)) {
                 print("WARNING: Be aware that you are going to reset the counters. " +
                         "Enter confirmation phrase to continue.");
@@ -83,58 +82,57 @@ public class DhcpL2RelayStatsCommand extends AbstractShellCommand {
                 dhcpCounters.setCounter(subscriberId, counter, (long) 0);
             }
         } else {
-           Map<DhcpL2RelayCountersIdentifier, AtomicLong> countersMap = dhcpCounters.getCountersMap();
-           if (countersMap.size() > 0) {
-               if (counter == null) {
-                   String jsonString = "";
-                   if (outputJson()) {
-                       jsonString = String.format("{\"%s\":{", dhcpCounters.NAME);
-                   } else {
-                       print("%s [%s] :", dhcpCounters.NAME, subscriberId);
-                   }
-                   DhcpL2RelayCounters[] counters = DhcpL2RelayCounters.values();
-                   for (int i = 0; i < counters.length; i++) {
-                       DhcpL2RelayCounters counterType = counters[i];
-                       AtomicLong v = countersMap.get(new DhcpL2RelayCountersIdentifier(subscriberId, counterType));
-                       if (v == null) {
-                           v = new AtomicLong(0);
-                       }
-                       if (outputJson()) {
-                           jsonString += String.format("\"%s\":%d", counterType, v.longValue());
-                           if (i < counters.length - 1) {
-                               jsonString += ",";
-                           }
-                       } else {
-                           printCounter(counterType, v);
-                       }
-                   }
-                   if (outputJson()) {
-                       jsonString += "}}";
-                       print("%s", jsonString);
-                   }
-               } else {
-                   // Show only the specified counter
-                   AtomicLong v = countersMap.get(new DhcpL2RelayCountersIdentifier(subscriberId, counter));
-                   if (v == null) {
-                       v = new AtomicLong(0);
-                   }
-                   if (outputJson()) {
-                       print("{\"%s\":%d}", counter, v.longValue());
-                   } else {
-                       printCounter(counter, v);
-                   }
-               }
-           } else {
-               print("No DHCP L2 Relay Counters were created yet for counter class [%s]",
-                       DhcpL2RelayEvent.GLOBAL_COUNTER);
-           }
-       }
+            Map<DhcpL2RelayCountersIdentifier, Long> countersMap = dhcpCounters.getCounters().counters();
+            if (countersMap.size() > 0) {
+                if (counter == null) {
+                    String jsonString = "";
+                    if (outputJson()) {
+                        jsonString = String.format("{\"%s\":{", dhcpCounters.NAME);
+                    } else {
+                        print("%s [%s] :", dhcpCounters.NAME, subscriberId);
+                    }
+                    DhcpL2RelayCounterNames[] counters = DhcpL2RelayCounterNames.values();
+                    for (int i = 0; i < counters.length; i++) {
+                        DhcpL2RelayCounterNames counterType = counters[i];
+                        Long value = countersMap.get(new DhcpL2RelayCountersIdentifier(subscriberId, counterType));
+                        if (value == null) {
+                            value = 0L;
+                        }
+                        if (outputJson()) {
+                            jsonString += String.format("\"%s\":%d", counterType, value);
+                            if (i < counters.length - 1) {
+                                jsonString += ",";
+                            }
+                        } else {
+                            printCounter(counterType, value);
+                        }
+                    }
+                    if (outputJson()) {
+                        jsonString += "}}";
+                        print("%s", jsonString);
+                    }
+                } else {
+                    // Show only the specified counter
+                    Long value = countersMap.get(new DhcpL2RelayCountersIdentifier(subscriberId, counter));
+                    if (value == null) {
+                        value = 0L;
+                    }
+                    if (outputJson()) {
+                        print("{\"%s\":%d}", counter, value);
+                    } else {
+                        printCounter(counter, value);
+                    }
+                }
+            } else {
+                print("No DHCP L2 Relay Counters were created yet for counter class [%s]",
+                        DhcpL2RelayEvent.GLOBAL_COUNTER);
+            }
+        }
     }
 
-    void printCounter(DhcpL2RelayCounters c, AtomicLong a) {
+    private void printCounter(DhcpL2RelayCounterNames counterNames, long value) {
         // print in non-JSON format
-        print("  %s %s %-4d", c,
-                String.join("", Collections.nCopies(50 - c.toString().length(), ".")),
-                a.longValue());
+        print("  %s %s %-4d", counterNames,
+                String.join("", Collections.nCopies(50 - counterNames.toString().length(), ".")), value);
     }
 }

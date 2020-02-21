@@ -30,7 +30,6 @@ import org.onlab.packet.UDP;
 import org.onlab.packet.VlanId;
 import org.onlab.packet.dhcp.DhcpOption;
 import org.onlab.util.KryoNamespace;
-import org.onlab.util.SafeRecurringTask;
 import org.onlab.util.Tools;
 import org.onosproject.cfg.ComponentConfigService;
 import org.onosproject.cluster.ClusterService;
@@ -76,6 +75,7 @@ import org.opencord.dhcpl2relay.DhcpAllocationInfo;
 import org.opencord.dhcpl2relay.DhcpL2RelayEvent;
 import org.opencord.dhcpl2relay.DhcpL2RelayListener;
 import org.opencord.dhcpl2relay.DhcpL2RelayService;
+import org.opencord.dhcpl2relay.DhcpL2RelayStoreDelegate;
 import org.opencord.dhcpl2relay.impl.packet.DhcpOption82;
 import org.opencord.sadis.BaseInformationService;
 import org.opencord.sadis.SadisService;
@@ -94,7 +94,6 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.time.Instant;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.List;
@@ -104,25 +103,17 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
 import static org.onlab.packet.MacAddress.valueOf;
-import static org.onlab.util.Tools.get;
-import static org.onlab.util.Tools.getIntegerProperty;
 import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FACTORY;
-import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.DHCP_COUNTERS_TOPIC;
-import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.DHCP_COUNTERS_TOPIC_DEFAULT;
 import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.ENABLE_DHCP_BROADCAST_REPLIES;
 import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.ENABLE_DHCP_BROADCAST_REPLIES_DEFAULT;
 import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.OPTION_82;
 import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.OPTION_82_DEFAULT;
-import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.PUBLISH_COUNTERS_RATE;
-import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.PUBLISH_COUNTERS_RATE_DEFAULT;
 
 /**
  * DHCP Relay Agent Application Component.
@@ -131,8 +122,6 @@ import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.PUBLISH_COUNTE
 property = {
         OPTION_82 + ":Boolean=" + OPTION_82_DEFAULT,
         ENABLE_DHCP_BROADCAST_REPLIES + ":Boolean=" + ENABLE_DHCP_BROADCAST_REPLIES_DEFAULT,
-        PUBLISH_COUNTERS_RATE + ":Integer=" + PUBLISH_COUNTERS_RATE_DEFAULT,
-        DHCP_COUNTERS_TOPIC + ":String=" + DHCP_COUNTERS_TOPIC_DEFAULT
 })
 public class DhcpL2Relay
         extends AbstractListenerManager<DhcpL2RelayEvent, DhcpL2RelayListener>
@@ -202,12 +191,6 @@ public class DhcpL2Relay
     /** Ask the DHCP Server to send back replies as L2 broadcast. */
     protected boolean enableDhcpBroadcastReplies = ENABLE_DHCP_BROADCAST_REPLIES_DEFAULT;
 
-    protected int publishCountersRate = PUBLISH_COUNTERS_RATE_DEFAULT;
-    private String dhcpCountersTopic = DHCP_COUNTERS_TOPIC_DEFAULT;
-
-
-    protected PublishCountersToKafka publishCountersToKafka;
-
     ScheduledFuture<?> refreshTask;
     ScheduledExecutorService refreshService = Executors.newSingleThreadScheduledExecutor();
 
@@ -229,6 +212,8 @@ public class DhcpL2Relay
     protected boolean useOltUplink = false;
 
     private BaseInformationService<SubscriberAndDeviceInformation> subsService;
+
+    private DhcpL2RelayStoreDelegate delegate = new InnerDhcpL2RelayStoreDelegate();
 
     @Activate
     protected void activate(ComponentContext context) {
@@ -255,6 +240,8 @@ public class DhcpL2Relay
 
         leadershipService.runForLeadership(LEADER_TOPIC);
 
+        dhcpL2RelayCounters.setDelegate(delegate);
+
         cfgService.addListener(cfgListener);
         mastershipService.addListener(changeListener);
         deviceService.addListener(deviceListener);
@@ -271,9 +258,6 @@ public class DhcpL2Relay
             modified(context);
         }
 
-        publishCountersToKafka = new PublishCountersToKafka();
-        restartPublishCountersTask();
-
         log.info("DHCP-L2-RELAY Started");
     }
 
@@ -285,6 +269,7 @@ public class DhcpL2Relay
         if (refreshService != null) {
             refreshService.shutdownNow();
         }
+        dhcpL2RelayCounters.unsetDelegate(delegate);
         cfgService.removeListener(cfgListener);
         factories.forEach(cfgService::unregisterConfigFactory);
         packetService.removeProcessor(dhcpRelayPacketProcessor);
@@ -312,41 +297,6 @@ public class DhcpL2Relay
         if (o != null) {
             enableDhcpBroadcastReplies = o;
         }
-
-        Integer newPublishCountersRate = getIntegerProperty(properties, "publishCountersRate");
-        if (newPublishCountersRate != null) {
-            if (newPublishCountersRate != publishCountersRate && newPublishCountersRate >= 0) {
-                log.info("publishCountersRate modified from {} to {}", publishCountersRate, newPublishCountersRate);
-                publishCountersRate = newPublishCountersRate;
-            } else if (newPublishCountersRate < 0) {
-                log.error("Invalid newPublishCountersRate : {}, defaulting to 0", newPublishCountersRate);
-                publishCountersRate = 0;
-            }
-            restartPublishCountersTask();
-        }
-
-        String newDhcpCountersTopic = get(properties, "dhcpCountersTopic");
-        if (newDhcpCountersTopic != null && !newDhcpCountersTopic.equals(dhcpCountersTopic)) {
-            log.info("Property dhcpCountersTopic modified from {} to {}", dhcpCountersTopic, newDhcpCountersTopic);
-            dhcpCountersTopic = newDhcpCountersTopic;
-        }
-    }
-
-    /**
-     * Starts a thread to publish the counters to kafka at a certain rate time.
-     */
-    private void restartPublishCountersTask() {
-        if (refreshTask != null) {
-            refreshTask.cancel(true);
-        }
-        if (publishCountersRate > 0) {
-            log.info("Refresh Rate set to {}, publishCountersToKafka will be called every {} seconds",
-                    publishCountersRate, publishCountersRate);
-            refreshTask = refreshService.scheduleWithFixedDelay(SafeRecurringTask.wrap(publishCountersToKafka),
-                    publishCountersRate, publishCountersRate, TimeUnit.SECONDS);
-        } else {
-            log.info("Refresh Rate set to 0, disabling calls to publishCountersToKafka");
-        }
     }
 
     private <V> V value(Versioned<V> versioned) {
@@ -359,27 +309,6 @@ public class DhcpL2Relay
     @Override
     public Map<String, DhcpAllocationInfo> getAllocationInfo() {
         return ImmutableMap.copyOf(allocations.asJavaMap());
-    }
-
-    /**
-     * Publish the counters to kafka.
-     */
-    private class PublishCountersToKafka implements Runnable {
-        public void run() {
-            dhcpL2RelayCounters.getCountersMap().forEach((counterKey, counterValue) -> {
-                // Publish the global counters
-                if (counterKey.counterClassKey.equals(DhcpL2RelayEvent.GLOBAL_COUNTER)) {
-                    post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.STATS_UPDATE, null, null,
-                            new AbstractMap.SimpleEntry<String, AtomicLong>(counterKey.counterTypeKey.toString(),
-                                    counterValue), dhcpCountersTopic, null));
-                } else { // Publish the counters per subscriber
-                    DhcpAllocationInfo info = value(allocations.get(counterKey.counterClassKey));
-                    post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.STATS_UPDATE, info, null,
-                            new AbstractMap.SimpleEntry<String, AtomicLong>(counterKey.counterTypeKey.toString(),
-                                    counterValue), dhcpCountersTopic, counterKey.counterClassKey));
-                }
-            });
-        }
     }
 
     /**
@@ -713,7 +642,7 @@ public class DhcpL2Relay
                 packetService.emit(o);
 
                 SubscriberAndDeviceInformation entry = getSubscriberInfoFromClient(context);
-                updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("PACKETS_TO_SERVER"));
+                updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("PACKETS_TO_SERVER"));
             } else {
                 log.error("No connect point to send msg to DHCP Server");
             }
@@ -732,7 +661,7 @@ public class DhcpL2Relay
         }
 
         private void  updateDhcpRelayCountersStore(SubscriberAndDeviceInformation entry,
-                                                   DhcpL2RelayCounters counterType) {
+                                                   DhcpL2RelayCounterNames counterType) {
             // Update global counter stats
             dhcpL2RelayCounters.incrementCounter(DhcpL2RelayEvent.GLOBAL_COUNTER, counterType);
             if (entry == null) {
@@ -802,7 +731,7 @@ public class DhcpL2Relay
                         forwardPacket(ethernetPacketDiscover, context);
                     }
                     entry = getSubscriberInfoFromClient(context);
-                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPDISCOVER"));
+                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPDISCOVER"));
                     break;
                 case DHCPOFFER:
                     //reply to dhcp client.
@@ -812,7 +741,7 @@ public class DhcpL2Relay
                         sendReply(ethernetPacketOffer, dhcpPayload, context);
                     }
                     entry = getSubscriberInfoFromServer(dhcpPayload, context);
-                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPOFFER"));
+                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPOFFER"));
                     break;
                 case DHCPREQUEST:
                     Ethernet ethernetPacketRequest =
@@ -821,7 +750,7 @@ public class DhcpL2Relay
                         forwardPacket(ethernetPacketRequest, context);
                     }
                     entry = getSubscriberInfoFromClient(context);
-                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPREQUEST"));
+                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPREQUEST"));
                     break;
                 case DHCPACK:
                     //reply to dhcp client.
@@ -831,7 +760,7 @@ public class DhcpL2Relay
                         sendReply(ethernetPacketAck, dhcpPayload, context);
                     }
                     entry = getSubscriberInfoFromServer(dhcpPayload, context);
-                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPACK"));
+                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPACK"));
                     break;
                 case DHCPDECLINE:
                     Ethernet ethernetPacketDecline =
@@ -840,7 +769,7 @@ public class DhcpL2Relay
                         forwardPacket(ethernetPacketDecline, context);
                     }
                     entry = getSubscriberInfoFromClient(context);
-                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPDECLINE"));
+                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPDECLINE"));
                     break;
                 case DHCPNAK:
                     //reply to dhcp client.
@@ -850,7 +779,7 @@ public class DhcpL2Relay
                         sendReply(ethernetPacketNak, dhcpPayload, context);
                     }
                     entry = getSubscriberInfoFromServer(dhcpPayload, context);
-                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPNACK"));
+                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPNACK"));
                     break;
                 case DHCPRELEASE:
                     Ethernet ethernetPacketRelease =
@@ -859,7 +788,7 @@ public class DhcpL2Relay
                         forwardPacket(ethernetPacketRelease, context);
                     }
                     entry = getSubscriberInfoFromClient(context);
-                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPRELEASE"));
+                    updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPRELEASE"));
                     break;
                 default:
                     break;
@@ -981,7 +910,7 @@ public class DhcpL2Relay
                 return null;
             }
 
-            updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("PACKETS_FROM_SERVER"));
+            updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("PACKETS_FROM_SERVER"));
 
             // we leave the srcMac from the original packet
             etherReply.setQinQVID(VlanId.NO_VID);
@@ -1221,6 +1150,23 @@ public class DhcpL2Relay
                         break;
                 }
             }
+        }
+    }
+
+    private class InnerDhcpL2RelayStoreDelegate implements DhcpL2RelayStoreDelegate {
+        @Override
+        public void notify(DhcpL2RelayEvent event) {
+            if (event.type().equals(DhcpL2RelayEvent.Type.STATS_UPDATE)) {
+                DhcpL2RelayEvent toPost = event;
+                if (event.getSubscriberId() != null) {
+                    // infuse the event with the allocation info before posting
+                    DhcpAllocationInfo info = value(allocations.get(event.getSubscriberId()));
+                    toPost = new DhcpL2RelayEvent(event.type(), info, event.connectPoint(),
+                            event.getCountersEntry(), event.getSubscriberId());
+                }
+                post(toPost);
+            }
+
         }
     }
 }

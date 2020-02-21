@@ -16,23 +16,17 @@
 
 package org.opencord.dhcpl2relay.impl;
 
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import org.onosproject.store.Store;
+import org.opencord.dhcpl2relay.DhcpL2RelayEvent;
+import org.opencord.dhcpl2relay.DhcpL2RelayStoreDelegate;
 
 /**
  * Represents a stored DHCP Relay Counters. A counter entry is defined by the pair &lt;counterClass, counterType&gt;,
  * where counterClass can be maybe global or subscriber ID and counterType is the DHCP message type.
  */
-public interface DhcpL2RelayCountersStore {
+public interface DhcpL2RelayCountersStore extends Store<DhcpL2RelayEvent, DhcpL2RelayStoreDelegate> {
 
     String NAME = "DHCP_L2_Relay_stats";
-
-    /**
-     * Init counter values for a given counter class.
-     *
-     * @param counterClass class of counters (global, per subscriber).
-     */
-    void initCounters(String counterClass);
 
     /**
      * Creates or updates DHCP L2 Relay counter.
@@ -40,7 +34,7 @@ public interface DhcpL2RelayCountersStore {
      * @param counterClass class of counters (global, per subscriber).
      * @param counterType name of counter
      */
-    void incrementCounter(String counterClass, DhcpL2RelayCounters counterType);
+    void incrementCounter(String counterClass, DhcpL2RelayCounterNames counterType);
 
     /**
      * Sets the value of a DHCP L2 Relay counter.
@@ -49,14 +43,14 @@ public interface DhcpL2RelayCountersStore {
      * @param counterType name of counter
      * @param value The value of the counter
      */
-    void setCounter(String counterClass, DhcpL2RelayCounters counterType, Long value);
+    void setCounter(String counterClass, DhcpL2RelayCounterNames counterType, Long value);
 
     /**
-     * Gets the DHCP L2 Relay counters map.
+     * Gets the current DHCP L2 relay counter values.
      *
-     * @return the DHCP counter map
+     * @return DHCP L2 relay counter values
      */
-    public Map<DhcpL2RelayCountersIdentifier, AtomicLong> getCountersMap();
+    DhcpL2RelayStatistics getCounters();
 
     /**
      * Resets counter values for a given counter class.

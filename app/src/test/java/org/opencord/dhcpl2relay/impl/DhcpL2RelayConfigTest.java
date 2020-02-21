@@ -66,6 +66,9 @@ public class DhcpL2RelayConfigTest extends DhcpL2RelayTestBase {
         dhcpL2Relay.mastershipService = new MockMastershipService();
         dhcpL2Relay.storageService = new TestStorageService();
         dhcpL2Relay.leadershipService = new LeadershipServiceAdapter();
+        SimpleDhcpL2RelayCountersStore store = new SimpleDhcpL2RelayCountersStore();
+        store.componentConfigService = mockConfigService;
+        dhcpL2Relay.dhcpL2RelayCounters = store;
         TestUtils.setField(dhcpL2Relay, "eventDispatcher", new TestEventDispatcher());
         dhcpL2Relay.activate(new ComponentContextAdapter());
     }

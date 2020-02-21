@@ -33,8 +33,6 @@ public class DhcpL2RelayEvent extends AbstractEvent<DhcpL2RelayEvent.Type, DhcpA
 
     private final Map.Entry<String, AtomicLong> countersEntry;
 
-    private final String dhcpCountersTopic;
-
     private final String subscriberId;
 
     /**
@@ -64,16 +62,13 @@ public class DhcpL2RelayEvent extends AbstractEvent<DhcpL2RelayEvent.Type, DhcpA
      * @param allocationInfo DHCP allocation info
      * @param connectPoint connect point the client is on
      * @param countersEntry an entry that represents the counters (used for STATS events)
-     * @param dhcpCountersTopic Kafka topic where the dhcp counters are published
      * @param subscriberId the subscriber identifier information
      */
     public DhcpL2RelayEvent(Type type, DhcpAllocationInfo allocationInfo, ConnectPoint connectPoint,
-                            Map.Entry<String, AtomicLong> countersEntry,
-                            String dhcpCountersTopic, String subscriberId) {
+                            Map.Entry<String, AtomicLong> countersEntry, String subscriberId) {
         super(type, allocationInfo);
         this.connectPoint = connectPoint;
         this.countersEntry = countersEntry;
-        this.dhcpCountersTopic = dhcpCountersTopic;
         this.subscriberId = subscriberId;
     }
 
@@ -88,7 +83,6 @@ public class DhcpL2RelayEvent extends AbstractEvent<DhcpL2RelayEvent.Type, DhcpA
         super(type, allocationInfo);
         this.connectPoint = connectPoint;
         this.countersEntry = null;
-        this.dhcpCountersTopic = null;
         this.subscriberId = null;
     }
 
@@ -108,15 +102,6 @@ public class DhcpL2RelayEvent extends AbstractEvent<DhcpL2RelayEvent.Type, DhcpA
      */
     public Map.Entry<String, AtomicLong> getCountersEntry() {
         return countersEntry;
-    }
-
-    /**
-     * Gets the Kafka topic where the dhcp counters are published.
-     *
-     * @return the dhcp kafka topic
-     */
-    public String getDhcpCountersTopic() {
-        return dhcpCountersTopic;
     }
 
     /**

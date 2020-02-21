@@ -23,7 +23,7 @@ import java.util.Set;
 /**
  * Represents DHCP relay counters type.
  */
-public enum DhcpL2RelayCounters {
+public enum DhcpL2RelayCounterNames {
     /**
      *  DHCP relay counter of type Discover.
      */
@@ -64,10 +64,10 @@ public enum DhcpL2RelayCounters {
     /**
      * Supported types of DHCP relay counters.
      */
-    static final Set<DhcpL2RelayCounters> SUPPORTED_COUNTERS = ImmutableSet.of(DhcpL2RelayCounters.DHCPDISCOVER,
-            DhcpL2RelayCounters.DHCPRELEASE, DhcpL2RelayCounters.DHCPDECLINE,
-            DhcpL2RelayCounters.DHCPREQUEST, DhcpL2RelayCounters.DHCPOFFER,
-            DhcpL2RelayCounters.DHCPACK, DhcpL2RelayCounters.DHCPNACK,
-            DhcpL2RelayCounters.PACKETS_TO_SERVER,
-            DhcpL2RelayCounters.PACKETS_FROM_SERVER);
+    static final Set<DhcpL2RelayCounterNames> SUPPORTED_COUNTERS = ImmutableSet.of(DhcpL2RelayCounterNames.DHCPDISCOVER,
+            DhcpL2RelayCounterNames.DHCPRELEASE, DhcpL2RelayCounterNames.DHCPDECLINE,
+            DhcpL2RelayCounterNames.DHCPREQUEST, DhcpL2RelayCounterNames.DHCPOFFER,
+            DhcpL2RelayCounterNames.DHCPACK, DhcpL2RelayCounterNames.DHCPNACK,
+            DhcpL2RelayCounterNames.PACKETS_TO_SERVER,
+            DhcpL2RelayCounterNames.PACKETS_FROM_SERVER);
     }

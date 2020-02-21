@@ -19,17 +19,16 @@ package org.opencord.dhcpl2relay.cli;
 
 import org.apache.karaf.shell.api.action.Argument;
 import org.apache.karaf.shell.api.action.Command;
-import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.apache.karaf.shell.api.action.Option;
+import org.apache.karaf.shell.api.action.lifecycle.Service;
 import org.onosproject.cli.AbstractShellCommand;
 import org.opencord.dhcpl2relay.DhcpL2RelayEvent;
-import org.opencord.dhcpl2relay.impl.DhcpL2RelayCounters;
+import org.opencord.dhcpl2relay.impl.DhcpL2RelayCounterNames;
 import org.opencord.dhcpl2relay.impl.DhcpL2RelayCountersIdentifier;
 import org.opencord.dhcpl2relay.impl.DhcpL2RelayCountersStore;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Display/Reset the DHCP L2 relay application statistics.
@@ -57,7 +56,7 @@ public class DhcpL2RelayStatsCommand extends AbstractShellCommand {
             description = "The counter to display (or reset). In case not specified, all counters\nwill be " +
                     "displayed (or reset in case the -r option is specified).",
             required = false, multiValued = false)
-    DhcpL2RelayCounters counter = null;
+    DhcpL2RelayCounterNames counter = null;
 
     @Override
     protected void doExecute() {
@@ -83,7 +82,8 @@ public class DhcpL2RelayStatsCommand extends AbstractShellCommand {
                 dhcpCounters.setCounter(subscriberId, counter, (long) 0);
             }
         } else {
-           Map<DhcpL2RelayCountersIdentifier, AtomicLong> countersMap = dhcpCounters.getCountersMap();
+           //Map<DhcpL2RelayCountersIdentifier, AtomicLong> countersMap = dhcpCounters.getCountersMap();
+           Map<DhcpL2RelayCountersIdentifier, Long> countersMap = dhcpCounters.getCounters().counters();
            if (countersMap.size() > 0) {
                if (counter == null) {
                    String jsonString = "";
@@ -92,12 +92,12 @@ public class DhcpL2RelayStatsCommand extends AbstractShellCommand {
                    } else {
                        print("%s [%s] :", dhcpCounters.NAME, subscriberId);
                    }
-                   DhcpL2RelayCounters[] counters = DhcpL2RelayCounters.values();
+                   DhcpL2RelayCounterNames[] counters = DhcpL2RelayCounterNames.values();
                    for (int i = 0; i < counters.length; i++) {
-                       DhcpL2RelayCounters counterType = counters[i];
-                       AtomicLong v = countersMap.get(new DhcpL2RelayCountersIdentifier(subscriberId, counterType));
+                       DhcpL2RelayCounterNames counterType = counters[i];
+                       Long v = countersMap.get(new DhcpL2RelayCountersIdentifier(subscriberId, counterType));
                        if (v == null) {
-                           v = new AtomicLong(0);
+                           v = 0L;
                        }
                        if (outputJson()) {
                            jsonString += String.format("\"%s\":%d", counterType, v.longValue());
@@ -114,9 +114,9 @@ public class DhcpL2RelayStatsCommand extends AbstractShellCommand {
                    }
                } else {
                    // Show only the specified counter
-                   AtomicLong v = countersMap.get(new DhcpL2RelayCountersIdentifier(subscriberId, counter));
+                   Long v = countersMap.get(new DhcpL2RelayCountersIdentifier(subscriberId, counter));
                    if (v == null) {
-                       v = new AtomicLong(0);
+                       v = 0L;
                    }
                    if (outputJson()) {
                        print("{\"%s\":%d}", counter, v.longValue());
@@ -131,10 +131,9 @@ public class DhcpL2RelayStatsCommand extends AbstractShellCommand {
        }
     }
 
-    void printCounter(DhcpL2RelayCounters c, AtomicLong a) {
+    void printCounter(DhcpL2RelayCounterNames c, long a) {
         // print in non-JSON format
         print("  %s %s %-4d", c,
-                String.join("", Collections.nCopies(50 - c.toString().length(), ".")),
-                a.longValue());
+                String.join("", Collections.nCopies(50 - c.toString().length(), ".")), a);
     }
 }

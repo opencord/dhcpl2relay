@@ -1,0 +1,188 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "02ae284d_1e0361f3",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 827,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-02-25T08:23:59Z",
+      "side": 1,
+      "message": "please move this before or after the check for null packet, avoids useless computation.",
+      "range": {
+        "startLine": 824,
+        "startChar": 0,
+        "endLine": 827,
+        "endChar": 13
+      },
+      "revId": "b1039f6dcd68405414c6574edac8e2286c2bdd6f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f48031e1_9d0531af",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 831,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-02-25T08:23:59Z",
+      "side": 1,
+      "message": "please void double comment and useless new line and spaces",
+      "range": {
+        "startLine": 831,
+        "startChar": 0,
+        "endLine": 831,
+        "endChar": 76
+      },
+      "revId": "b1039f6dcd68405414c6574edac8e2286c2bdd6f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b216b72d_22040538",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 835,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-02-25T08:23:59Z",
+      "side": 1,
+      "message": "this could be moved before the DHCPACK check and move the sub !\u003d null check within that same if statement with and \u0026\u0026",
+      "range": {
+        "startLine": 834,
+        "startChar": 0,
+        "endLine": 835,
+        "endChar": 77
+      },
+      "revId": "b1039f6dcd68405414c6574edac8e2286c2bdd6f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8939379a_9b83f623",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 849,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-02-25T08:23:59Z",
+      "side": 1,
+      "message": "catching a whole Exception without specific type and doing nothing is REALLY bad. please avoid this pattern, catch the right type of exception and log/return or re-throw.",
+      "range": {
+        "startLine": 849,
+        "startChar": 0,
+        "endLine": 849,
+        "endChar": 49
+      },
+      "revId": "b1039f6dcd68405414c6574edac8e2286c2bdd6f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c6a9bebf_bd30e4d0",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 854,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-02-25T08:23:59Z",
+      "side": 1,
+      "message": "remove logs used for programming",
+      "range": {
+        "startLine": 853,
+        "startChar": 0,
+        "endLine": 854,
+        "endChar": 93
+      },
+      "revId": "b1039f6dcd68405414c6574edac8e2286c2bdd6f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5b5ed598_525c295c",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 857,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-02-25T08:23:59Z",
+      "side": 1,
+      "message": "the circuit id here will be \"None\" if there is an error above, please rethink the logic.",
+      "range": {
+        "startLine": 857,
+        "startChar": 56,
+        "endLine": 857,
+        "endChar": 65
+      },
+      "revId": "b1039f6dcd68405414c6574edac8e2286c2bdd6f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2cdd822b_20cd57b5",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 861,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-02-25T08:23:59Z",
+      "side": 1,
+      "message": "remove logs used for programming",
+      "range": {
+        "startLine": 861,
+        "startChar": 16,
+        "endLine": 861,
+        "endChar": 84
+      },
+      "revId": "b1039f6dcd68405414c6574edac8e2286c2bdd6f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a8f8d5e1_6a73313c",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 998,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-02-25T08:23:59Z",
+      "side": 1,
+      "message": "proper formatting please. Aslo you are making the check for packet type again",
+      "range": {
+        "startLine": 996,
+        "startChar": 0,
+        "endLine": 998,
+        "endChar": 13
+      },
+      "revId": "b1039f6dcd68405414c6574edac8e2286c2bdd6f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

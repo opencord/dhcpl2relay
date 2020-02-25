@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ad4f9927_818871bb",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 852,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-02-25T10:37:15Z",
+      "side": 1,
+      "message": "please include the packet here with ... packet {}\", packet);",
+      "range": {
+        "startLine": 852,
+        "startChar": 83,
+        "endLine": 852,
+        "endChar": 92
+      },
+      "revId": "493858fc3d7e65bf261cf0383c4c0a8fa129cee0",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ce59d6a3_56c52125",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 856,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-02-25T10:37:15Z",
+      "side": 1,
+      "message": "parentheses are not needed for exceptions",
+      "range": {
+        "startLine": 856,
+        "startChar": 85,
+        "endLine": 856,
+        "endChar": 87
+      },
+      "revId": "493858fc3d7e65bf261cf0383c4c0a8fa129cee0",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "0d2f222d_dab4ca5e",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 856,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-02-25T10:37:15Z",
+      "side": 1,
+      "message": "add a return statement after this.",
+      "range": {
+        "startLine": 856,
+        "startChar": 28,
+        "endLine": 856,
+        "endChar": 93
+      },
+      "revId": "493858fc3d7e65bf261cf0383c4c0a8fa129cee0",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

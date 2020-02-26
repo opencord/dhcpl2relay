@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "932b349d_f57ba3f0",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 857,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2020-02-26T13:11:17Z",
+      "side": 1,
+      "message": "I don\u0027t think we need this check. Why can\u0027t we send the option 82 for the DHCPRELEASE message as well? My understanding is that anything that goes to the DhcpServer from the RelayAgent should have Option 82",
+      "revId": "21f9e50c87bd4b6b6b5d08e04f66a99d98723c0f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "eaedf62b_a322c36b",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 904,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2020-02-26T13:11:17Z",
+      "side": 1,
+      "message": "at line 919 below, we are getting the entry again from Sadis, why can\u0027t we use that itself. Just to bring that line of code here. Also check if entry is null, we could just return from the function with an error level log",
+      "revId": "21f9e50c87bd4b6b6b5d08e04f66a99d98723c0f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

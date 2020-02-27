@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ad2c4c26_9badddb9",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 875,
+      "author": {
+        "id": 1000097
+      },
+      "writtenOn": "2020-02-27T09:43:30Z",
+      "side": 1,
+      "message": "Logging of the entire packet should only be at trace level.\nHere you could log only some important info like etnry.id() and dhcpPacket.getPacketType() which can uniquely identify the subscriber and transaction",
+      "revId": "2cb743197190cb5b105f2e0094303e33790567a6",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

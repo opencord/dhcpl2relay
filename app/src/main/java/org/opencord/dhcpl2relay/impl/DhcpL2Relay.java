@@ -1079,9 +1079,11 @@ public class DhcpL2Relay
                     DeviceId deviceId = event.subject().id();
                     if (!deviceService.isAvailable(deviceId)) {
                         log.warn("Device {} is not available ", deviceId);
-                        allocationMap.entrySet().removeIf(entry -> deviceId.equals(entry.getValue().
-                                location().deviceId()));
-                        log.info("Device {} is removed from DHCP allocationmap ", deviceId);
+                        if (deviceService.getPorts(deviceId).isEmpty()) {
+                            allocationMap.entrySet().removeIf(entry -> deviceId.equals(entry.getValue().
+                                    location().deviceId()));
+                            log.info("Device {} is removed from DHCP allocationmap ", deviceId);
+                        }
                     }
                     break;
                 case PORT_REMOVED:

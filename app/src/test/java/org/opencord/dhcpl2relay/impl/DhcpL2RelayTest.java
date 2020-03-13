@@ -151,6 +151,39 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     }
 
     /**
+     * Tests the DHCP relay app by sending DHCP Nak Packet.
+     *
+     * @throws Exception when an unhandled error occurs
+     */
+    @Test
+    public void testDhcpNak() {
+
+        Ethernet nakPacket = constructDhcpNakPacket(SERVER_MAC,
+                CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
+
+        sendPacket(nakPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        Ethernet nakRelayed = (Ethernet) getPacket();
+        compareServerPackets(nakPacket, nakRelayed);
+    }
+
+    /**
+     * Tests the DHCP relay app by sending DHCP Decline Packet.
+     *
+     * @throws Exception when an unhandled error occurs
+     */
+    @Test
+    public void testDhcpDecline() {
+
+        Ethernet declinePacket = constructDhcpDeclinePacket(CLIENT_MAC);
+
+        sendPacket(declinePacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+
+        Ethernet declineRelayed = (Ethernet) getPacket();
+        compareClientPackets(declinePacket, declineRelayed);
+    }
+
+    /**
      * Tests the DHCP global counters.
      */
     @Test

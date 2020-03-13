@@ -784,10 +784,21 @@ public class DhcpL2Relay
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPACK"));
                     break;
                 case DHCPDECLINE:
+                    Ethernet ethernetPacketDecline =
+                            processDhcpPacketFromClient(context, packet);
+                    if (ethernetPacketDecline != null) {
+                        forwardPacket(ethernetPacketDecline, context);
+                    }
                     entry = getSubscriberInfoFromClient(context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPDECLINE"));
                     break;
                 case DHCPNAK:
+                    //reply to dhcp client.
+                    Ethernet ethernetPacketNak =
+                            processDhcpPacketFromServer(context, packet);
+                    if (ethernetPacketNak != null) {
+                        sendReply(ethernetPacketNak, dhcpPayload, context);
+                    }
                     entry = getSubscriberInfoFromServer(dhcpPayload, context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounters.valueOf("DHCPNACK"));
                     break;

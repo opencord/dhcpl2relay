@@ -729,6 +729,46 @@ public class DhcpL2RelayTestBase {
     }
 
     /**
+     * Constructs DHCP Nak Packet.
+     *
+     * @return Ethernet packet
+     */
+    Ethernet constructDhcpNakPacket(MacAddress servMac, MacAddress clientMac,
+                                    String ipAddress, String dhcpClientIpAddress) {
+
+        Ethernet pkt = construcEthernetPacket(servMac, clientMac, ipAddress, DHCP.OPCODE_REPLY,
+                clientMac, Ip4Address.valueOf(dhcpClientIpAddress));
+
+        IPv4 ipv4Packet = (IPv4) pkt.getPayload();
+        UDP udpPacket = (UDP) ipv4Packet.getPayload();
+        DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
+
+        dhcpPacket.setOptions(constructDhcpOptions(DHCP.MsgType.DHCPNAK));
+
+        return pkt;
+    }
+
+    /**
+     * Constructs DHCP Decline Packet.
+     *
+     * @return Ethernet packet
+     */
+    Ethernet constructDhcpDeclinePacket(MacAddress clientMac) {
+
+        Ethernet pkt = construcEthernetPacket(clientMac, MacAddress.BROADCAST,
+                "255.255.255.255", DHCP.OPCODE_REQUEST, MacAddress.NONE,
+                Ip4Address.valueOf("0.0.0.0"));
+
+        IPv4 ipv4Packet = (IPv4) pkt.getPayload();
+        UDP udpPacket = (UDP) ipv4Packet.getPayload();
+        DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
+
+        dhcpPacket.setOptions(constructDhcpOptions(DHCP.MsgType.DHCPDECLINE));
+
+        return pkt;
+    }
+
+    /**
      * Constructs DHCP Discover Options.
      *
      * @return Ethernet packet

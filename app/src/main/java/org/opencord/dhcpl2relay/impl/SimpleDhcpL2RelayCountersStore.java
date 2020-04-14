@@ -325,7 +325,7 @@ public class SimpleDhcpL2RelayCountersStore extends AbstractStore<DhcpL2RelayEve
                 subscriberId = counterKey.counterClassKey;
             }
 
-            delegate.notify(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.STATS_UPDATE, null, null,
+            notifyDelegate(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.STATS_UPDATE, null, null,
                     new AbstractMap.SimpleEntry<>(counterKey.counterTypeKey.toString(),
                             new AtomicLong(counterValue)), subscriberId));
         });

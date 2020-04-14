@@ -953,12 +953,14 @@ public class DhcpL2Relay
 
                 UniTagInformation uniTagInformation = getUnitagInformationFromPacketContext(context, sub);
                 if (uniTagInformation == null) {
-                    log.warn("Missing service information for connectPoint {} / cTag {}",
-                            context.inPacket().receivedFrom(),  context.inPacket().parsed().getVlanID());
-                    return null;
+                    continue;
                 }
                 return cp;
             }
+            // no sadis config found for this connectPoint/vlan
+            log.warn("Missing service information for connectPoint {} / cTag {}",
+                    context.inPacket().receivedFrom(),  context.inPacket().parsed().getVlanID());
+
             return null;
         }
 

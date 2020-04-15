@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "716d0f1e_68345487",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 250,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-04-15T09:41:03Z",
+      "side": 1,
+      "message": "I\u0027m wondering if an EventuallyConsistentMap would still be ok here. The allocation is something that arrives from the southbound. Did you go for a strongly consistent  to ensure that we have everything we observed ?",
+      "range": {
+        "startLine": 250,
+        "startChar": 65,
+        "endLine": 250,
+        "endChar": 85
+      },
+      "revId": "e14716753c832cbb75dc7c1b3ba018527fcfe3af",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6140d1e4_ac3d9d51",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
         "patchSetId": 4
@@ -42,6 +65,23 @@
         "endLine": 1147,
         "endChar": 13
       },
+      "revId": "e14716753c832cbb75dc7c1b3ba018527fcfe3af",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2457f8df_ebd4fc1d",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 1157,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-04-15T09:41:03Z",
+      "side": 1,
+      "message": "maybe while you are at it it\u0027s worth adding if the device is available or not in this log",
       "revId": "e14716753c832cbb75dc7c1b3ba018527fcfe3af",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": false

@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6140d1e4_ac3d9d51",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 357,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-04-15T08:58:47Z",
+      "side": 1,
+      "message": "I believe there is already a function in Versioned doing this. Is that accessible ?",
+      "range": {
+        "startLine": 352,
+        "startChar": 0,
+        "endLine": 357,
+        "endChar": 5
+      },
+      "revId": "e14716753c832cbb75dc7c1b3ba018527fcfe3af",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5e2a5ea4_214a674d",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 1147,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-04-15T08:58:47Z",
+      "side": 1,
+      "message": "maybe better to use Object.equals. You can also cache the node id",
+      "range": {
+        "startLine": 1145,
+        "startChar": 0,
+        "endLine": 1147,
+        "endChar": 13
+      },
+      "revId": "e14716753c832cbb75dc7c1b3ba018527fcfe3af",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

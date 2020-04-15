@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "fcd73b2d_6b87fdbb",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 250,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T17:07:41Z",
+      "side": 1,
+      "message": "You probably could use an ECMap here. I\u0027d suggest we go with the consistent map for now and it can always be optimized in the future if there are performance issues.",
+      "parentUuid": "716d0f1e_68345487",
+      "range": {
+        "startLine": 250,
+        "startChar": 65,
+        "endLine": 250,
+        "endChar": 85
+      },
+      "revId": "e14716753c832cbb75dc7c1b3ba018527fcfe3af",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6140d1e4_ac3d9d51",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
         "patchSetId": 4
@@ -36,6 +60,30 @@
       "writtenOn": "2020-04-15T08:58:47Z",
       "side": 1,
       "message": "I believe there is already a function in Versioned doing this. Is that accessible ?",
+      "range": {
+        "startLine": 352,
+        "startChar": 0,
+        "endLine": 357,
+        "endChar": 5
+      },
+      "revId": "e14716753c832cbb75dc7c1b3ba018527fcfe3af",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4683efed_4678eb8c",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 357,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T17:07:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6140d1e4_ac3d9d51",
       "range": {
         "startLine": 352,
         "startChar": 0,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "69e8bbe1_00d5f5ab",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 1147,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T17:07:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5e2a5ea4_214a674d",
+      "range": {
+        "startLine": 1145,
+        "startChar": 0,
+        "endLine": 1147,
+        "endChar": 13
+      },
+      "revId": "e14716753c832cbb75dc7c1b3ba018527fcfe3af",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2457f8df_ebd4fc1d",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
         "patchSetId": 4
@@ -82,6 +154,24 @@
       "writtenOn": "2020-04-15T09:41:03Z",
       "side": 1,
       "message": "maybe while you are at it it\u0027s worth adding if the device is available or not in this log",
+      "revId": "e14716753c832cbb75dc7c1b3ba018527fcfe3af",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8ea85caf_2f71f766",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 1157,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T17:07:41Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2457f8df_ebd4fc1d",
       "revId": "e14716753c832cbb75dc7c1b3ba018527fcfe3af",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": false

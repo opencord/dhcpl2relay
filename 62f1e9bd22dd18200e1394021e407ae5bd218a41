@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "e5b56792_d10c5804",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/cli/DhcpL2RelayStatsCommand.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T18:10:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bd3524b1_25c74657",
+      "range": {
+        "startLine": 85,
+        "startChar": 0,
+        "endLine": 85,
+        "endChar": 104
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c98217f7_f0932e8f",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/cli/DhcpL2RelayStatsCommand.java",
         "patchSetId": 3
@@ -36,6 +60,30 @@
       "writtenOn": "2020-04-15T10:02:31Z",
       "side": 1,
       "message": "I know it\u0027s not strictly part of this patch but please rename with better names.",
+      "range": {
+        "startLine": 134,
+        "startChar": 21,
+        "endLine": 134,
+        "endChar": 58
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "957d934f_4cfd5236",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/cli/DhcpL2RelayStatsCommand.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T18:10:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c98217f7_f0932e8f",
       "range": {
         "startLine": 134,
         "startChar": 21,
@@ -94,6 +142,30 @@
     },
     {
       "key": {
+        "uuid": "3973591c_682995d6",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T18:10:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "6dcf8151_25ff4b63",
+      "range": {
+        "startLine": 31,
+        "startChar": 0,
+        "endLine": 36,
+        "endChar": 74
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "92b66187_5b1576fc",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersStore.java",
         "patchSetId": 3
@@ -140,6 +212,30 @@
     },
     {
       "key": {
+        "uuid": "1ff92e35_f46c840c",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T18:10:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2b1ed9c0_8bf41c2a",
+      "range": {
+        "startLine": 60,
+        "startChar": 0,
+        "endLine": 60,
+        "endChar": 77
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a9b0caed_79b602ca",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
         "patchSetId": 3
@@ -151,6 +247,30 @@
       "writtenOn": "2020-04-15T10:02:31Z",
       "side": 1,
       "message": "with a pool of 1 executer the sync task and the publisher task will be forcefully scheduled one after the other. is that the behaviour you want ?",
+      "range": {
+        "startLine": 136,
+        "startChar": 8,
+        "endLine": 136,
+        "endChar": 55
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ba40a42_1c530196",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T18:10:34Z",
+      "side": 1,
+      "message": "Yeah I think this is OK, the task duration should be much smaller than the scheduling period.",
+      "parentUuid": "a9b0caed_79b602ca",
       "range": {
         "startLine": 136,
         "startChar": 8,
@@ -186,6 +306,30 @@
     },
     {
       "key": {
+        "uuid": "426b60f8_2b20ff2d",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T18:10:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "42f9c631_9bef4599",
+      "range": {
+        "startLine": 162,
+        "startChar": 41,
+        "endLine": 162,
+        "endChar": 62
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "72dbf56f_b28e37fa",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
         "patchSetId": 3
@@ -197,6 +341,30 @@
       "writtenOn": "2020-04-15T10:02:31Z",
       "side": 1,
       "message": "same",
+      "range": {
+        "startLine": 166,
+        "startChar": 34,
+        "endLine": 166,
+        "endChar": 52
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4a68d24f_8f0d80db",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 166,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T18:10:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "72dbf56f_b28e37fa",
       "range": {
         "startLine": 166,
         "startChar": 34,
@@ -232,6 +400,30 @@
     },
     {
       "key": {
+        "uuid": "75eee6bd_508a5c70",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T18:10:34Z",
+      "side": 1,
+      "message": "yeah added this",
+      "parentUuid": "81a9686b_ba99bd73",
+      "range": {
+        "startLine": 158,
+        "startChar": 0,
+        "endLine": 169,
+        "endChar": 5
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "821072fb_63aef63a",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
         "patchSetId": 3
@@ -243,6 +435,30 @@
       "writtenOn": "2020-04-15T10:16:09Z",
       "side": 1,
       "message": "Who is using it ? Should we set the dirty bits and sync ?",
+      "range": {
+        "startLine": 239,
+        "startChar": 16,
+        "endLine": 239,
+        "endChar": 26
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "35452105_112f7a40",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 239,
+      "author": {
+        "id": 1000005
+      },
+      "writtenOn": "2020-04-15T18:10:34Z",
+      "side": 1,
+      "message": "It\u0027s used by the CLI to reset a specific counter. Probably not the best API that allows setting the counter to an arbitrary value though.\n\nYes, added the sync.",
+      "parentUuid": "821072fb_63aef63a",
       "range": {
         "startLine": 239,
         "startChar": 16,

@@ -1,0 +1,142 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c98217f7_f0932e8f",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/cli/DhcpL2RelayStatsCommand.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-04-15T10:02:31Z",
+      "side": 1,
+      "message": "I know it\u0027s not strictly part of this patch but please rename with better names.",
+      "range": {
+        "startLine": 134,
+        "startChar": 21,
+        "endLine": 134,
+        "endChar": 58
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6bda03e0_2caf0950",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-04-15T10:02:31Z",
+      "side": 1,
+      "message": "probably worth removing",
+      "range": {
+        "startLine": 31,
+        "startChar": 0,
+        "endLine": 36,
+        "endChar": 74
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "92b66187_5b1576fc",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-04-15T10:02:31Z",
+      "side": 1,
+      "message": "same",
+      "range": {
+        "startLine": 60,
+        "startChar": 0,
+        "endLine": 60,
+        "endChar": 77
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a9b0caed_79b602ca",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-04-15T10:02:31Z",
+      "side": 1,
+      "message": "with a pool of 1 executer the sync task and the publisher task will be forcefully scheduled one after the other. is that the behaviour you want ?",
+      "range": {
+        "startLine": 136,
+        "startChar": 8,
+        "endLine": 136,
+        "endChar": 55
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "42f9c631_9bef4599",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 162,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-04-15T10:02:31Z",
+      "side": 1,
+      "message": "use existing constant",
+      "range": {
+        "startLine": 162,
+        "startChar": 41,
+        "endLine": 162,
+        "endChar": 62
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "72dbf56f_b28e37fa",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/SimpleDhcpL2RelayCountersStore.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 166,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-04-15T10:02:31Z",
+      "side": 1,
+      "message": "same",
+      "range": {
+        "startLine": 166,
+        "startChar": 34,
+        "endLine": 166,
+        "endChar": 52
+      },
+      "revId": "62f1e9bd22dd18200e1394021e407ae5bd218a41",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

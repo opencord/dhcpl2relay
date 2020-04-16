@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "67ab86d1_1a401613",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 957,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-04-16T18:26:24Z",
+      "side": 1,
+      "message": "can we do it with \nif (uniTagInformation !\u003d null) {\n                    return cp\n                }\n\n?",
+      "range": {
+        "startLine": 955,
+        "startChar": 16,
+        "endLine": 957,
+        "endChar": 17
+      },
+      "revId": "121b5823ccae0bdf67434a5e8cd8af5373197706",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

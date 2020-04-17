@@ -15,7 +15,6 @@
  */
 package org.opencord.dhcpl2relay.impl;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -302,7 +301,7 @@ public class DhcpL2Relay
 
     @Override
     public Map<String, DhcpAllocationInfo> getAllocationInfo() {
-        return ImmutableMap.copyOf(allocations.asJavaMap());
+        return allocations.asJavaMap();
     }
 
     /**

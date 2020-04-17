@@ -16,6 +16,24 @@
       "revId": "94f98fb07ab819bba1d51d5d80df42b349f8fe7a",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bea92029_f42e5dc0",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/cli/DhcpL2RelayClearAllocationsCommand.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1000007
+      },
+      "writtenOn": "2020-04-17T21:49:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3364242f_6efd11f1",
+      "revId": "94f98fb07ab819bba1d51d5d80df42b349f8fe7a",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
     }
   ]
 }

@@ -17,6 +17,7 @@
 package org.opencord.dhcpl2relay;
 
 import org.onosproject.event.ListenerService;
+import org.onosproject.net.ConnectPoint;
 
 import java.util.Map;
 
@@ -32,4 +33,16 @@ public interface DhcpL2RelayService extends
      * @return map of subscriber ID to DHCP allocation information
      */
     Map<String, DhcpAllocationInfo> getAllocationInfo();
+
+    /**
+     * Remove all the DHCP leases that have been allocated from the local state.
+     */
+    void clearAllocations();
+
+    /**
+     * Remove a single DHCP lease from the local state.
+     * @param cp the ConnectPoint associated with this lease
+     * @return boolean
+     */
+    boolean removeAllocationByConnectPoint(ConnectPoint cp);
 }

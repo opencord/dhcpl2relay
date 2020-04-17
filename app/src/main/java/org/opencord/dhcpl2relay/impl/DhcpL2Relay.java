@@ -1058,6 +1058,22 @@ public class DhcpL2Relay
                 .forEach(allocations::remove);
     }
 
+    public void clearAllocations() {
+        allocations.clear();
+    }
+
+
+    public boolean removeAllocationByConnectPoint(ConnectPoint cp) {
+        for (String key : allocations.keySet()) {
+            DhcpAllocationInfo entry = allocations.asJavaMap().get(key);
+            if (entry.location().equals(cp)) {
+                allocations.remove(key);
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Handles Device status change for the devices which connect
      * to the DHCP server.

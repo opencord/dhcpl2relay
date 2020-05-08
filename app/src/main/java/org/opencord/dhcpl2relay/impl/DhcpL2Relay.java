@@ -34,6 +34,7 @@ import org.onlab.util.Tools;
 import org.onosproject.cfg.ComponentConfigService;
 import org.onosproject.cluster.ClusterService;
 import org.onosproject.cluster.LeadershipService;
+import org.onosproject.cluster.NodeId;
 import org.onosproject.core.ApplicationId;
 import org.onosproject.core.CoreService;
 import org.onosproject.event.AbstractListenerManager;
@@ -98,7 +99,6 @@ import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executors;
@@ -326,7 +326,7 @@ public class DhcpL2Relay
             if (dhcpConnectPoints != null) {
                 // find a connect point through a device for which we are master
                 for (ConnectPoint cp: dhcpConnectPoints) {
-                    if (mastershipService.isLocalMaster(cp.deviceId())) {
+                    if (isLocalLeader(cp.deviceId())) {
                         if (deviceService.isAvailable(cp.deviceId())) {
                             dhcpServerConnectPoint.set(cp);
                         }
@@ -433,7 +433,7 @@ public class DhcpL2Relay
 
             log.debug("getUplinkPortsOfOlts: Checking mastership of {}", d);
             // do only for devices for which we are the master
-            if (!mastershipService.isLocalMaster(d.id())) {
+            if (!isLocalLeader(d.id())) {
                 continue;
             }
 
@@ -458,10 +458,6 @@ public class DhcpL2Relay
      */
     private boolean isUplinkPortOfOlt(DeviceId dId, Port p) {
         log.debug("isUplinkPortOfOlt: DeviceId: {} Port: {}", dId, p);
-        // do only for devices for which we are the master
-        if (!mastershipService.isLocalMaster(dId)) {
-            return false;
-        }
 
         Device d = deviceService.getDevice(dId);
         SubscriberAndDeviceInformation deviceInfo = subsService.get(d.serialNumber());
@@ -1074,6 +1070,31 @@ public class DhcpL2Relay
         return false;
     }
 
+
+    /**
+     * Checks for mastership or falls back to leadership on deviceId.
+     * If the node is not master and device is available
+     * or the device is not available and the leader is different
+     * we let master or leader else handle it
+     * Leadership on the device topic is needed because the master can be NONE
+     * in case the device went away, we still need to handle events
+     * consistently
+     */
+    private boolean isLocalLeader(DeviceId deviceId) {
+        if (!mastershipService.isLocalMaster(deviceId)) {
+            // When the device is available we just check the mastership
+            if (deviceService.isAvailable(deviceId)) {
+                return false;
+            }
+            // Fallback with Leadership service - device id is used as topic
+            NodeId leader = leadershipService.runForLeadership(
+                    deviceId.toString()).leaderNodeId();
+            // Verify if this node is the leader
+            return clusterService.getLocalNode().id().equals(leader);
+        }
+        return true;
+    }
+
     /**
      * Handles Device status change for the devices which connect
      * to the DHCP server.
@@ -1081,12 +1102,14 @@ public class DhcpL2Relay
     private class InnerDeviceListener implements DeviceListener {
         @Override
         public void event(DeviceEvent event) {
-            // ensure only one instance handles the event
-            if (!Objects.equals(leadershipService.getLeader(LEADER_TOPIC), clusterService.getLocalNode().id())) {
+            final DeviceId deviceId = event.subject().id();
+
+            // Ensure only one instance handles the event
+            if (!isLocalLeader(deviceId)) {
                 return;
             }
 
-            final DeviceId deviceId = event.subject().id();
+            log.debug("Handling event {}", event);
 
             switch (event.type()) {
                 case DEVICE_REMOVED:

@@ -22,6 +22,30 @@
       "revId": "ab346516c701a4150f62b1b3559f1900e1c2ecd7",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ef0cded6_cf73d242",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 464,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-05-08T17:32:36Z",
+      "side": 0,
+      "message": "this is duplicate code, the method gets called only from inside the listener where we already do the check.",
+      "parentUuid": "39a8076c_fdeb55f7",
+      "range": {
+        "startLine": 461,
+        "startChar": 0,
+        "endLine": 464,
+        "endChar": 9
+      },
+      "revId": "ab346516c701a4150f62b1b3559f1900e1c2ecd7",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
     }
   ]
 }

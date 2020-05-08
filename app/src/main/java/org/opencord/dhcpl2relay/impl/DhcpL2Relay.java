@@ -458,10 +458,6 @@ public class DhcpL2Relay
      */
     private boolean isUplinkPortOfOlt(DeviceId dId, Port p) {
         log.debug("isUplinkPortOfOlt: DeviceId: {} Port: {}", dId, p);
-        // do only for devices for which we are the master
-        if (!mastershipService.isLocalMaster(dId)) {
-            return false;
-        }
 
         Device d = deviceService.getDevice(dId);
         SubscriberAndDeviceInformation deviceInfo = subsService.get(d.serialNumber());
@@ -1081,12 +1077,24 @@ public class DhcpL2Relay
     private class InnerDeviceListener implements DeviceListener {
         @Override
         public void event(DeviceEvent event) {
+            final DeviceId deviceId = event.subject().id();
+
             // ensure only one instance handles the event
-            if (!Objects.equals(leadershipService.getLeader(LEADER_TOPIC), clusterService.getLocalNode().id())) {
+            // if the device is available and the node is not  master
+            // or the device is not available and the leader is different
+            // we let master or leader else handle it
+            // leadership on the topic is needed because the master can be NONE
+            // in case the device went away, we still need to handle events
+            // consistently
+            if ((deviceService.isAvailable(deviceId) &&
+                    !mastershipService.isLocalMaster(deviceId)) ||
+                    (!deviceService.isAvailable(deviceId) &&
+                            !Objects.equals(leadershipService.getLeader(deviceId.toString()),
+                                       clusterService.getLocalNode().id()))) {
                 return;
             }
 
-            final DeviceId deviceId = event.subject().id();
+            log.debug("Handling event {}", event);
 
             switch (event.type()) {
                 case DEVICE_REMOVED:

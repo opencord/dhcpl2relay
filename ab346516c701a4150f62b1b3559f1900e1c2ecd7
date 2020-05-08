@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "39a8076c_fdeb55f7",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 464,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-05-08T17:27:00Z",
+      "side": 0,
+      "message": "don\u0027t remove but just substitute the calls with the new isLocalLeader.\nPlease check elsewhere in the code",
+      "range": {
+        "startLine": 461,
+        "startChar": 0,
+        "endLine": 464,
+        "endChar": 9
+      },
+      "revId": "ab346516c701a4150f62b1b3559f1900e1c2ecd7",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

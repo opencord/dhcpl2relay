@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d8ad7593_3d0df893",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1095,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-05-08T17:27:00Z",
+      "side": 1,
+      "message": "Substitute with this code, we made long time ago:\n\nhttps://github.com/opencord/mcast/blob/e48900104f871d777c1c800c02a1014fa29b656f/app/src/main/java/org/opencord/cordmcast/impl/CordMcast.java#L733",
+      "range": {
+        "startLine": 1081,
+        "startChar": 0,
+        "endLine": 1095,
+        "endChar": 13
+      },
+      "revId": "957a3aca4b3dc339148c2f58d11cfcb307a8b66e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    }
+  ]
+}

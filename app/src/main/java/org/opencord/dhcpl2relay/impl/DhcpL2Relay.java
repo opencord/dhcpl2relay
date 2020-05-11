@@ -131,7 +131,6 @@ public class DhcpL2Relay
     public static final String DHCP_L2RELAY_APP = "org.opencord.dhcpl2relay";
     private static final String HOST_LOC_PROVIDER =
             "org.onosproject.provider.host.impl.HostLocationProvider";
-    private static final String LEADER_TOPIC = "dhcpl2relay-leader";
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final InternalConfigListener cfgListener =
             new InternalConfigListener();
@@ -239,8 +238,6 @@ public class DhcpL2Relay
                 .withApplicationId(appId)
                 .build();
 
-        leadershipService.runForLeadership(LEADER_TOPIC);
-
         dhcpL2RelayCounters.setDelegate(delegate);
 
         cfgService.addListener(cfgListener);
@@ -280,7 +277,6 @@ public class DhcpL2Relay
         deviceService.removeListener(deviceListener);
         mastershipService.removeListener(changeListener);
         eventDispatcher.removeSink(DhcpL2RelayEvent.class);
-        leadershipService.withdraw(LEADER_TOPIC);
         log.info("DHCP-L2-RELAY Stopped");
     }
 

@@ -34,8 +34,8 @@ public class DhcpL2RelayAllocationsCommand extends AbstractShellCommand {
         service.getAllocationInfo().forEach((key, value) -> {
             print("SubscriberId=%s,ConnectPoint=%s,State=%s,MAC=%s,CircuitId=%s" +
                             ",IP Allocated=%s,Allocation Timestamp=%s",
-                    key, value.location(), value.type(), value.macAddress().toString(), value.circuitId(),
-                    value.ipAddress().getIp4Address().toString(), value.allocationTime().toString());
+                    value.subscriberId(), value.location(), value.type(), value.macAddress().toString(),
+                    value.circuitId(), value.ipAddress().getIp4Address().toString(), value.allocationTime().toString());
         });
     }
 }

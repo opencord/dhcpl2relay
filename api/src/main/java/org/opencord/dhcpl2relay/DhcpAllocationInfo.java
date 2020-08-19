@@ -33,6 +33,7 @@ public class DhcpAllocationInfo {
     private IpAddress ip;
     private Instant allocationTime;
     private DHCP.MsgType type;
+    private String subscriberId;
 
     /**
      * Creates a new DHCP allocation info record.
@@ -42,15 +43,17 @@ public class DhcpAllocationInfo {
      * @param circuitId option 82 information
      * @param macAddress MAC address of client
      * @param ip IP of client if allocated
+     * @param subscriberId Sadis ID of a subscriber
      */
     public DhcpAllocationInfo(ConnectPoint location, DHCP.MsgType type,
-                              String circuitId, MacAddress macAddress, IpAddress ip) {
+                              String circuitId, MacAddress macAddress, IpAddress ip, String subscriberId) {
         this.location = location;
         this.type = type;
         this.circuitId = circuitId;
         this.macAddress = macAddress;
         this.ip = ip;
         this.allocationTime = Instant.now();
+        this.subscriberId = subscriberId;
     }
 
     /**
@@ -96,6 +99,15 @@ public class DhcpAllocationInfo {
      */
     public IpAddress ipAddress() {
         return ip;
+    }
+
+    /**
+     * SubscriberId of client if it has one.
+     *
+     * @return SubscriberId
+     */
+    public String subscriberId() {
+        return subscriberId;
     }
 
     /**

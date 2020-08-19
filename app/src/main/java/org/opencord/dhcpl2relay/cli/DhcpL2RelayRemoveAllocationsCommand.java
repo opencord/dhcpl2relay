@@ -53,7 +53,7 @@ public class DhcpL2RelayRemoveAllocationsCommand extends AbstractShellCommand {
         PortNumber port = PortNumber.portNumber(strPort);
         ConnectPoint cp = new ConnectPoint(deviceId, port);
 
-        Boolean success = service.removeAllocationByConnectPoint(cp);
+        Boolean success = service.removeAllocationsByConnectPoint(cp);
 
         if (success) {
             print("DHCP Allocation removed for port %s on device %s", strPort, strDeviceId);

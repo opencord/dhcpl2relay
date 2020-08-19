@@ -44,5 +44,5 @@ public interface DhcpL2RelayService extends
      * @param cp the ConnectPoint associated with this lease
      * @return boolean
      */
-    boolean removeAllocationByConnectPoint(ConnectPoint cp);
+    boolean removeAllocationsByConnectPoint(ConnectPoint cp);
 }

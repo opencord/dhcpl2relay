@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "a8158c7c_dc2d7871",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 876,
+      "author": {
+        "id": 1000007
+      },
+      "writtenOn": "2020-08-20T18:41:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5fb0f3de_aa064a77",
+      "revId": "6e5b3e2fba9895613acd885dff1b692a3803702e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4c526543_1f124c46",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
         "patchSetId": 2
@@ -33,6 +51,24 @@
       "revId": "6e5b3e2fba9895613acd885dff1b692a3803702e",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "bc825f35_de40c44a",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 948,
+      "author": {
+        "id": 1000007
+      },
+      "writtenOn": "2020-08-20T18:41:13Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4c526543_1f124c46",
+      "revId": "6e5b3e2fba9895613acd885dff1b692a3803702e",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
     }
   ]
 }

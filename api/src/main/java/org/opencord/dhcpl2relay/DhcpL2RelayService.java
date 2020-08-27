@@ -40,8 +40,8 @@ public interface DhcpL2RelayService extends
     void clearAllocations();
 
     /**
-     * Remove a single DHCP lease from the local state.
-     * @param cp the ConnectPoint associated with this lease
+     * Remove multiple DHCP leases from the local state.
+     * @param cp the ConnectPoint associated with the set of leases.
      * @return boolean
      */
     boolean removeAllocationsByConnectPoint(ConnectPoint cp);

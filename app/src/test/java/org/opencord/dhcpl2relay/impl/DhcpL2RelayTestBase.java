@@ -32,19 +32,18 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-import com.google.common.collect.ImmutableSet;
 import org.onlab.packet.BasePacket;
 import org.onlab.packet.ChassisId;
 import org.onlab.packet.DHCP;
 import org.onlab.packet.Ethernet;
 import org.onlab.packet.IPv4;
-import org.onlab.packet.IpAddress;
 import org.onlab.packet.Ip4Address;
+import org.onlab.packet.IpAddress;
 import org.onlab.packet.MacAddress;
 import org.onlab.packet.UDP;
 import org.onlab.packet.VlanId;
@@ -94,9 +93,11 @@ import org.osgi.service.component.ComponentInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableSet;
+
 
 /**
- * Common methods for AAA app testing.
+ * Common methods for DHCP app testing.
  */
 public class DhcpL2RelayTestBase {
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -114,6 +115,7 @@ public class DhcpL2RelayTestBase {
     static final String DESTINATION_ADDRESS_IP = "1.1.1.1";
     static final String DHCP_CLIENT_IP_ADDRESS = "2.2.2.2";
     static final int UPLINK_PORT = 5;
+    static final int CLIENT_PORT = 1;
 
     static final String EXPECTED_IP = "10.2.0.2";
     static final String OLT_DEV_ID = "of:00000000000000aa";
@@ -123,7 +125,8 @@ public class DhcpL2RelayTestBase {
     static final MacAddress OLT_MAC_ADDRESS = MacAddress.valueOf("01:02:03:04:05:06");
 
     static final ConnectPoint SERVER_CONNECT_POINT =
-            ConnectPoint.deviceConnectPoint("of:00000000000000aa/5");
+            ConnectPoint.deviceConnectPoint("of:00000000000000aa/" +
+                                            String.valueOf(UPLINK_PORT));
 
     static final DefaultAnnotations DEVICE_ANNOTATIONS = DefaultAnnotations.builder()
             .set(AnnotationKeys.PROTOCOL, SCHEME_NAME.toUpperCase()).build();
@@ -162,21 +165,30 @@ public class DhcpL2RelayTestBase {
         private final Device device1 = new DhcpL2RelayTestBase.MockDevice(providerId, DEVICE_ID_1, Device.Type.SWITCH,
                 "foo.inc", "0", "0", OLT_DEV_ID, new ChassisId(),
                 DEVICE_ANNOTATIONS);
-
+        private final Device otherDevice = new DhcpL2RelayTestBase.MockDevice(
+                                                providerId,
+                                                DeviceId.deviceId("of:0000b86a974385f7"),
+                                                Device.Type.SWITCH,
+                                                "foo.inc", "0", "0", "EC1838000853", new ChassisId(),
+                                                DEVICE_ANNOTATIONS);
         @Override
         public Device getDevice(DeviceId devId) {
-            return device1;
-
+            if (devId.equals(DEVICE_ID_1)) {
+                return device1;
+            } else {
+                return otherDevice;
+            }
         }
 
         @Override
         public Port getPort(ConnectPoint cp) {
-            return new DhcpL2RelayTestBase.MockPort();
+            return new DhcpL2RelayTestBase.MockPort(cp);
         }
 
         @Override
         public Port getPort(DeviceId deviceId, PortNumber portNumber) {
-            return new DhcpL2RelayTestBase.MockPort();
+            return new DhcpL2RelayTestBase.MockPort(new ConnectPoint(deviceId,
+                                                                     portNumber));
         }
 
         @Override
@@ -200,7 +212,8 @@ public class DhcpL2RelayTestBase {
         @Override
         public Set<Host> getHostsByMac(MacAddress mac) {
 
-            HostLocation loc = new HostLocation(DEVICE_ID_1, PortNumber.portNumber(22), 0);
+            HostLocation loc = new HostLocation(DEVICE_ID_1, PortNumber
+                    .portNumber(CLIENT_PORT), 0);
 
             IpAddress ip = IpAddress.valueOf("10.100.200.10");
 
@@ -219,7 +232,11 @@ public class DhcpL2RelayTestBase {
     }
 
     class  MockPort implements Port {
+        private ConnectPoint cp;
 
+        public MockPort(ConnectPoint cp) {
+            this.cp = cp;
+        }
         @Override
         public boolean isEnabled() {
             return true;
@@ -249,7 +266,13 @@ public class DhcpL2RelayTestBase {
 
             @Override
             public String value(String val) {
-                return "PON 1/1";
+                if (cp.port().toLong() == 32) {
+                    return "ALPHe3d1cea3-1";
+                } else if (cp.port().toLong() == 4112) {
+                    return "ALPHe3d1ceb7-1";
+                } else {
+                    return "PON 1/1";
+                }
             }
             @Override
             public Set<String> keys() {
@@ -296,13 +319,30 @@ public class DhcpL2RelayTestBase {
         DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation device =
                 new DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation(OLT_DEV_ID, VlanId.NONE, VlanId.NONE, null,
                         null, OLT_MAC_ADDRESS, Ip4Address.valueOf("10.10.10.10"), UPLINK_PORT);
+        DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation otherDevice =
+                new DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation(
+                        "EC1838000853", VlanId.NONE, VlanId.NONE, null,
+                        null, OLT_MAC_ADDRESS, Ip4Address.valueOf("10.10.10.10"), UPLINK_PORT);
+
         DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation sub =
                 new DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation(CLIENT_ID_1, CLIENT_C_TAG,
                         CLIENT_S_TAG, CLIENT_NAS_PORT_ID, CLIENT_CIRCUIT_ID, null, null, -1);
+        DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation sub32 =
+                new DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation("ALPHe3d1cea3-1", VlanId.vlanId((short) 801),
+                        VlanId.vlanId((short) 111), CLIENT_NAS_PORT_ID, CLIENT_CIRCUIT_ID, null, null, -1);
+        DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation sub4112 =
+                new DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation("ALPHe3d1ceb7-1", VlanId.vlanId((short) 101),
+                        VlanId.vlanId((short) 222), CLIENT_NAS_PORT_ID, CLIENT_CIRCUIT_ID, null, null, -1);
         @Override
         public SubscriberAndDeviceInformation get(String id) {
             if (id.equals(OLT_DEV_ID)) {
                 return device;
+            } else if (id.equals("EC1838000853")) {
+                return otherDevice;
+            } else if (id.equals("ALPHe3d1cea3-1")) {
+                return sub32;
+            } else if (id.equals("ALPHe3d1ceb7-1")) {
+                return sub4112;
             } else {
                 return  sub;
             }
@@ -340,6 +380,18 @@ public class DhcpL2RelayTestBase {
                     .setIsDhcpRequired(true)
                     .build();
             uniTagInformationList.add(uniTagInformation);
+
+            if (id.equals("ALPHe3d1cea3-1")) {
+                // a second service on the same UNI
+                uniTagInformation = new UniTagInformation.Builder()
+                        .setPonCTag(VlanId.vlanId(((short) (cTag.toShort() + 1))))
+                        .setPonSTag(sTag)
+                        .setUsPonCTagPriority(CLIENT_C_PBIT)
+                        .setIsDhcpRequired(true)
+                        .build();
+                uniTagInformationList.add(uniTagInformation);
+            }
+
             this.setUniTagList(uniTagInformationList);
         }
     }
@@ -587,22 +639,18 @@ public class DhcpL2RelayTestBase {
         packetProcessor.process(context);
     }
 
-    /**
-     * Constructs an Ethernet packet with IP/UDP/DHCP payload.
-     *
-     * @return Ethernet packet
-     */
-    private Ethernet construcEthernetPacket(MacAddress srcMac, MacAddress dstMac,
+    private Ethernet constructEthernetPacket(MacAddress srcMac, MacAddress dstMac,
                                                 String dstIp, byte dhcpReqRsp,
                                                 MacAddress clientHwAddress,
-                                                Ip4Address dhcpClientIpAddress) {
+                                                Ip4Address dhcpClientIpAddress,
+                                                VlanId clientVlan, short clientPbit) {
         // Ethernet Frame.
         Ethernet ethPkt = new Ethernet();
         ethPkt.setSourceMACAddress(srcMac);
         ethPkt.setDestinationMACAddress(dstMac);
         ethPkt.setEtherType(Ethernet.TYPE_IPV4);
-        ethPkt.setVlanID(CLIENT_C_TAG.toShort());
-        ethPkt.setPriorityCode((byte) CLIENT_C_PBIT);
+        ethPkt.setVlanID(clientVlan.toShort());
+        ethPkt.setPriorityCode((byte) clientPbit);
 
         if (DHCP.OPCODE_REPLY == dhcpReqRsp) {
             ethPkt.setQinQPriorityCode((byte) 3);
@@ -646,6 +694,23 @@ public class DhcpL2RelayTestBase {
         ethPkt.setPayload(ipv4Reply);
 
         return ethPkt;
+
+    }
+
+    /**
+     * Constructs an Ethernet packet with IP/UDP/DHCP payload and client
+     * VLAN information.
+     *
+     * @return Ethernet packet
+     */
+    private Ethernet construcEthernetPacket(MacAddress srcMac, MacAddress dstMac,
+                                            String dstIp, byte dhcpReqRsp,
+                                            MacAddress clientHwAddress,
+                                            Ip4Address dhcpClientIpAddress) {
+        return constructEthernetPacket(srcMac, dstMac, dstIp, dhcpReqRsp,
+                                       clientHwAddress, dhcpClientIpAddress,
+                                       CLIENT_C_TAG, CLIENT_C_PBIT);
+
     }
 
     /**
@@ -654,10 +719,29 @@ public class DhcpL2RelayTestBase {
      * @return Ethernet packet
      */
     Ethernet constructDhcpDiscoverPacket(MacAddress clientMac) {
-
         Ethernet pkt = construcEthernetPacket(clientMac, MacAddress.BROADCAST,
-                "255.255.255.255", DHCP.OPCODE_REQUEST, MacAddress.NONE,
+                "255.255.255.255", DHCP.OPCODE_REQUEST, clientMac,
                 Ip4Address.valueOf("0.0.0.0"));
+
+        IPv4 ipv4Packet = (IPv4) pkt.getPayload();
+        UDP udpPacket = (UDP) ipv4Packet.getPayload();
+        DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
+
+        dhcpPacket.setOptions(constructDhcpOptions(DHCP.MsgType.DHCPDISCOVER));
+
+        return pkt;
+    }
+
+    /**
+     * Constructs DHCP Discover Packet with client VLAN information.
+     *
+     * @return Ethernet packet
+     */
+    Ethernet constructDhcpDiscoverPacket(MacAddress clientMac, VlanId clientVlan,
+                                         short clientPbit) {
+        Ethernet pkt = constructEthernetPacket(clientMac, MacAddress.BROADCAST,
+                "255.255.255.255", DHCP.OPCODE_REQUEST, clientMac,
+                Ip4Address.valueOf("0.0.0.0"), clientVlan, clientPbit);
 
         IPv4 ipv4Packet = (IPv4) pkt.getPayload();
         UDP udpPacket = (UDP) ipv4Packet.getPayload();
@@ -674,9 +758,8 @@ public class DhcpL2RelayTestBase {
      * @return Ethernet packet
      */
     Ethernet constructDhcpRequestPacket(MacAddress clientMac) {
-
         Ethernet pkt = construcEthernetPacket(clientMac, MacAddress.BROADCAST,
-                "255.255.255.255", DHCP.OPCODE_REQUEST, MacAddress.NONE,
+                "255.255.255.255", DHCP.OPCODE_REQUEST, clientMac,
                 Ip4Address.valueOf("0.0.0.0"));
 
         IPv4 ipv4Packet = (IPv4) pkt.getPayload();
@@ -695,7 +778,6 @@ public class DhcpL2RelayTestBase {
      */
     Ethernet constructDhcpOfferPacket(MacAddress servMac, MacAddress clientMac,
                                            String ipAddress, String dhcpClientIpAddress) {
-
         Ethernet pkt = construcEthernetPacket(servMac, clientMac, ipAddress, DHCP.OPCODE_REPLY,
                 clientMac, Ip4Address.valueOf(dhcpClientIpAddress));
 
@@ -715,7 +797,6 @@ public class DhcpL2RelayTestBase {
      */
     Ethernet constructDhcpAckPacket(MacAddress servMac, MacAddress clientMac,
                                            String ipAddress, String dhcpClientIpAddress) {
-
         Ethernet pkt = construcEthernetPacket(servMac, clientMac, ipAddress, DHCP.OPCODE_REPLY,
                 clientMac, Ip4Address.valueOf(dhcpClientIpAddress));
 
@@ -756,7 +837,7 @@ public class DhcpL2RelayTestBase {
     Ethernet constructDhcpDeclinePacket(MacAddress clientMac) {
 
         Ethernet pkt = construcEthernetPacket(clientMac, MacAddress.BROADCAST,
-                "255.255.255.255", DHCP.OPCODE_REQUEST, MacAddress.NONE,
+                "255.255.255.255", DHCP.OPCODE_REQUEST, clientMac,
                 Ip4Address.valueOf("0.0.0.0"));
 
         IPv4 ipv4Packet = (IPv4) pkt.getPayload();

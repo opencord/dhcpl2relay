@@ -15,7 +15,14 @@
  */
 package org.opencord.dhcpl2relay.impl;
 
-import com.google.common.collect.Lists;
+import static org.easymock.EasyMock.createMock;
+import static org.junit.Assert.assertEquals;
+import static org.slf4j.LoggerFactory.getLogger;
+
+import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +30,9 @@ import org.onlab.junit.TestUtils;
 import org.onlab.packet.DHCP;
 import org.onlab.packet.Ethernet;
 import org.onlab.packet.IPv4;
+import org.onlab.packet.MacAddress;
 import org.onlab.packet.UDP;
+import org.onlab.packet.VlanId;
 import org.onlab.packet.dhcp.DhcpOption;
 import org.onosproject.cfg.ComponentConfigService;
 import org.onosproject.cluster.ClusterServiceAdapter;
@@ -32,21 +41,20 @@ import org.onosproject.net.ConnectPoint;
 import org.onosproject.net.flowobjective.FlowObjectiveServiceAdapter;
 import org.onosproject.store.cluster.messaging.ClusterCommunicationServiceAdapter;
 import org.onosproject.store.service.TestStorageService;
+import org.opencord.dhcpl2relay.DhcpAllocationInfo;
 import org.opencord.dhcpl2relay.DhcpL2RelayEvent;
 import org.opencord.dhcpl2relay.DhcpL2RelayStoreDelegate;
 import org.opencord.dhcpl2relay.impl.packet.DhcpOption82;
+import org.slf4j.Logger;
 
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
-
-import static org.easymock.EasyMock.createMock;
-import static org.junit.Assert.assertEquals;
+import com.google.common.collect.Lists;
 
 public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
 
     private DhcpL2Relay dhcpL2Relay;
     private SimpleDhcpL2RelayCountersStore store;
+    private final Logger log = getLogger(getClass());
+    Map<String, DhcpAllocationInfo> allocs;
 
     ComponentConfigService mockConfigService =
             createMock(ComponentConfigService.class);
@@ -91,6 +99,76 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         dhcpL2Relay.deactivate();
     }
 
+    private void checkAllocation(DHCP.MsgType messageType) {
+        ConnectPoint clientCp = ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/"
+                + String.valueOf(CLIENT_PORT));
+        allocs = dhcpL2Relay.getAllocationInfo();
+        assert allocs.size() == 1;
+        allocs.forEach((k, v) -> {
+            log.info("Allocation {} : {}", k, v);
+            assertEquals(v.type(), messageType);
+            assertEquals(v.macAddress(), CLIENT_MAC);
+            assertEquals(v.location(), clientCp);
+        });
+    }
+
+    @Test
+    public void testMultipleAllocations() throws Exception {
+        dhcpL2Relay.clearAllocations();
+        // Trigger a discover from one RG on port 32
+        MacAddress mac32 = MacAddress.valueOf("b4:96:91:0c:4f:e4");
+        VlanId vlan32a = VlanId.vlanId((short) 801);
+        Ethernet discover32a = constructDhcpDiscoverPacket(
+                                  mac32, vlan32a, (short) 0);
+        ConnectPoint client32 = ConnectPoint.deviceConnectPoint(
+                                                "of:0000b86a974385f7/32");
+        sendPacket(discover32a, client32);
+        allocs = dhcpL2Relay.getAllocationInfo();
+        assert allocs.size() == 1;
+
+        //Trigger a discover from another RG on port 4112
+        MacAddress mac4112 = MacAddress.valueOf("b4:96:91:0c:4f:c9");
+        VlanId vlan4112 = VlanId.vlanId((short) 101);
+        Ethernet discover4112 = constructDhcpDiscoverPacket(
+                                                            mac4112, vlan4112,
+                                                            (short) 0);
+        ConnectPoint client4112 = ConnectPoint.deviceConnectPoint(
+                "of:0000b86a974385f7/4112");
+        sendPacket(discover4112, client4112);
+        allocs = dhcpL2Relay.getAllocationInfo();
+        assert allocs.size() == 2;
+
+        // Trigger a discover for another service with a different vlan
+        // from the same UNI port 32
+        VlanId vlan32b = VlanId.vlanId((short) 802);
+        Ethernet discover32b = constructDhcpDiscoverPacket(
+                                  mac32, vlan32b, (short) 0);
+        sendPacket(discover32b, client32);
+        allocs = dhcpL2Relay.getAllocationInfo();
+        assert allocs.size() == 3;
+
+        allocs.forEach((k, v) -> {
+            log.info("Allocation {} : {}", k, v);
+            assertEquals(v.type(), DHCP.MsgType.DHCPDISCOVER);
+            if (v.subscriberId().equals("ALPHe3d1cea3-1")) {
+                assertEquals(v.macAddress(), mac32);
+                assertEquals(v.location(), client32);
+                if (!(v.vlanId().equals(vlan32a) || v.vlanId().equals(vlan32b))) {
+                    assert false;
+                }
+            } else if (v.subscriberId().equals("ALPHe3d1ceb7-1")) {
+                assertEquals(v.macAddress(), mac4112);
+                assertEquals(v.location(), client4112);
+                assertEquals(v.vlanId(), vlan4112);
+            } else {
+                assert false;
+            }
+        });
+
+        dhcpL2Relay.clearAllocations();
+        assert dhcpL2Relay.getAllocationInfo().size() == 0;
+    }
+
     /**
      * Tests the DHCP relay app by sending DHCP discovery Packet.
      *
@@ -98,13 +176,16 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      */
     @Test
     public void testDhcpDiscover()  throws Exception {
-        //  (1) Sending DHCP discover packet
+        // Sending DHCP Discover packet
+        dhcpL2Relay.clearAllocations();
         Ethernet discoverPacket = constructDhcpDiscoverPacket(CLIENT_MAC);
-
-        sendPacket(discoverPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+        ConnectPoint clientCp = ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/"
+                + String.valueOf(CLIENT_PORT));
+        sendPacket(discoverPacket, clientCp);
 
         Ethernet discoverRelayed = (Ethernet) getPacket();
         compareClientPackets(discoverPacket, discoverRelayed);
+        checkAllocation(DHCP.MsgType.DHCPDISCOVER);
     }
 
     /**
@@ -114,13 +195,15 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      */
     @Test
     public void testDhcpRequest()  throws Exception {
-        //  (1) Sending DHCP discover packet
+        // Sending DHCP Request packet
         Ethernet requestPacket = constructDhcpRequestPacket(CLIENT_MAC);
-
-        sendPacket(requestPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+        ConnectPoint clientCp = ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/"
+                + String.valueOf(CLIENT_PORT));
+        sendPacket(requestPacket, clientCp);
 
         Ethernet requestRelayed = (Ethernet) getPacket();
         compareClientPackets(requestPacket, requestRelayed);
+        checkAllocation(DHCP.MsgType.DHCPREQUEST);
     }
 
     /**
@@ -130,14 +213,15 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
      */
     @Test
     public void testDhcpOffer() {
-        //  (1) Sending DHCP discover packet
+        // Sending DHCP Offer packet
         Ethernet offerPacket = constructDhcpOfferPacket(SERVER_MAC,
                 CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
-
-        sendPacket(offerPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+        sendPacket(offerPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/"
+                + String.valueOf(UPLINK_PORT)));
 
         Ethernet offerRelayed = (Ethernet) getPacket();
         compareServerPackets(offerPacket, offerRelayed);
+        checkAllocation(DHCP.MsgType.DHCPOFFER);
     }
 
     /**
@@ -151,10 +235,12 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         Ethernet ackPacket = constructDhcpAckPacket(SERVER_MAC,
                 CLIENT_MAC, DESTINATION_ADDRESS_IP, DHCP_CLIENT_IP_ADDRESS);
 
-        sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/" + 1));
+        sendPacket(ackPacket, ConnectPoint.deviceConnectPoint(OLT_DEV_ID + "/"
+                + String.valueOf(UPLINK_PORT)));
 
         Ethernet ackRelayed = (Ethernet) getPacket();
         compareServerPackets(ackPacket, ackRelayed);
+        checkAllocation(DHCP.MsgType.DHCPACK);
     }
 
     /**
@@ -172,6 +258,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
 
         Ethernet nakRelayed = (Ethernet) getPacket();
         compareServerPackets(nakPacket, nakRelayed);
+        checkAllocation(DHCP.MsgType.DHCPNAK);
     }
 
     /**
@@ -188,6 +275,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
 
         Ethernet declineRelayed = (Ethernet) getPacket();
         compareClientPackets(declinePacket, declineRelayed);
+        checkAllocation(DHCP.MsgType.DHCPDECLINE);
     }
 
     /**

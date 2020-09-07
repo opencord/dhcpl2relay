@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "51f6c50b_22b70ea6",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 975,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-09-07T07:28:06Z",
+      "side": 1,
+      "message": "nit: inPort",
+      "revId": "bd5ce9c2ac06972e5532e92fad4c8799289ecf4d",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0545c7e4_2a6fbcbf",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 1136,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-09-07T07:28:06Z",
+      "side": 1,
+      "message": "MINOR: the Listeners have an isRelevant() method that we could use for this to separate them out of the action logic present in the event() method.",
+      "revId": "bd5ce9c2ac06972e5532e92fad4c8799289ecf4d",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

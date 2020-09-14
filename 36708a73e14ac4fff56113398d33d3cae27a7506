@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2de8608d_3bff1d80",
+        "filename": "app/pom.xml",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2020-09-14T16:46:49Z",
+      "side": 1,
+      "message": "should this be 2.2.1-SNAPSHOT ? same valid for other poms",
+      "revId": "36708a73e14ac4fff56113398d33d3cae27a7506",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

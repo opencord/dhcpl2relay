@@ -1,0 +1,9 @@
+Verified+1: Jenkins Technical User <do-not-reply@opennetworking.org>
+Code-Review+1: Girish Gowdra <girish@opennetworking.org>
+Code-Review+2: Andrea Campanella <andrea@opennetworking.org>
+Code-Review+2: Matteo Scandolo <teo@opennetworking.org>
+Submitted-by: Matteo Scandolo <teo@opennetworking.org>
+Submitted-at: Mon, 14 Sep 2020 16:02:56 +0000
+Reviewed-on: https://gerrit.opencord.org/c/dhcpl2relay/+/20488
+Project: dhcpl2relay
+Branch: refs/heads/master

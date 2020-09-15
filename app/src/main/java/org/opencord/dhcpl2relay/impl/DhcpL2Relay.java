@@ -699,6 +699,17 @@ public class DhcpL2Relay
             return null;
         }
 
+        private String bytesToMacAddressString(byte[] mac) {
+            StringBuilder sb = new StringBuilder(18);
+            for (byte b : mac) {
+                if (sb.length() > 0) {
+                    sb.append(':');
+                }
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        }
+
         // process the dhcp packet before relaying to server or client
         private void processDhcpPacket(PacketContext context, Ethernet packet,
                                        DHCP dhcpPayload) {
@@ -722,8 +733,9 @@ public class DhcpL2Relay
 
             SubscriberAndDeviceInformation entry = null;
 
-            log.info("Received DHCP Packet of type {} from {} with MacAddress {} and vlan {}",
-                     incomingPacketType, context.inPacket().receivedFrom(), packet.getSourceMAC(), packet.getVlanID());
+            log.info("Received DHCP Packet of type {} from {} with Client MacAddress {} and vlan {}",
+                     incomingPacketType, context.inPacket().receivedFrom(),
+                     bytesToMacAddressString(dhcpPayload.getClientHardwareAddress()), packet.getVlanID());
 
             switch (incomingPacketType) {
                 case DHCPDISCOVER:

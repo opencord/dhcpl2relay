@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bb4bc4cf_375e73e9",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 726,
+      "author": {
+        "id": 1000068
+      },
+      "writtenOn": "2020-09-15T17:44:44Z",
+      "side": 1,
+      "message": "Well if the packet is coming from server, it will have QinQ vlan as the outer vlan. In other words there will be two vlans, and this log will print the inner-vlanId, no? Is that what u want? I assume you are trying to get some info in scale tests at INFO level - correct? Because you can get all the info at TRACE level but you are probably not running at TRACE in scale tests",
+      "revId": "cf4004e278a816e28b24537550a076fde138ccd1",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

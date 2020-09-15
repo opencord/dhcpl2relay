@@ -722,8 +722,11 @@ public class DhcpL2Relay
 
             SubscriberAndDeviceInformation entry = null;
 
-            log.info("Received DHCP Packet of type {} from {} with MacAddress {} and vlan {}",
-                     incomingPacketType, context.inPacket().receivedFrom(), packet.getSourceMAC(), packet.getVlanID());
+            MacAddress clientMacAddress = MacAddress.valueOf(dhcpPayload.getClientHardwareAddress());
+
+            log.info("Received DHCP Packet of type {} from {} with Client MacAddress {} and vlan {}",
+                     incomingPacketType, context.inPacket().receivedFrom(),
+                     clientMacAddress, packet.getVlanID());
 
             switch (incomingPacketType) {
                 case DHCPDISCOVER:

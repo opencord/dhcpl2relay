@@ -16,6 +16,24 @@
       "revId": "cf4004e278a816e28b24537550a076fde138ccd1",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "86e0578d_aa49c9bc",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 726,
+      "author": {
+        "id": 1000007
+      },
+      "writtenOn": "2020-09-15T18:20:44Z",
+      "side": 1,
+      "message": "If we run at TRACE level we get the dump of the packet, but given the format is very hard to \"grep\" on that isolate the exchanges for a single packet.\n\nIn BBSim the MacAddress is enough to differentiate between services, I was adding informations on the VLAN to debug on hardware in cases for which we have the same MacAddress on different services.\n\nI can either change the log to print both VLANs or remove it.\n\nThis is an example of the output in the TT workflow:\n18:17:54.173 INFO [DhcpL2Relay] Received DHCP Packet of type DHCPDISCOVER from of:00000a0a0a0a0a00/16 with MacAddress 2E:60:00:00:01:02 and vlan 55\n18:17:54.452 INFO [DhcpL2Relay] Received DHCP Packet of type DHCPDISCOVER from of:00000a0a0a0a0a00/16 with MacAddress 2E:60:00:00:01:01 and vlan 444\n18:17:55.335 INFO [DhcpL2Relay] Received DHCP Packet of type DHCPOFFER from of:00000a0a0a0a0a00/1048576 with MacAddress FE:99:15:BF:7B:CF and vlan 55\n18:17:55.396 INFO [DhcpL2Relay] Received DHCP Packet of type DHCPREQUEST from of:00000a0a0a0a0a00/16 with MacAddress 2E:60:00:00:01:02 and vlan 55\n18:17:55.477 INFO [DhcpL2Relay] Received DHCP Packet of type DHCPACK from of:00000a0a0a0a0a00/1048576 with MacAddress FE:99:15:BF:7B:CF and vlan 55\n18:17:55.595 INFO [DhcpL2Relay] Received DHCP Packet of type DHCPOFFER from of:00000a0a0a0a0a00/1048576 with MacAddress FE:99:15:BF:7B:CF and vlan 444\n18:17:55.642 INFO [DhcpL2Relay] Received DHCP Packet of type DHCPREQUEST from of:00000a0a0a0a0a00/16 with MacAddress 2E:60:00:00:01:01 and vlan 444\n18:17:55.734 INFO [DhcpL2Relay] Received DHCP Packet of type DHCPACK from of:00000a0a0a0a0a00/1048576 with MacAddress FE:99:15:BF:7B:CF and vlan 444\n\nIn this case the VLAN won\u0027t be that important as they are the same for all the services",
+      "parentUuid": "bb4bc4cf_375e73e9",
+      "revId": "cf4004e278a816e28b24537550a076fde138ccd1",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
     }
   ]
 }

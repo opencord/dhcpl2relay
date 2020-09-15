@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9b918f26_17edb233",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 725,
+      "author": {
+        "id": 1000068
+      },
+      "writtenOn": "2020-09-15T23:03:21Z",
+      "side": 1,
+      "message": "Matteo it is important to add the word \"client\" in the log message, otherwise it gives the impression you are referring to source-Mac",
+      "revId": "0f3a9803da38c4402b04b477c03536f4d560c86f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

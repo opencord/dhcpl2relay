@@ -723,7 +723,7 @@ public class DhcpL2Relay
             SubscriberAndDeviceInformation entry = null;
 
             log.info("Received DHCP Packet of type {} from {} with MacAddress {} and vlan {}",
-                     incomingPacketType, context.inPacket().receivedFrom(), packet.getSourceMAC(), packet.getVlanID());
+                     incomingPacketType, context.inPacket().receivedFrom(), dhcpPayload.getClientHardwareAddress(), packet.getVlanID(),);
 
             switch (incomingPacketType) {
                 case DHCPDISCOVER:

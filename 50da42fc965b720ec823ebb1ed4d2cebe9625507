@@ -16,6 +16,23 @@
       "revId": "50da42fc965b720ec823ebb1ed4d2cebe9625507",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b0762e54_cc24f5ce",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 726,
+      "author": {
+        "id": 1000068
+      },
+      "writtenOn": "2020-09-15T22:18:22Z",
+      "side": 1,
+      "message": "looks like u have an extra comma at the end",
+      "revId": "50da42fc965b720ec823ebb1ed4d2cebe9625507",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
     }
   ]
 }

@@ -34,6 +34,24 @@
       "revId": "e601dc3d79f4ef343b349804f4b0d028ee53bf0b",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2addb667_a374f505",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 729,
+      "author": {
+        "id": 1000007
+      },
+      "writtenOn": "2020-09-16T19:00:45Z",
+      "side": 1,
+      "message": "You picky guys... 😊",
+      "parentUuid": "523d75a2_fdb8043e",
+      "revId": "e601dc3d79f4ef343b349804f4b0d028ee53bf0b",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
     }
   ]
 }

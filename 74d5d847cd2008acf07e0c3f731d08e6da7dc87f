@@ -19,6 +19,23 @@
     },
     {
       "key": {
+        "uuid": "b5bc9499_4b6aeaea",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 273,
+      "author": {
+        "id": 1000068
+      },
+      "writtenOn": "2020-09-24T17:40:13Z",
+      "side": 1,
+      "message": "Good to shutdown executors",
+      "revId": "74d5d847cd2008acf07e0c3f731d08e6da7dc87f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0e5ca1c2_4788be5c",
         "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
         "patchSetId": 8
@@ -30,6 +47,29 @@
       "writtenOn": "2020-09-24T17:23:23Z",
       "side": 1,
       "message": "I would do in \"process\" only the dispatching and I would create a \"processInternal\" which includes also the if at line 598.",
+      "revId": "74d5d847cd2008acf07e0c3f731d08e6da7dc87f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "de324dfb_0cc4b5ac",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 639,
+      "author": {
+        "id": 1000068
+      },
+      "writtenOn": "2020-09-24T17:40:13Z",
+      "side": 1,
+      "message": "you can do these allocations within the isTraceEnabled",
+      "range": {
+        "startLine": 636,
+        "startChar": 1,
+        "endLine": 639,
+        "endChar": 1
+      },
       "revId": "74d5d847cd2008acf07e0c3f731d08e6da7dc87f",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": true

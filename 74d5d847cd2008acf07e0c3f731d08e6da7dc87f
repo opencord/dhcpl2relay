@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9b164b1f_9d598969",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 228,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-09-24T17:23:23Z",
+      "side": 1,
+      "message": "do we want to transform this in a parameter ? In this way we can change it dynamically without the need to rebuild a new image",
+      "revId": "74d5d847cd2008acf07e0c3f731d08e6da7dc87f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0e5ca1c2_4788be5c",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 598,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-09-24T17:23:23Z",
+      "side": 1,
+      "message": "I would do in \"process\" only the dispatching and I would create a \"processInternal\" which includes also the if at line 598.",
+      "revId": "74d5d847cd2008acf07e0c3f731d08e6da7dc87f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "cc086733_a939ed26",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-09-24T17:23:23Z",
+      "side": 1,
+      "message": "You can use assertAfter or MoreExecutors.directExecutors",
+      "revId": "74d5d847cd2008acf07e0c3f731d08e6da7dc87f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

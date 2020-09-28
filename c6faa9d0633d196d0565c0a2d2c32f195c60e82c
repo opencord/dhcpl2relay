@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0da0cd3c_c87d76c7",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 10
+      },
+      "lineNbr": 321,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-09-28T09:29:50Z",
+      "side": 1,
+      "message": "at run time (when packetProcessorExec !\u003d null) we should shutdown the old executor otherwise we will have a thread leak.",
+      "revId": "c6faa9d0633d196d0565c0a2d2c32f195c60e82c",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

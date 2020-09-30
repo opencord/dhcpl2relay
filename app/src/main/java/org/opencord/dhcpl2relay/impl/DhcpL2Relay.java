@@ -241,9 +241,6 @@ public class DhcpL2Relay
 
         //start the dhcp relay agent
         appId = coreService.registerApplication(DHCP_L2RELAY_APP);
-        // ensure that host-learning via dhcp includes IP addresses
-        componentConfigService.preSetProperty(HOST_LOC_PROVIDER,
-                                              "useDhcp", Boolean.TRUE.toString());
         componentConfigService.registerProperties(getClass());
         eventDispatcher.addSink(DhcpL2RelayEvent.class, listenerRegistry);
 

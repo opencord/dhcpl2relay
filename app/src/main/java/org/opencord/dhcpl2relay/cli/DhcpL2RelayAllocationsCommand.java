@@ -32,7 +32,7 @@ public class DhcpL2RelayAllocationsCommand extends AbstractShellCommand {
         DhcpL2RelayService service = get(DhcpL2RelayService.class);
 
         service.getAllocationInfo().forEach((key, value) -> {
-            print("SubscriberId=%s,ConnectPoint=%s,State=%s,MAC=%s,VLAN=%s"
+            print("SubscriberId=%s,ConnectPoint=%s,State=%s,MAC=%s,VLAN=%s,"
                     + "CircuitId=%s,IP Allocated=%s,Allocation Timestamp=%s",
                     value.subscriberId(), value.location(), value.type(),
                     value.macAddress().toString(), value.vlanId().toString(),

@@ -15,11 +15,36 @@
  */
 package org.opencord.dhcpl2relay.impl;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import static java.util.concurrent.Executors.newFixedThreadPool;
+import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
+import static org.onlab.packet.MacAddress.valueOf;
+import static org.onlab.util.Tools.groupedThreads;
+import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FACTORY;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.ENABLE_DHCP_BROADCAST_REPLIES;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.ENABLE_DHCP_BROADCAST_REPLIES_DEFAULT;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.OPTION_82;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.OPTION_82_DEFAULT;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.PACKET_PROCESSOR_THREADS;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.PACKET_PROCESSOR_THREADS_DEFAULT;
+
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.HexDump;
 import org.onlab.packet.DHCP;
 import org.onlab.packet.Ethernet;
@@ -30,6 +55,7 @@ import org.onlab.packet.TpPort;
 import org.onlab.packet.UDP;
 import org.onlab.packet.VlanId;
 import org.onlab.packet.dhcp.DhcpOption;
+import org.onlab.packet.dhcp.DhcpRelayAgentOption;
 import org.onlab.util.KryoNamespace;
 import org.onlab.util.Tools;
 import org.onosproject.cfg.ComponentConfigService;
@@ -78,7 +104,7 @@ import org.opencord.dhcpl2relay.DhcpL2RelayEvent;
 import org.opencord.dhcpl2relay.DhcpL2RelayListener;
 import org.opencord.dhcpl2relay.DhcpL2RelayService;
 import org.opencord.dhcpl2relay.DhcpL2RelayStoreDelegate;
-import org.opencord.dhcpl2relay.impl.packet.DhcpOption82;
+import org.opencord.dhcpl2relay.impl.packet.DhcpOption82Data;
 import org.opencord.sadis.BaseInformationService;
 import org.opencord.sadis.SadisService;
 import org.opencord.sadis.SubscriberAndDeviceInformation;
@@ -93,30 +119,11 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import static java.util.concurrent.Executors.newFixedThreadPool;
-import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
-import static org.onlab.packet.MacAddress.valueOf;
-import static org.onlab.util.Tools.groupedThreads;
-import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FACTORY;
-import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.*;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * DHCP Relay Agent Application Component.
@@ -565,54 +572,12 @@ public class DhcpL2Relay
                                     appId, Optional.of(cp.deviceId()));
     }
 
-    private SubscriberAndDeviceInformation getDevice(PacketContext context) {
-        String serialNo = deviceService.getDevice(context.inPacket().
-                receivedFrom().deviceId()).serialNumber();
-
-        return subsService.get(serialNo);
-    }
-
-    private MacAddress relayAgentMacAddress(PacketContext context) {
-
-        SubscriberAndDeviceInformation device = this.getDevice(context);
-        if (device == null) {
-            log.warn("Device not found for {}", context.inPacket().
-                    receivedFrom());
-            return null;
-        }
-
-        return device.hardwareIdentifier();
-    }
-
-    private String nasPortId(PacketContext context) {
-        return nasPortId(context.inPacket().receivedFrom());
-    }
-
-    private String nasPortId(ConnectPoint cp) {
-        Port p = deviceService.getPort(cp);
-        return p.annotations().value(AnnotationKeys.PORT_NAME);
-    }
-
-    private SubscriberAndDeviceInformation getSubscriber(PacketContext context) {
-        return subsService.get(nasPortId(context));
-    }
-
-    private UniTagInformation getUnitagInformationFromPacketContext(PacketContext context,
-                                                                    SubscriberAndDeviceInformation sub) {
-        //If the ctag is defined in the tagList and dhcp is required, return the service info
-        List<UniTagInformation> tagList = sub.uniTagList();
-        for (UniTagInformation uniServiceInformation : tagList) {
-            if (uniServiceInformation.getPonCTag().toShort() == context.inPacket().parsed().getVlanID()) {
-                if (uniServiceInformation.getIsDhcpRequired()) {
-                    return uniServiceInformation;
-                }
-            }
-        }
-
-        return null;
-    }
-
+    /**
+     * Main packet-processing engine for dhcp l2 relay agent.
+     */
     private class DhcpRelayPacketProcessor implements PacketProcessor {
+        private static final String VLAN_KEYWORD = ":vlan";
+        private static final String PCP_KEYWORD = ":pcp";
 
         @Override
         public void process(PacketContext context) {
@@ -655,93 +620,6 @@ public class DhcpL2Relay
             }
         }
 
-        //forward the packet to ConnectPoint where the DHCP server is attached.
-        private void forwardPacket(Ethernet packet, PacketContext context) {
-            if (log.isTraceEnabled()) {
-                IPv4 ipv4Packet = (IPv4) packet.getPayload();
-                UDP udpPacket = (UDP) ipv4Packet.getPayload();
-                DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
-                log.trace("Emitting packet to server: packet {}, with MAC {}",
-                          getDhcpPacketType(dhcpPayload),
-                          MacAddress.valueOf(dhcpPayload.getClientHardwareAddress()));
-            }
-            ConnectPoint toSendTo = null;
-            if (!useOltUplink) {
-                toSendTo = dhcpServerConnectPoint.get();
-            } else {
-                toSendTo = getUplinkConnectPointOfOlt(context.inPacket().
-                        receivedFrom().deviceId());
-            }
-
-            if (toSendTo != null) {
-                TrafficTreatment t = DefaultTrafficTreatment.builder()
-                        .setOutput(toSendTo.port()).build();
-                OutboundPacket o = new DefaultOutboundPacket(
-                        toSendTo.deviceId(), t,
-                        ByteBuffer.wrap(packet.serialize()));
-                if (log.isTraceEnabled()) {
-                    log.trace("Relaying packet to dhcp server at {} {}",
-                              toSendTo, packet);
-                }
-                packetService.emit(o);
-
-                SubscriberAndDeviceInformation entry = getSubscriberInfoFromClient(context);
-                updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("PACKETS_TO_SERVER"));
-            } else {
-                log.error("No connect point to send msg to DHCP Server");
-            }
-        }
-
-        // get the type of the DHCP packet
-        private DHCP.MsgType getDhcpPacketType(DHCP dhcpPayload) {
-
-            for (DhcpOption option : dhcpPayload.getOptions()) {
-                if (option.getCode() == OptionCode_MessageType.getValue()) {
-                    byte[] data = option.getData();
-                    return DHCP.MsgType.getType(data[0]);
-                }
-            }
-            return null;
-        }
-
-        private void updateDhcpRelayCountersStore(SubscriberAndDeviceInformation entry,
-                                                  DhcpL2RelayCounterNames counterType) {
-            // Update global counter stats
-            dhcpL2RelayCounters.incrementCounter(DhcpL2RelayEvent.GLOBAL_COUNTER, counterType);
-            if (entry == null) {
-                log.warn("Counter not updated as subscriber info not found.");
-            } else {
-                // Update subscriber counter stats
-                dhcpL2RelayCounters.incrementCounter(entry.id(), counterType);
-            }
-        }
-
-        /*
-         * Get subscriber information based on it's context packet.
-         */
-        private SubscriberAndDeviceInformation getSubscriberInfoFromClient(PacketContext context) {
-            if (context != null) {
-                return getSubscriber(context);
-            }
-            return null;
-        }
-
-        /*
-         * Get subscriber information based on it's DHCP payload.
-         */
-        private SubscriberAndDeviceInformation getSubscriberInfoFromServer(DHCP dhcpPayload, PacketContext context) {
-            if (dhcpPayload != null) {
-                MacAddress descMac = valueOf(dhcpPayload.getClientHardwareAddress());
-                ConnectPoint subsCp = getConnectPointOfClient(descMac, context);
-
-                if (subsCp != null) {
-                    String portId = nasPortId(subsCp);
-                    return subsService.get(portId);
-                }
-            }
-            return null;
-        }
-
         // process the dhcp packet before relaying to server or client
         private void processDhcpPacket(PacketContext context, Ethernet packet,
                                        DHCP dhcpPayload) {
@@ -776,66 +654,63 @@ public class DhcpL2Relay
                     Ethernet ethernetPacketDiscover =
                             processDhcpPacketFromClient(context, packet);
                     if (ethernetPacketDiscover != null) {
-                        forwardPacket(ethernetPacketDiscover, context);
+                        relayPacketToServer(ethernetPacketDiscover, context);
                     }
-                    entry = getSubscriberInfoFromClient(context);
+                    entry = getSubscriber(context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPDISCOVER"));
                     break;
                 case DHCPOFFER:
-                    //reply to dhcp client.
-                    Ethernet ethernetPacketOffer =
+                    RelayToClientInfo r2cDataOffer =
                             processDhcpPacketFromServer(context, packet);
-                    if (ethernetPacketOffer != null) {
-                        sendReply(ethernetPacketOffer, dhcpPayload, context);
+                    if (r2cDataOffer != null) {
+                        relayPacketToClient(r2cDataOffer, clientMacAddress);
+                        entry = getSubscriber(r2cDataOffer.cp);
                     }
-                    entry = getSubscriberInfoFromServer(dhcpPayload, context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPOFFER"));
                     break;
                 case DHCPREQUEST:
                     Ethernet ethernetPacketRequest =
                             processDhcpPacketFromClient(context, packet);
                     if (ethernetPacketRequest != null) {
-                        forwardPacket(ethernetPacketRequest, context);
+                        relayPacketToServer(ethernetPacketRequest, context);
                     }
-                    entry = getSubscriberInfoFromClient(context);
+                    entry = getSubscriber(context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPREQUEST"));
                     break;
                 case DHCPACK:
-                    //reply to dhcp client.
-                    Ethernet ethernetPacketAck =
+                    RelayToClientInfo r2cDataAck =
                             processDhcpPacketFromServer(context, packet);
-                    if (ethernetPacketAck != null) {
-                        sendReply(ethernetPacketAck, dhcpPayload, context);
+                    if (r2cDataAck != null) {
+                        relayPacketToClient(r2cDataAck, clientMacAddress);
+                        entry = getSubscriber(r2cDataAck.cp);
                     }
-                    entry = getSubscriberInfoFromServer(dhcpPayload, context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPACK"));
                     break;
                 case DHCPDECLINE:
                     Ethernet ethernetPacketDecline =
                             processDhcpPacketFromClient(context, packet);
                     if (ethernetPacketDecline != null) {
-                        forwardPacket(ethernetPacketDecline, context);
+                        relayPacketToServer(ethernetPacketDecline, context);
                     }
-                    entry = getSubscriberInfoFromClient(context);
+                    entry = getSubscriber(context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPDECLINE"));
                     break;
                 case DHCPNAK:
-                    //reply to dhcp client.
-                    Ethernet ethernetPacketNak =
+                    RelayToClientInfo r2cDataNack =
                             processDhcpPacketFromServer(context, packet);
-                    if (ethernetPacketNak != null) {
-                        sendReply(ethernetPacketNak, dhcpPayload, context);
+                    if (r2cDataNack != null) {
+                        relayPacketToClient(r2cDataNack, clientMacAddress);
+                        entry = getSubscriber(r2cDataNack.cp);
                     }
-                    entry = getSubscriberInfoFromServer(dhcpPayload, context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPNACK"));
                     break;
                 case DHCPRELEASE:
                     Ethernet ethernetPacketRelease =
                             processDhcpPacketFromClient(context, packet);
                     if (ethernetPacketRelease != null) {
-                        forwardPacket(ethernetPacketRelease, context);
+                        relayPacketToServer(ethernetPacketRelease, context);
                     }
-                    entry = getSubscriberInfoFromClient(context);
+                    entry = getSubscriber(context);
                     updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("DHCPRELEASE"));
                     break;
                 default:
@@ -843,6 +718,13 @@ public class DhcpL2Relay
             }
         }
 
+        /**
+         * Processes dhcp packets from clients.
+         *
+         * @param context the packet context
+         * @param ethernetPacket the dhcp packet from client
+         * @return the packet to relay to the server
+         */
         private Ethernet processDhcpPacketFromClient(PacketContext context,
                                                      Ethernet ethernetPacket) {
             if (log.isTraceEnabled()) {
@@ -884,19 +766,16 @@ public class DhcpL2Relay
                          inPort, clientVlan);
                 return null;
             }
-
-            DhcpAllocationInfo info = new DhcpAllocationInfo(
-                    inPort, dhcpPacket.getPacketType(), entry.circuitId(),
-                    clientMac, clientIp, clientVlan, entry.id());
-
-            String key = getUniqueUuidFromString(entry.id() + clientMac
-                                                 + clientVlan);
-            allocations.put(key, info);
-
-            post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info,
-                                      inPort));
+            DhcpOption82Data d82 = null;
             if (option82) {
-                DHCP dhcpPacketWithOption82 = addOption82(dhcpPacket, entry);
+                DHCP dhcpPacketWithOption82 = addOption82(dhcpPacket, entry,
+                                                          inPort, clientVlan,
+                                                          uniTagInformation
+                                                                  .getDsPonCTagPriority());
+                byte[] d82b = dhcpPacketWithOption82
+                        .getOption(DHCP.DHCPOptionCode.OptionCode_CircuitID)
+                        .getData();
+                d82 = new DhcpOption82Data(d82b);
                 udpPacket.setPayload(dhcpPacketWithOption82);
             }
 
@@ -914,14 +793,39 @@ public class DhcpL2Relay
             if (uniTagInformation.getUsPonSTagPriority() != -1) {
                 etherReply.setQinQPriorityCode((byte) uniTagInformation.getUsPonSTagPriority());
             }
-            log.info("Finished processing DHCP Packet of type {} from {} and relaying to dhcpServer",
-                     dhcpPacket.getPacketType(), entry.id());
+            if (uniTagInformation.getUsPonCTagPriority() != -1) {
+                etherReply.setPriorityCode((byte) uniTagInformation
+                        .getUsPonCTagPriority());
+            }
+
+            DhcpAllocationInfo info = new DhcpAllocationInfo(inPort,
+                                                             dhcpPacket.getPacketType(),
+                                                             (d82 == null)
+                                                                 ? entry.circuitId()
+                                                                 : d82.getAgentCircuitId(),
+                                                             clientMac, clientIp,
+                                                             clientVlan, entry.id());
+            String key = getUniqueUuidFromString(entry.id() + clientMac
+                    + clientVlan);
+            allocations.put(key, info);
+            post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info, inPort));
+            if (log.isTraceEnabled()) {
+                log.trace("Finished processing DHCP Packet of type {} from {} "
+                        + "... relaying to dhcpServer",
+                          dhcpPacket.getPacketType(), entry.id());
+            }
             return etherReply;
         }
 
-        //build the DHCP offer/ack with proper client port.
-        private Ethernet processDhcpPacketFromServer(PacketContext context,
-                                                     Ethernet ethernetPacket) {
+        /**
+         * Processes dhcp packets from the server.
+         *
+         * @param context the packet context
+         * @param ethernetPacket the dhcp packet
+         * @return returns information necessary for relaying packet to client
+         */
+        private RelayToClientInfo processDhcpPacketFromServer(PacketContext context,
+                                                              Ethernet ethernetPacket) {
             if (log.isTraceEnabled()) {
                 log.trace("DHCP Packet received from server at {} {}",
                           context.inPacket().receivedFrom(), ethernetPacket);
@@ -930,66 +834,349 @@ public class DhcpL2Relay
             Ethernet etherReply = (Ethernet) ethernetPacket.clone();
             IPv4 ipv4Packet = (IPv4) etherReply.getPayload();
             UDP udpPacket = (UDP) ipv4Packet.getPayload();
-            DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
+            DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
             VlanId innerVlan = VlanId.vlanId(ethernetPacket.getVlanID());
+            MacAddress dstMac = valueOf(dhcpPacket.getClientHardwareAddress());
 
-            MacAddress dstMac = valueOf(dhcpPayload.getClientHardwareAddress());
-            ConnectPoint subsCp = getConnectPointOfClient(dstMac, context);
-            // If we can't find the subscriber, can't process further
-            if (subsCp == null) {
-                log.warn("Couldn't find subscriber, service or host info for mac"
-                        + " address {} and vlan {} .. DHCP packet won't be delivered", dstMac, innerVlan);
-                return null;
-            }
-
-            SubscriberAndDeviceInformation entry = getSubscriberInfoFromServer(dhcpPayload, context);
-            if (entry != null) {
-                IpAddress ip = IpAddress.valueOf(dhcpPayload.getYourIPAddress());
-                // store DHCPAllocationInfo
-                DhcpAllocationInfo info = new DhcpAllocationInfo(subsCp,
-                     dhcpPayload.getPacketType(), entry.circuitId(), dstMac, ip,
-                     innerVlan, entry.id());
-                String key = getUniqueUuidFromString(entry.id()
-                                                     + info.macAddress() + innerVlan);
-                allocations.put(key, info);
-
-                post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info, subsCp));
-            }
-
-            UniTagInformation uniTagInformation = getUnitagInformationFromPacketContext(context, entry);
-            if (uniTagInformation == null) {
-                log.warn("Missing service information for connectPoint {} / cTag {}",
-                         context.inPacket().receivedFrom(), context.inPacket().parsed().getVlanID());
-                return null;
-            }
-
-            updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames.valueOf("PACKETS_FROM_SERVER"));
-
-            // we leave the srcMac from the original packet
+            // we leave the srcMac from the original packet.
+            // TODO remove S-VLAN
             etherReply.setQinQVID(VlanId.NO_VID);
             etherReply.setQinQPriorityCode((byte) 0);
             etherReply.setDestinationMACAddress(dstMac);
-            etherReply.setVlanID(uniTagInformation.getPonCTag().toShort());
-            if (uniTagInformation.getUsPonCTagPriority() != -1) {
-                etherReply.setPriorityCode((byte) uniTagInformation.getUsPonCTagPriority());
-            }
 
+            // TODO deserialization of dhcp option82 leaves 'data' field null
+            // As a result we need to retrieve suboption data
+            RelayToClientInfo r2cData = null;
+            boolean usedOption82 = false;
             if (option82) {
-                udpPacket.setPayload(removeOption82(dhcpPayload));
-            } else {
-                udpPacket.setPayload(dhcpPayload);
+                // retrieve connectPoint and vlan from option82, if it is in expected format
+                DhcpOption opt = dhcpPacket
+                        .getOption(DHCP.DHCPOptionCode.OptionCode_CircuitID);
+                if (opt != null && opt instanceof DhcpRelayAgentOption) {
+                    DhcpRelayAgentOption d82 = (DhcpRelayAgentOption) opt;
+                    DhcpOption d82ckt = d82.getSubOption(DhcpOption82Data.CIRCUIT_ID_CODE);
+                    if (d82ckt.getData() != null) {
+                        r2cData = decodeCircuitId(new String(d82ckt.getData()));
+                    }
+                }
+                if (r2cData != null) {
+                    usedOption82 = true;
+                    etherReply.setVlanID(r2cData.cvid.toShort());
+                    if (r2cData.pcp != -1) {
+                        etherReply.setPriorityCode((byte) r2cData.pcp);
+                    }
+                }
             }
+            // always remove option82 if present
+            DHCP remDhcpPacket = removeOption82(dhcpPacket);
+            udpPacket.setPayload(remDhcpPacket);
+
             ipv4Packet.setPayload(udpPacket);
             etherReply.setPayload(ipv4Packet);
 
-            log.info("Finished processing packet.. relaying to client");
-            return etherReply;
+            if (!usedOption82) {
+                // option 82 data not present or not used, we need to
+                // lookup host store with client dstmac and vlan from context
+                r2cData = new RelayToClientInfo();
+                r2cData.cp = getConnectPointOfClient(dstMac, context);
+                if (r2cData.cp == null) {
+                    log.warn("Couldn't find subscriber, service or host info for mac"
+                            + " address {} and vlan {} .. DHCP packet can't be"
+                            + " delivered to client", dstMac, innerVlan);
+                    return null;
+                }
+            }
+
+            // always need the subscriber entry
+            SubscriberAndDeviceInformation entry = getSubscriber(r2cData.cp);
+            if (entry == null) {
+                log.warn("Couldn't find subscriber info for cp {}.. DHCP packet"
+                        + " can't be delivered to client mac {} and vlan {}",
+                         r2cData.cp, dstMac, innerVlan);
+                return null;
+            }
+
+            if (!usedOption82) {
+                UniTagInformation uniTagInformation =
+                        getUnitagInformationFromPacketContext(context, entry);
+                if (uniTagInformation == null) {
+                    log.warn("Missing service information for connectPoint {} "
+                            + " cTag {} .. DHCP packet can't be delivered to client",
+                             r2cData.cp, innerVlan);
+                    return null;
+                }
+                r2cData.cvid = uniTagInformation.getPonCTag();
+                r2cData.pcp = uniTagInformation.getDsPonCTagPriority();
+                r2cData.cktId = entry.circuitId();
+                etherReply.setVlanID(r2cData.cvid.toShort());
+                if (r2cData.pcp != -1) {
+                    etherReply.setPriorityCode((byte) r2cData.pcp);
+                }
+            }
+
+            // update stats and events
+            IpAddress ip = IpAddress.valueOf(dhcpPacket.getYourIPAddress());
+            DhcpAllocationInfo info =
+                    new DhcpAllocationInfo(r2cData.cp, dhcpPacket.getPacketType(),
+                                           r2cData.cktId, dstMac, ip, innerVlan,
+                                           entry.id());
+            String key = getUniqueUuidFromString(entry.id() + info.macAddress()
+                    + innerVlan);
+            allocations.put(key, info);
+            post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info,
+                                      r2cData.cp));
+            updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames
+                    .valueOf("PACKETS_FROM_SERVER"));
+            if (log.isTraceEnabled()) {
+                log.trace("Finished processing packet.. relaying to client at {}",
+                     r2cData.cp);
+            }
+            r2cData.ethernetPkt = etherReply;
+            return r2cData;
         }
 
-        /*
-         * Get ConnectPoint of the Client based on it's MAC address
+        // forward the packet to ConnectPoint where the DHCP server is attached.
+        private void relayPacketToServer(Ethernet packet, PacketContext context) {
+            if (log.isTraceEnabled()) {
+                IPv4 ipv4Packet = (IPv4) packet.getPayload();
+                UDP udpPacket = (UDP) ipv4Packet.getPayload();
+                DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
+                log.trace("Emitting packet to server: packet {}, with MAC {}",
+                          getDhcpPacketType(dhcpPayload),
+                          MacAddress.valueOf(dhcpPayload.getClientHardwareAddress()));
+            }
+            ConnectPoint toSendTo = null;
+            if (!useOltUplink) {
+                toSendTo = dhcpServerConnectPoint.get();
+            } else {
+                toSendTo = getUplinkConnectPointOfOlt(context.inPacket().receivedFrom()
+                        .deviceId());
+            }
+
+            if (toSendTo != null) {
+                TrafficTreatment t = DefaultTrafficTreatment.builder()
+                        .setOutput(toSendTo.port()).build();
+                OutboundPacket o = new DefaultOutboundPacket(toSendTo
+                        .deviceId(), t, ByteBuffer.wrap(packet.serialize()));
+                if (log.isTraceEnabled()) {
+                    log.trace("Relaying packet to dhcp server at {} {}", toSendTo,
+                              packet);
+                }
+                packetService.emit(o);
+
+                SubscriberAndDeviceInformation entry = getSubscriber(context);
+                updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames
+                        .valueOf("PACKETS_TO_SERVER"));
+            } else {
+                log.error("No connect point to send msg to DHCP Server");
+            }
+        }
+
+        // send the response to the requester host (client)
+        private void relayPacketToClient(RelayToClientInfo r2cData,
+                                         MacAddress dstMac) {
+            ConnectPoint subCp = r2cData.cp;
+            Ethernet ethPacket = r2cData.ethernetPkt;
+            // Send packet out to requester if the host information is available
+            if (subCp != null) {
+                TrafficTreatment t = DefaultTrafficTreatment.builder()
+                        .setOutput(subCp.port()).build();
+                OutboundPacket o = new DefaultOutboundPacket(subCp.deviceId(),
+                                        t, ByteBuffer.wrap(ethPacket.serialize()));
+                if (log.isTraceEnabled()) {
+                    log.trace("Relaying packet to DHCP client at {} with "
+                        + "MacAddress {}, {} given {}", subCp, dstMac,
+                         ethPacket, r2cData);
+                }
+                packetService.emit(o);
+            } else {
+                log.error("Dropping DHCP Packet because unknown connectPoint for {}",
+                          dstMac);
+            }
+        }
+
+        /**
+         * Option 82 includes circuitId and remoteId data configured by an
+         * operator in sadis for a subscriber, and can be a string in any form
+         * relevant to the operator's dhcp-server. When circuitId is configured
+         * in sadis, the relay agent adds the option, but does not use the
+         * information for forwarding packets back to client.
+         * <p>
+         * If circuitId is not configured in sadis, this relay-agent adds
+         * circuitId information in the form
+         * "{@literal<}connectPoint>:vlan{@literal<}clientVlanId>:pcp{@literal<}downstreamPcp>"
+         * for example, "of:0000000000000001/32:vlan200:pcp7". When the packet
+         * is received back from the server with circuitId in this form, this
+         * relay agent will use this information to forward packets to the
+         * client.
+         *
+         * @param dhcpPacket the DHCP packet to transform
+         * @param entry sadis information for the subscriber
+         * @param cp the connectPoint to set if sadis entry has no circuitId
+         * @param clientVlan the vlan to set if sadis entry has no circuitId
+         * @param downstreamPbits the pbits to set if sadis entry has no
+         *            circuitId
+         * @return the modified dhcp packet with option82 added
          */
-        private ConnectPoint getConnectPointOfClient(MacAddress dstMac, PacketContext context) {
+        private DHCP addOption82(DHCP dhcpPacket, SubscriberAndDeviceInformation entry,
+                                 ConnectPoint cp, VlanId clientVlan,
+                                 int downstreamPbits) {
+            List<DhcpOption> options = Lists.newArrayList(dhcpPacket.getOptions());
+            DhcpOption82Data option82 = new DhcpOption82Data();
+            if (entry.circuitId() == null || entry.circuitId().isBlank()) {
+                option82.setAgentCircuitId(cp + VLAN_KEYWORD + clientVlan
+                        + PCP_KEYWORD
+                        + downstreamPbits);
+            } else {
+                option82.setAgentCircuitId(entry.circuitId());
+            }
+            option82.setAgentRemoteId(entry.remoteId());
+            if (log.isTraceEnabled()) {
+                log.trace("adding option82 {} ", option82);
+            }
+            DhcpOption option = new DhcpOption()
+                    .setCode(DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
+                    .setData(option82.toByteArray())
+                    .setLength(option82.length());
+
+            options.add(options.size() - 1, option);
+            dhcpPacket.setOptions(options);
+
+            return dhcpPacket;
+        }
+
+        private DHCP removeOption82(DHCP dhcpPacket) {
+            List<DhcpOption> options = dhcpPacket.getOptions();
+            List<DhcpOption> newoptions = options.stream()
+                    .filter(option -> option
+                            .getCode() != DHCP.DHCPOptionCode.OptionCode_CircuitID
+                                    .getValue())
+                    .collect(Collectors.toList());
+
+            return dhcpPacket.setOptions(newoptions);
+        }
+
+        /**
+         * Returns the circuit Id values decoded from the option 82 data. Decoding
+         * is performed if and only if the circuit id format is in the form
+         * "{@literal<}connectPoint>:vlan{@literal<}clientVlanId>:pcp{@literal<}downstreamPcp>"
+         *
+         * @param cktId the circuitId string from option 82 data
+         * @return decoded circuit id data if it is in the expected format or
+         *         null
+         */
+        private RelayToClientInfo decodeCircuitId(String cktId) {
+            if (cktId.contains(VLAN_KEYWORD) && cktId.contains(PCP_KEYWORD)) {
+                ConnectPoint cp = ConnectPoint
+                        .fromString(cktId
+                                .substring(0, cktId.indexOf(VLAN_KEYWORD)));
+                VlanId cvid = VlanId
+                        .vlanId(cktId.substring(
+                                                cktId.indexOf(VLAN_KEYWORD)
+                                                        + VLAN_KEYWORD.length(),
+                                                cktId.indexOf(PCP_KEYWORD)));
+                int pcp = Integer
+                        .valueOf(cktId.substring(cktId.indexOf(PCP_KEYWORD)
+                                + PCP_KEYWORD.length()))
+                        .intValue();
+                log.debug("retrieved from option82-> cp={} cvlan={} down-pcp={}"
+                        + " for relaying to client ", cp, cvid, pcp);
+                return new RelayToClientInfo(cp, cvid, pcp, cktId);
+            } else {
+                log.debug("Option 82 circuitId {} is operator defined and will "
+                        + "not be used for forwarding", cktId);
+                return null;
+            }
+        }
+
+        private class RelayToClientInfo {
+            Ethernet ethernetPkt;
+            ConnectPoint cp;
+            VlanId cvid;
+            int pcp;
+            String cktId;
+
+            public RelayToClientInfo(ConnectPoint cp, VlanId cvid, int pcp,
+                                     String cktId) {
+                this.cp = cp;
+                this.cvid = cvid;
+                this.pcp = pcp;
+                this.cktId = cktId;
+            }
+
+            public RelayToClientInfo() {
+            }
+
+            @Override
+            public String toString() {
+                return "RelayToClientInfo: {connectPoint=" + cp + " clientVlan="
+                        + cvid + " clientPcp=" + pcp + " circuitId=" + cktId + "}";
+            }
+
+        }
+
+        // get the type of the DHCP packet
+        private DHCP.MsgType getDhcpPacketType(DHCP dhcpPayload) {
+            for (DhcpOption option : dhcpPayload.getOptions()) {
+                if (option.getCode() == OptionCode_MessageType.getValue()) {
+                    byte[] data = option.getData();
+                    return DHCP.MsgType.getType(data[0]);
+                }
+            }
+            return null;
+        }
+
+        private void updateDhcpRelayCountersStore(SubscriberAndDeviceInformation entry,
+                                                  DhcpL2RelayCounterNames counterType) {
+            // Update global counter stats
+            dhcpL2RelayCounters.incrementCounter(DhcpL2RelayEvent.GLOBAL_COUNTER,
+                                                 counterType);
+            if (entry == null) {
+                log.warn("Counter not updated as subscriber info not found.");
+            } else {
+                // Update subscriber counter stats
+                dhcpL2RelayCounters.incrementCounter(entry.id(), counterType);
+            }
+        }
+
+        /**
+         * Get subscriber information based on subscriber's connectPoint.
+         *
+         * @param subsCp the subscriber's connectPoint
+         * @return subscriber sadis info or null if not found
+         */
+        private SubscriberAndDeviceInformation getSubscriber(ConnectPoint subsCp) {
+            if (subsCp != null) {
+                String portName = getPortName(subsCp);
+                return subsService.get(portName);
+            }
+            return null;
+        }
+
+        /**
+         * Returns sadis info for subscriber based on incoming packet context.
+         * The packet context must refer to a packet coming from a subscriber
+         * port.
+         *
+         * @param context incoming packet context from subscriber port (UNI)
+         * @return sadis info for the subscriber or null
+         */
+        private SubscriberAndDeviceInformation getSubscriber(PacketContext context) {
+            String portName = getPortName(context.inPacket().receivedFrom());
+            return subsService.get(portName);
+        }
+
+        /**
+         * Returns ConnectPoint of the Client based on MAC address and C-VLAN.
+         * Verifies that returned connect point has service defined in sadis.
+         *
+         * @param dstMac client dstMac
+         * @param context context for incoming packet, parsed for C-vlan id
+         * @return connect point information for client or null if connect point
+         *         not found or service cannot be verified for client info
+         */
+        private ConnectPoint getConnectPointOfClient(MacAddress dstMac,
+                                                     PacketContext context) {
             Set<Host> hosts = hostService.getHostsByMac(dstMac);
             if (hosts == null || hosts.isEmpty()) {
                 log.warn("Cannot determine host for DHCP client: {}. Aborting "
@@ -1003,14 +1190,14 @@ public class DhcpL2Relay
                 ConnectPoint cp = new ConnectPoint(h.location().deviceId(),
                                                    h.location().port());
 
-                String portId = nasPortId(cp);
-                SubscriberAndDeviceInformation sub = subsService.get(portId);
+                SubscriberAndDeviceInformation sub = getSubscriber(cp);
                 if (sub == null) {
-                    log.warn("Subscriber info not found for {}", cp);
-                    return null;
+                    log.warn("Subscriber info not found for {} for host {}", cp, h);
+                    continue;
                 }
                 // check for cvlan in subscriber's uniTagInfo list
-                UniTagInformation uniTagInformation = getUnitagInformationFromPacketContext(context, sub);
+                UniTagInformation uniTagInformation =
+                        getUnitagInformationFromPacketContext(context, sub);
                 if (uniTagInformation != null) {
                     return cp;
                 }
@@ -1018,58 +1205,71 @@ public class DhcpL2Relay
             // no sadis config found for this connectPoint/vlan
             log.warn("Missing service information for dhcp packet received from"
                     + " {} with cTag {} .. cannot relay to client",
-                     context.inPacket().receivedFrom(), context.inPacket().parsed().getVlanID());
+                     context.inPacket().receivedFrom(),
+                     context.inPacket().parsed().getVlanID());
+            return null;
+        }
+
+        /**
+         * Returns the port-name for the given connectPoint port.
+         *
+         * @param cp the given connect point
+         * @return the port-name for the connect point port
+         */
+        private String getPortName(ConnectPoint cp) {
+            Port p = deviceService.getPort(cp);
+            return p.annotations().value(AnnotationKeys.PORT_NAME);
+        }
+
+        /**
+         * Return's uniTagInformation (service information) if incoming packet's
+         * client VLAN id matches the subscriber's service info, and dhcp is
+         * required for this service.
+         *
+         * @param context
+         * @param sub
+         * @return
+         */
+        private UniTagInformation getUnitagInformationFromPacketContext(PacketContext context,
+                                                                        SubscriberAndDeviceInformation sub) {
+            // If the ctag is defined in the tagList and dhcp is required,
+            // return the service info
+            List<UniTagInformation> tagList = sub.uniTagList();
+            for (UniTagInformation uniServiceInformation : tagList) {
+                if (uniServiceInformation.getPonCTag().toShort() == context.inPacket()
+                        .parsed().getVlanID()) {
+                    if (uniServiceInformation.getIsDhcpRequired()) {
+                        return uniServiceInformation;
+                    }
+                }
+            }
 
             return null;
         }
 
-        // send the response to the requester host (client)
-        private void sendReply(Ethernet ethPacket, DHCP dhcpPayload, PacketContext context) {
-            MacAddress descMac = valueOf(dhcpPayload.getClientHardwareAddress());
-            ConnectPoint subCp = getConnectPointOfClient(descMac, context);
-            // Send packet out to requester if the host information is available
-            if (subCp != null) {
-                TrafficTreatment t = DefaultTrafficTreatment.builder()
-                        .setOutput(subCp.port()).build();
-                OutboundPacket o = new DefaultOutboundPacket(
-                        subCp.deviceId(), t, ByteBuffer.wrap(ethPacket.serialize()));
-                if (log.isTraceEnabled()) {
-                    log.trace("Relaying packet to DHCP client at {} with MacAddress {}, {}", subCp,
-                              descMac, ethPacket);
-                }
-                packetService.emit(o);
-            } else {
-                log.error("Dropping DHCP Packet because can't find host for {}", descMac);
+
+        private MacAddress relayAgentMacAddress(PacketContext context) {
+            SubscriberAndDeviceInformation device = this.getDevice(context);
+            if (device == null) {
+                log.warn("Device not found for {}", context.inPacket().receivedFrom());
+                return null;
             }
+            return device.hardwareIdentifier();
         }
-    }
 
-    private DHCP addOption82(DHCP dhcpPacket, SubscriberAndDeviceInformation entry) {
-        log.trace("option82data {} ", entry);
+        /**
+         * Returns sadis information for device from which packet was received.
+         *
+         * @param context the packet context
+         * @return sadis information for device
+         */
+        private SubscriberAndDeviceInformation getDevice(PacketContext context) {
+            String serialNo = deviceService
+                    .getDevice(context.inPacket().receivedFrom().deviceId())
+                    .serialNumber();
+            return subsService.get(serialNo);
+        }
 
-        List<DhcpOption> options = Lists.newArrayList(dhcpPacket.getOptions());
-        DhcpOption82 option82 = new DhcpOption82();
-        option82.setAgentCircuitId(entry.circuitId());
-        option82.setAgentRemoteId(entry.remoteId());
-        DhcpOption option = new DhcpOption()
-                .setCode(DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
-                .setData(option82.toByteArray())
-                .setLength(option82.length());
-
-        options.add(options.size() - 1, option);
-        dhcpPacket.setOptions(options);
-
-        return dhcpPacket;
-
-    }
-
-    private DHCP removeOption82(DHCP dhcpPacket) {
-        List<DhcpOption> options = dhcpPacket.getOptions();
-        List<DhcpOption> newoptions = options.stream()
-                .filter(option -> option.getCode() != DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue())
-                .collect(Collectors.toList());
-
-        return dhcpPacket.setOptions(newoptions);
     }
 
     /**
@@ -1122,7 +1322,6 @@ public class DhcpL2Relay
         allocations.clear();
     }
 
-
     @Override
     public boolean removeAllocationsByConnectPoint(ConnectPoint cp) {
         boolean removed = false;
@@ -1135,7 +1334,6 @@ public class DhcpL2Relay
         }
         return removed;
     }
-
 
     /**
      * Checks for mastership or falls back to leadership on deviceId.

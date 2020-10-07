@@ -80,6 +80,7 @@ import org.onosproject.net.packet.PacketContext;
 import org.onosproject.net.packet.PacketProcessor;
 import org.onosproject.net.packet.PacketServiceAdapter;
 import org.onosproject.net.provider.ProviderId;
+import org.opencord.dhcpl2relay.impl.packet.DhcpOption82Data;
 import org.opencord.sadis.BandwidthProfileInformation;
 import org.opencord.sadis.BaseInformationService;
 import org.opencord.sadis.SadisService;
@@ -108,6 +109,9 @@ public class DhcpL2RelayTestBase {
     static final String CLIENT_ID_1 = "SUBSCRIBER_ID_1";
     static final String CLIENT_NAS_PORT_ID = "PON 1/1";
     static final String CLIENT_CIRCUIT_ID = "CIR-PON 1/1";
+    static final String CLIENT32_CIRCUIT_ID = "";
+    static final String CLIENT4112_CIRCUIT_ID = null;
+    public static final String CLIENT_REMOTE_ID = "I am an RG";
     static final short NOT_PROVIDED = 0;
 
     static final MacAddress CLIENT_MAC = MacAddress.valueOf("00:00:00:00:00:01");
@@ -130,6 +134,7 @@ public class DhcpL2RelayTestBase {
 
     static final DefaultAnnotations DEVICE_ANNOTATIONS = DefaultAnnotations.builder()
             .set(AnnotationKeys.PROTOCOL, SCHEME_NAME.toUpperCase()).build();
+
 
     List<BasePacket> savedPackets = new LinkedList<>();
     PacketProcessor packetProcessor;
@@ -329,10 +334,10 @@ public class DhcpL2RelayTestBase {
                         CLIENT_S_TAG, CLIENT_NAS_PORT_ID, CLIENT_CIRCUIT_ID, null, null, -1);
         DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation sub32 =
                 new DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation("ALPHe3d1cea3-1", VlanId.vlanId((short) 801),
-                        VlanId.vlanId((short) 111), CLIENT_NAS_PORT_ID, CLIENT_CIRCUIT_ID, null, null, -1);
+                        VlanId.vlanId((short) 111), CLIENT_NAS_PORT_ID, CLIENT32_CIRCUIT_ID, null, null, -1);
         DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation sub4112 =
                 new DhcpL2RelayTestBase.MockSubscriberAndDeviceInformation("ALPHe3d1ceb7-1", VlanId.vlanId((short) 101),
-                        VlanId.vlanId((short) 222), CLIENT_NAS_PORT_ID, CLIENT_CIRCUIT_ID, null, null, -1);
+                        VlanId.vlanId((short) 222), CLIENT_NAS_PORT_ID, CLIENT4112_CIRCUIT_ID, null, null, -1);
         @Override
         public SubscriberAndDeviceInformation get(String id) {
             if (id.equals(OLT_DEV_ID)) {
@@ -368,22 +373,29 @@ public class DhcpL2RelayTestBase {
             this.setId(id);
             this.setIPAddress(ipAddress);
             this.setNasPortId(nasPortId);
-            this.setCircuitId(circuitId);
             this.setUplinkPort(uplinkPort);
+            this.setCircuitId(circuitId);
 
             List<UniTagInformation> uniTagInformationList = new ArrayList<>();
 
-            UniTagInformation uniTagInformation = new UniTagInformation.Builder()
+            UniTagInformation.Builder b = new UniTagInformation.Builder()
                     .setPonCTag(cTag)
                     .setPonSTag(sTag)
                     .setUsPonCTagPriority(CLIENT_C_PBIT)
-                    .setIsDhcpRequired(true)
-                    .build();
-            uniTagInformationList.add(uniTagInformation);
+                    .setIsDhcpRequired(true);
+
+            if (id.equals("ALPHe3d1ceb7-1")) {
+                // null remoteId, ds pbit is defined
+                b.setDsPonCTagPriority(5);
+            } else {
+                this.setRemoteId(CLIENT_REMOTE_ID);
+            }
+
+            uniTagInformationList.add(b.build());
 
             if (id.equals("ALPHe3d1cea3-1")) {
                 // a second service on the same UNI
-                uniTagInformation = new UniTagInformation.Builder()
+                UniTagInformation uniTagInformation = new UniTagInformation.Builder()
                         .setPonCTag(VlanId.vlanId(((short) (cTag.toShort() + 1))))
                         .setPonSTag(sTag)
                         .setUsPonCTagPriority(CLIENT_C_PBIT)
@@ -720,14 +732,16 @@ public class DhcpL2RelayTestBase {
      */
     Ethernet constructDhcpDiscoverPacket(MacAddress clientMac) {
         Ethernet pkt = construcEthernetPacket(clientMac, MacAddress.BROADCAST,
-                "255.255.255.255", DHCP.OPCODE_REQUEST, clientMac,
-                Ip4Address.valueOf("0.0.0.0"));
+                                              "255.255.255.255",
+                                              DHCP.OPCODE_REQUEST, clientMac,
+                                              Ip4Address.valueOf("0.0.0.0"));
 
         IPv4 ipv4Packet = (IPv4) pkt.getPayload();
         UDP udpPacket = (UDP) ipv4Packet.getPayload();
         DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
 
         dhcpPacket.setOptions(constructDhcpOptions(DHCP.MsgType.DHCPDISCOVER));
+        log.info("Sending discover packet {}", dhcpPacket.getOptions());
 
         return pkt;
     }
@@ -748,7 +762,6 @@ public class DhcpL2RelayTestBase {
         DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
 
         dhcpPacket.setOptions(constructDhcpOptions(DHCP.MsgType.DHCPDISCOVER));
-
         return pkt;
     }
 
@@ -786,7 +799,7 @@ public class DhcpL2RelayTestBase {
         DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
 
         dhcpPacket.setOptions(constructDhcpOptions(DHCP.MsgType.DHCPOFFER));
-
+        log.info("Sending offer packet {}", dhcpPacket.getOptions());
         return pkt;
     }
 
@@ -815,10 +828,13 @@ public class DhcpL2RelayTestBase {
      * @return Ethernet packet
      */
     Ethernet constructDhcpNakPacket(MacAddress servMac, MacAddress clientMac,
-                                    String ipAddress, String dhcpClientIpAddress) {
+                                    String ipAddress, String dhcpClientIpAddress,
+                                    VlanId clientVlan, short clientPcp) {
 
-        Ethernet pkt = construcEthernetPacket(servMac, clientMac, ipAddress, DHCP.OPCODE_REPLY,
-                clientMac, Ip4Address.valueOf(dhcpClientIpAddress));
+        Ethernet pkt = constructEthernetPacket(servMac, clientMac, ipAddress,
+                                DHCP.OPCODE_REPLY, clientMac,
+                                Ip4Address.valueOf(dhcpClientIpAddress),
+                                clientVlan, clientPcp);
 
         IPv4 ipv4Packet = (IPv4) pkt.getPayload();
         UDP udpPacket = (UDP) ipv4Packet.getPayload();
@@ -875,6 +891,47 @@ public class DhcpL2RelayTestBase {
         optionData = Ip4Address.valueOf(EXPECTED_IP).toOctets();
         option.setData(optionData);
         optionList.add(option);
+
+        // Tests app defined Option82
+        if (packetType.equals(DHCP.MsgType.DHCPOFFER)) {
+            option = new DhcpOption();
+            option.setCode(DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue());
+            DhcpOption82Data option82 = new DhcpOption82Data();
+            option82.setAgentCircuitId(OLT_DEV_ID + "/" + CLIENT_PORT + ":vlan"
+                    + CLIENT_C_TAG + ":pcp" + CLIENT_C_PBIT);
+            option82.setAgentRemoteId("bababababa");
+            option.setData(option82.toByteArray());
+            option.setLength(option82.length());
+            log.info("Added option82 {}", option);
+            optionList.add(option);
+        }
+        // Tests operator configured Option82, resulting in host lookup
+        if (packetType.equals(DHCP.MsgType.DHCPACK)) {
+            option = new DhcpOption();
+            option.setCode(DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue());
+            DhcpOption82Data option82 = new DhcpOption82Data();
+            option82.setAgentCircuitId(CLIENT_CIRCUIT_ID);
+            option82.setAgentRemoteId(CLIENT_REMOTE_ID);
+            option.setData(option82.toByteArray());
+            option.setLength(option82.length());
+            log.info("Added option82 {}", option);
+            optionList.add(option);
+        }
+        // Tests app-defined option82, but uses incorrect connectPoint - packet
+        // should still be forwarded to this connectPoint (ie without host lookup).
+        // Also pbit in circuitId is -1, which means original pbit should be retained
+        // Finally remoteId is missing
+        if (packetType.equals(DHCP.MsgType.DHCPNAK)) {
+            option = new DhcpOption();
+            option.setCode(DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue());
+            DhcpOption82Data option82 = new DhcpOption82Data();
+            option82.setAgentCircuitId("of:0000b86a974385f7/32" + ":vlan"
+                    + VlanId.vlanId((short) 111) + ":pcp-1");
+            option.setData(option82.toByteArray());
+            option.setLength(option82.length());
+            log.info("Added option82 {}", option);
+            optionList.add(option);
+        }
 
         // End Option.
         option = new DhcpOption();

@@ -16,14 +16,15 @@
 package org.opencord.dhcpl2relay.impl;
 
 import static org.easymock.EasyMock.createMock;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,10 +46,11 @@ import org.onosproject.store.service.TestStorageService;
 import org.opencord.dhcpl2relay.DhcpAllocationInfo;
 import org.opencord.dhcpl2relay.DhcpL2RelayEvent;
 import org.opencord.dhcpl2relay.DhcpL2RelayStoreDelegate;
-import org.opencord.dhcpl2relay.impl.packet.DhcpOption82;
+import org.opencord.dhcpl2relay.impl.packet.DhcpOption82Data;
 import org.slf4j.Logger;
 
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.MoreExecutors;
 
 public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
 
@@ -362,7 +364,7 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
         DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
 
         List<DhcpOption> options = Lists.newArrayList(dhcpPacket.getOptions());
-        DhcpOption82 option82 = new DhcpOption82();
+        DhcpOption82Data option82 = new DhcpOption82Data();
         option82.setAgentCircuitId(CLIENT_CIRCUIT_ID);
 
         DhcpOption option = new DhcpOption()
@@ -377,12 +379,20 @@ public class DhcpL2RelayTest extends DhcpL2RelayTestBase {
     }
 
     public void compareServerPackets(Ethernet sent, Ethernet relayed) {
-
         try {
+            // modify sent packet to create expected packet
             sent.setDestinationMACAddress(CLIENT_MAC);
             sent.setQinQVID(NOT_PROVIDED);
             sent.setQinQPriorityCode((byte) NOT_PROVIDED);
             sent.setVlanID(CLIENT_C_TAG.toShort());
+            DHCP d = ((DHCP) ((UDP) ((IPv4) sent.getPayload()).getPayload())
+                    .getPayload());
+            List<DhcpOption> newOptions = d.getOptions().stream()
+                    .filter(option -> option
+                            .getCode() != DHCP.DHCPOptionCode.OptionCode_CircuitID
+                                    .getValue())
+                    .collect(Collectors.toList());
+            d.setOptions(newOptions);
 
             final ByteBuffer byteBuffer = ByteBuffer.wrap(sent.serialize());
             Ethernet expectedPacket = Ethernet.deserializer().deserialize(byteBuffer.array(),

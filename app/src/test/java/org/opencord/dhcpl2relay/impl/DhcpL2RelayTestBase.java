@@ -80,6 +80,7 @@ import org.onosproject.net.packet.PacketContext;
 import org.onosproject.net.packet.PacketProcessor;
 import org.onosproject.net.packet.PacketServiceAdapter;
 import org.onosproject.net.provider.ProviderId;
+import org.opencord.dhcpl2relay.impl.packet.DhcpOption82Data;
 import org.opencord.sadis.BandwidthProfileInformation;
 import org.opencord.sadis.BaseInformationService;
 import org.opencord.sadis.SadisService;
@@ -107,7 +108,7 @@ public class DhcpL2RelayTestBase {
     static final short CLIENT_C_PBIT = 7;
     static final String CLIENT_ID_1 = "SUBSCRIBER_ID_1";
     static final String CLIENT_NAS_PORT_ID = "PON 1/1";
-    static final String CLIENT_CIRCUIT_ID = "CIR-PON 1/1";
+    static final String CLIENT_CIRCUIT_ID = " "; // CIR-PON 1/1"; XXX
     static final short NOT_PROVIDED = 0;
 
     static final MacAddress CLIENT_MAC = MacAddress.valueOf("00:00:00:00:00:01");
@@ -369,6 +370,7 @@ public class DhcpL2RelayTestBase {
             this.setIPAddress(ipAddress);
             this.setNasPortId(nasPortId);
             this.setCircuitId(circuitId);
+            this.setRemoteId("abba");
             this.setUplinkPort(uplinkPort);
 
             List<UniTagInformation> uniTagInformationList = new ArrayList<>();
@@ -786,7 +788,7 @@ public class DhcpL2RelayTestBase {
         DHCP dhcpPacket = (DHCP) udpPacket.getPayload();
 
         dhcpPacket.setOptions(constructDhcpOptions(DHCP.MsgType.DHCPOFFER));
-
+        log.info("Sending offer packet {}", dhcpPacket.getOptions());
         return pkt;
     }
 
@@ -876,10 +878,25 @@ public class DhcpL2RelayTestBase {
         option.setData(optionData);
         optionList.add(option);
 
+        // DHCP Option82
+        if (packetType == DHCP.MsgType.DHCPOFFER) {
+            option = new DhcpOption();
+            option.setCode(DHCP.DHCPOptionCode.OptionCode_CircuitID.getValue());
+            DhcpOption82Data option82 = new DhcpOption82Data();
+            option82.setAgentCircuitId(OLT_DEV_ID + "/" + CLIENT_PORT + ":vlan"
+                    + CLIENT_C_TAG + ":pcp" + CLIENT_C_PBIT);
+            option82.setAgentRemoteId("bababababa");
+            option.setData(option82.toByteArray());
+            option.setLength(option82.length());
+            log.info("Added option82 {}", option);
+            optionList.add(option);
+        }
+
         // End Option.
         option = new DhcpOption();
         option.setCode(DHCP.DHCPOptionCode.OptionCode_END.getValue());
         option.setLength((byte) 1);
+        // option.setData(new byte[] { 0 }); // XXX why does this not work?
         optionList.add(option);
 
         return optionList;

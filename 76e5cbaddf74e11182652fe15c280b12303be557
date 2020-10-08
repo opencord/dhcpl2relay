@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c0bb3904_4e18b65e",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/packet/DhcpOption82Data.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-10-08T12:27:56Z",
+      "side": 1,
+      "message": "define constants ?",
+      "revId": "76e5cbaddf74e11182652fe15c280b12303be557",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "35ec3cf9_d0a2fc71",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/packet/DhcpOption82Data.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-10-08T12:27:56Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "76e5cbaddf74e11182652fe15c280b12303be557",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

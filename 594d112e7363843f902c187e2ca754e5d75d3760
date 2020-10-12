@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4dd994cf_31229249",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 812,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-10-12T10:37:43Z",
+      "side": 1,
+      "message": "trace + if trace is enabled ? In general I would avoid to have a log message per packet",
+      "revId": "594d112e7363843f902c187e2ca754e5d75d3760",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d536dea7_4c12948b",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 928,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-10-12T10:37:43Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "594d112e7363843f902c187e2ca754e5d75d3760",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "95bd215e_9ecc70f7",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-10-12T10:37:43Z",
+      "side": 1,
+      "message": "are we missing assertions here ?",
+      "revId": "594d112e7363843f902c187e2ca754e5d75d3760",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "061b7de4_53c4db1a",
+        "filename": "app/src/test/java/org/opencord/dhcpl2relay/impl/DhcpL2RelayTest.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2020-10-12T10:37:43Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "594d112e7363843f902c187e2ca754e5d75d3760",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

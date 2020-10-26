@@ -810,9 +810,9 @@ public class DhcpL2Relay
             allocations.put(key, info);
             post(new DhcpL2RelayEvent(DhcpL2RelayEvent.Type.UPDATED, info, inPort));
             if (log.isTraceEnabled()) {
-                log.trace("Finished processing DHCP Packet of type {} from {} "
+                log.trace("Finished processing DHCP Packet of type {} with MAC {} from {} "
                         + "... relaying to dhcpServer",
-                          dhcpPacket.getPacketType(), entry.id());
+                          dhcpPacket.getPacketType(), clientMac, entry.id());
             }
             return etherReply;
         }
@@ -937,13 +937,15 @@ public class DhcpL2Relay
 
         // forward the packet to ConnectPoint where the DHCP server is attached.
         private void relayPacketToServer(Ethernet packet, PacketContext context) {
+            SubscriberAndDeviceInformation entry = getSubscriber(context);
             if (log.isTraceEnabled()) {
                 IPv4 ipv4Packet = (IPv4) packet.getPayload();
                 UDP udpPacket = (UDP) ipv4Packet.getPayload();
                 DHCP dhcpPayload = (DHCP) udpPacket.getPayload();
-                log.trace("Emitting packet to server: packet {}, with MAC {}",
+                log.trace("Emitting packet to server: packet {}, with MAC {} from {}",
                           getDhcpPacketType(dhcpPayload),
-                          MacAddress.valueOf(dhcpPayload.getClientHardwareAddress()));
+                          MacAddress.valueOf(dhcpPayload.getClientHardwareAddress()),
+                          entry.id());
             }
             ConnectPoint toSendTo = null;
             if (!useOltUplink) {
@@ -964,7 +966,6 @@ public class DhcpL2Relay
                 }
                 packetService.emit(o);
 
-                SubscriberAndDeviceInformation entry = getSubscriber(context);
                 updateDhcpRelayCountersStore(entry, DhcpL2RelayCounterNames
                         .valueOf("PACKETS_TO_SERVER"));
             } else {

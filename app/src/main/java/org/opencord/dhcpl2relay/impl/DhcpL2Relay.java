@@ -738,7 +738,7 @@ public class DhcpL2Relay
                 return null;
             }
 
-            Ethernet etherReply = ethernetPacket;
+            Ethernet etherReply = (Ethernet) ethernetPacket.clone();
 
             IPv4 ipv4Packet = (IPv4) etherReply.getPayload();
             UDP udpPacket = (UDP) ipv4Packet.getPayload();

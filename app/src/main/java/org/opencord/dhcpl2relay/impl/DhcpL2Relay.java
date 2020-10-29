@@ -1028,7 +1028,9 @@ public class DhcpL2Relay
             } else {
                 option82.setAgentCircuitId(entry.circuitId());
             }
-            option82.setAgentRemoteId(entry.remoteId());
+            if (entry.remoteId() != null && !entry.remoteId().isBlank()) {
+                option82.setAgentRemoteId(entry.remoteId());
+            }
             if (log.isTraceEnabled()) {
                 log.trace("adding option82 {} ", option82);
             }

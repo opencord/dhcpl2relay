@@ -586,6 +586,7 @@ public class DhcpL2RelayTestBase {
         }
 
         @Override
+        @SuppressWarnings({"TypeParameterUnusedInFormals"})
         public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
                 throws ExecutionException, InterruptedException {
             throw new UnsupportedOperationException();

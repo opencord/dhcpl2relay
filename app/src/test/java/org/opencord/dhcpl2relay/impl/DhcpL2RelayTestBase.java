@@ -586,12 +586,14 @@ public class DhcpL2RelayTestBase {
         }
 
         @Override
+        @SuppressWarnings({"TypeParameterUnusedInFormals"})
         public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
                 throws ExecutionException, InterruptedException {
             throw new UnsupportedOperationException();
         }
 
         @Override
+        @SuppressWarnings({"TypeParameterUnusedInFormals"})
         public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
                 throws ExecutionException, InterruptedException, TimeoutException {
             throw new UnsupportedOperationException();
@@ -618,6 +620,7 @@ public class DhcpL2RelayTestBase {
         }
 
         @Override
+        @SuppressWarnings({"TypeParameterUnusedInFormals"})
         public <T> Future<T> submit(Callable<T> task) {
             throw new UnsupportedOperationException();
         }

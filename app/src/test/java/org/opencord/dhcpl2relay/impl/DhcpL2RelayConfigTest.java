@@ -114,7 +114,7 @@ public class DhcpL2RelayConfigTest extends DhcpL2RelayTestBase {
     /**
      * Mocks the network config registry.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"})
     static final class TestNetworkConfigRegistry
             extends NetworkConfigRegistryAdapter {
         @Override

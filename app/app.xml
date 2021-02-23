@@ -18,8 +18,9 @@
      version="${project.version}"
      category="default" url="http://onosproject.org" title="DHCP L2 Relay"
      featuresRepo="mvn:${project.groupId}/${project.artifactId}/${project.version}/xml/features"
-     features="${project.artifactId}" apps="org.opencord.sadis">
+     features="${project.artifactId}">
     <description>${project.description}</description>
     <artifact>mvn:${project.groupId}/${project.artifactId}/${project.version}</artifact>
-    <artifact>mvn:${project.groupId}/dhcpl2relay-api/${project.version}</artifact>
+    <artifact>mvn:${project.groupId}/dhcpl2relay-api/${dhcpl2relay.api.version}</artifact>
+    <artifact>mvn:${project.groupId}/sadis-api/${sadis.api.version}</artifact>
 </app>

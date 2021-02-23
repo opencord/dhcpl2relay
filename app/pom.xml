@@ -65,7 +65,7 @@
         <dependency>
             <groupId>org.opencord</groupId>
             <artifactId>dhcpl2relay-api</artifactId>
-            <version>${project.version}</version>
+            <version>${dhcpl2relay.api.version}</version>
             <scope>compile</scope>
         </dependency>
 

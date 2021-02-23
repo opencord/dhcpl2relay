@@ -116,6 +116,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,7 +138,7 @@ import com.google.common.collect.Sets;
 public class DhcpL2Relay
         extends AbstractListenerManager<DhcpL2RelayEvent, DhcpL2RelayListener>
         implements DhcpL2RelayService {
-
+    private static final String SADIS_NOT_RUNNING = "Sadis is not running.";
     public static final String DHCP_L2RELAY_APP = "org.opencord.dhcpl2relay";
     private static final String HOST_LOC_PROVIDER =
             "org.onosproject.provider.host.impl.HostLocationProvider";
@@ -147,8 +148,8 @@ public class DhcpL2Relay
 
     private final Set<ConfigFactory> factories = ImmutableSet.of(
             new ConfigFactory<ApplicationId, DhcpL2RelayConfig>(APP_SUBJECT_FACTORY,
-                                                                DhcpL2RelayConfig.class,
-                                                                "dhcpl2relay") {
+                    DhcpL2RelayConfig.class,
+                    "dhcpl2relay") {
                 @Override
                 public DhcpL2RelayConfig createConfig() {
                     return new DhcpL2RelayConfig();
@@ -171,8 +172,11 @@ public class DhcpL2Relay
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected ComponentConfigService componentConfigService;
 
-    @Reference(cardinality = ReferenceCardinality.MANDATORY)
-    protected SadisService sadisService;
+    @Reference(cardinality = ReferenceCardinality.OPTIONAL,
+            bind = "bindSadisService",
+            unbind = "unbindSadisService",
+            policy = ReferencePolicy.DYNAMIC)
+    protected volatile SadisService sadisService;
 
     @Reference(cardinality = ReferenceCardinality.MANDATORY)
     protected DeviceService deviceService;
@@ -263,8 +267,11 @@ public class DhcpL2Relay
         mastershipService.addListener(changeListener);
         deviceService.addListener(deviceListener);
 
-        subsService = sadisService.getSubscriberInfoService();
-
+        if (sadisService != null) {
+            subsService = sadisService.getSubscriberInfoService();
+        } else {
+            log.warn(SADIS_NOT_RUNNING);
+        }
         factories.forEach(cfgService::registerConfigFactory);
         //update the dhcp server configuration.
         updateConfig();
@@ -326,9 +333,21 @@ public class DhcpL2Relay
                 packetProcessorExecutor.shutdown();
             }
             packetProcessorExecutor = newFixedThreadPool(packetProcessorThreads,
-                                                         groupedThreads("onos/dhcp",
-                                                                        "dhcp-packet-%d", log));
+                    groupedThreads("onos/dhcp",
+                            "dhcp-packet-%d", log));
         }
+    }
+
+    protected void bindSadisService(SadisService service) {
+        sadisService = service;
+        subsService = sadisService.getSubscriberInfoService();
+        log.info("Sadis-service binds to onos.");
+    }
+
+    protected void unbindSadisService(SadisService service) {
+        sadisService = null;
+        subsService = null;
+        log.info("Sadis-service unbinds from onos.");
     }
 
     @Override
@@ -464,6 +483,10 @@ public class DhcpL2Relay
      * are returned
      */
     private List<ConnectPoint> getUplinkPortsOfOlts() {
+        if (subsService == null) {
+            log.warn(SADIS_NOT_RUNNING);
+            return Lists.newArrayList();
+        }
         List<ConnectPoint> cps = new ArrayList<>();
 
         // find all the olt devices and if their uplink ports are visible
@@ -478,7 +501,7 @@ public class DhcpL2Relay
             }
 
             String devSerialNo = d.serialNumber();
-            SubscriberAndDeviceInformation deviceInfo = subsService.get(devSerialNo);
+            SubscriberAndDeviceInformation deviceInfo = getSubscriberAndDeviceInfo(devSerialNo);
             log.debug("getUplinkPortsOfOlts: Found device: {}", deviceInfo);
             if (deviceInfo != null) {
                 // check if the uplink port with that number is available on the device
@@ -493,6 +516,14 @@ public class DhcpL2Relay
         return cps;
     }
 
+    private SubscriberAndDeviceInformation getSubscriberAndDeviceInfo(String portOrDevice) {
+        if (subsService == null) {
+            log.warn(SADIS_NOT_RUNNING);
+            return null;
+        }
+        return subsService.get(portOrDevice);
+    }
+
     /**
      * Returns whether the passed port is the uplink port of the olt device.
      */
@@ -500,7 +531,7 @@ public class DhcpL2Relay
         log.debug("isUplinkPortOfOlt: DeviceId: {} Port: {}", dId, p);
 
         Device d = deviceService.getDevice(dId);
-        SubscriberAndDeviceInformation deviceInfo = subsService.get(d.serialNumber());
+        SubscriberAndDeviceInformation deviceInfo = getSubscriberAndDeviceInfo(d.serialNumber());
 
         if (deviceInfo != null) {
             return (deviceInfo.uplinkPort() == p.number().toLong());
@@ -515,7 +546,7 @@ public class DhcpL2Relay
     private ConnectPoint getUplinkConnectPointOfOlt(DeviceId dId) {
 
         Device d = deviceService.getDevice(dId);
-        SubscriberAndDeviceInformation deviceInfo = subsService.get(d.serialNumber());
+        SubscriberAndDeviceInformation deviceInfo = getSubscriberAndDeviceInfo(d.serialNumber());
         log.debug("getUplinkConnectPointOfOlt DeviceId: {} devInfo: {}", dId, deviceInfo);
         if (deviceInfo != null) {
             PortNumber pNum = PortNumber.portNumber(deviceInfo.uplinkPort());
@@ -1148,7 +1179,7 @@ public class DhcpL2Relay
         private SubscriberAndDeviceInformation getSubscriber(ConnectPoint subsCp) {
             if (subsCp != null) {
                 String portName = getPortName(subsCp);
-                return subsService.get(portName);
+                return getSubscriberAndDeviceInfo(portName);
             }
             return null;
         }
@@ -1163,7 +1194,7 @@ public class DhcpL2Relay
          */
         private SubscriberAndDeviceInformation getSubscriber(PacketContext context) {
             String portName = getPortName(context.inPacket().receivedFrom());
-            return subsService.get(portName);
+            return getSubscriberAndDeviceInfo(portName);
         }
 
         /**
@@ -1267,7 +1298,7 @@ public class DhcpL2Relay
             String serialNo = deviceService
                     .getDevice(context.inPacket().receivedFrom().deviceId())
                     .serialNumber();
-            return subsService.get(serialNo);
+            return getSubscriberAndDeviceInfo(serialNo);
         }
 
     }

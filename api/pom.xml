@@ -24,6 +24,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <version>${dhcpl2relay.api.version}</version>
     <artifactId>dhcpl2relay-api</artifactId>
     <packaging>bundle</packaging>
     <description>DHCP L2 Relay application API</description>

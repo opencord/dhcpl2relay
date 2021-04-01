@@ -673,7 +673,7 @@ public class DhcpL2Relay
 
             MacAddress clientMacAddress = MacAddress.valueOf(dhcpPayload.getClientHardwareAddress());
 
-            log.info("Received DHCP Packet of type {} from {} with Client MacAddress {} and vlan {}",
+            log.debug("Received DHCP Packet of type {} from {} with Client MacAddress {} and vlan {}",
                      incomingPacketType, context.inPacket().receivedFrom(),
                      clientMacAddress, packet.getVlanID());
 

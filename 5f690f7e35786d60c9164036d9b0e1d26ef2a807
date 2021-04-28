@@ -16,6 +16,24 @@
       "revId": "5f690f7e35786d60c9164036d9b0e1d26ef2a807",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d22db1af_d7c05714",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/OsgiPropertyConstants.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1000681
+      },
+      "writtenOn": "2021-04-28T13:57:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2fb63f6a_7477770b",
+      "revId": "5f690f7e35786d60c9164036d9b0e1d26ef2a807",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
     }
   ]
 }

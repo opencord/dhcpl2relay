@@ -16,6 +16,7 @@
 package org.opencord.dhcpl2relay.impl;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
 import static org.onlab.packet.MacAddress.valueOf;
 import static org.onlab.util.Tools.groupedThreads;
@@ -239,9 +240,11 @@ public class DhcpL2Relay
     private DhcpL2RelayStoreDelegate delegate = new InnerDhcpL2RelayStoreDelegate();
 
     protected ExecutorService packetProcessorExecutor;
+    protected ExecutorService eventHandlerExecutor;
 
     @Activate
     protected void activate(ComponentContext context) {
+        eventHandlerExecutor = newSingleThreadExecutor(groupedThreads("onos/dhcp", "dhcp-event-%d", log));
 
         //start the dhcp relay agent
         appId = coreService.registerApplication(DHCP_L2RELAY_APP);
@@ -302,6 +305,7 @@ public class DhcpL2Relay
         cancelDhcpPktsFromServer();
 
         packetProcessorExecutor.shutdown();
+        eventHandlerExecutor.shutdown();
         componentConfigService.unregisterProperties(getClass(), false);
         deviceService.removeListener(deviceListener);
         mastershipService.removeListener(changeListener);
@@ -1393,6 +1397,10 @@ public class DhcpL2Relay
     private class InnerDeviceListener implements DeviceListener {
         @Override
         public void event(DeviceEvent event) {
+            eventHandlerExecutor.submit(() -> handleDeviceEvent(event));
+        }
+
+        private void handleDeviceEvent(DeviceEvent event) {
             final DeviceId deviceId = event.subject().id();
 
             // Ensure only one instance handles the event
@@ -1494,3 +1502,4 @@ public class DhcpL2Relay
         }
     }
 }
+

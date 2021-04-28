@@ -39,3 +39,4 @@ public final class OsgiPropertyConstants {
     public static final String SYNC_COUNTERS_RATE = "syncCountersRate";
     public static final int SYNC_COUNTERS_RATE_DEFAULT = 5;
 }
+

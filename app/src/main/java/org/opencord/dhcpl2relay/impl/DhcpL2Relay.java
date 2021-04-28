@@ -22,6 +22,8 @@ import static org.onlab.util.Tools.groupedThreads;
 import static org.onosproject.net.config.basics.SubjectFactories.APP_SUBJECT_FACTORY;
 import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.ENABLE_DHCP_BROADCAST_REPLIES;
 import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.ENABLE_DHCP_BROADCAST_REPLIES_DEFAULT;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.EVENT_HANDLER_THREADS;
+import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.EVENT_HANDLER_THREADS_DEFAULT;
 import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.OPTION_82;
 import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.OPTION_82_DEFAULT;
 import static org.opencord.dhcpl2relay.impl.OsgiPropertyConstants.PACKET_PROCESSOR_THREADS;
@@ -134,6 +136,7 @@ import com.google.common.collect.Sets;
                 OPTION_82 + ":Boolean=" + OPTION_82_DEFAULT,
                 ENABLE_DHCP_BROADCAST_REPLIES + ":Boolean=" + ENABLE_DHCP_BROADCAST_REPLIES_DEFAULT,
                 PACKET_PROCESSOR_THREADS + ":Integer=" + PACKET_PROCESSOR_THREADS_DEFAULT,
+                EVENT_HANDLER_THREADS + ":Integer=" + EVENT_HANDLER_THREADS_DEFAULT,
         })
 public class DhcpL2Relay
         extends AbstractListenerManager<DhcpL2RelayEvent, DhcpL2RelayListener>
@@ -214,6 +217,11 @@ public class DhcpL2Relay
      */
     protected int packetProcessorThreads = PACKET_PROCESSOR_THREADS_DEFAULT;
 
+    /**
+     * Number of threads used to handle device events.
+     */
+    protected int eventHandlerThreads = EVENT_HANDLER_THREADS_DEFAULT;
+
     ScheduledFuture<?> refreshTask;
     ScheduledExecutorService refreshService = Executors.newSingleThreadScheduledExecutor();
 
@@ -239,6 +247,7 @@ public class DhcpL2Relay
     private DhcpL2RelayStoreDelegate delegate = new InnerDhcpL2RelayStoreDelegate();
 
     protected ExecutorService packetProcessorExecutor;
+    protected ExecutorService eventHandlerExecutor;
 
     @Activate
     protected void activate(ComponentContext context) {
@@ -302,6 +311,7 @@ public class DhcpL2Relay
         cancelDhcpPktsFromServer();
 
         packetProcessorExecutor.shutdown();
+        eventHandlerExecutor.shutdown();
         componentConfigService.unregisterProperties(getClass(), false);
         deviceService.removeListener(deviceListener);
         mastershipService.removeListener(changeListener);
@@ -335,6 +345,19 @@ public class DhcpL2Relay
             packetProcessorExecutor = newFixedThreadPool(packetProcessorThreads,
                     groupedThreads("onos/dhcp",
                             "dhcp-packet-%d", log));
+        }
+
+        s = Tools.get(properties, EVENT_HANDLER_THREADS);
+        int oldEventProcessorThreads = eventHandlerThreads;
+        eventHandlerThreads = Strings.isNullOrEmpty(s) ? oldEventProcessorThreads
+                : Integer.parseInt(s.trim());
+        if (eventHandlerExecutor == null || oldEventProcessorThreads != eventHandlerThreads) {
+            if (eventHandlerExecutor != null) {
+                eventHandlerExecutor.shutdown();
+            }
+            eventHandlerExecutor = newFixedThreadPool(eventHandlerThreads,
+                    groupedThreads("onos/dhcp",
+                            "dhcp-event-%d", log));
         }
     }
 
@@ -1397,6 +1420,10 @@ public class DhcpL2Relay
     private class InnerDeviceListener implements DeviceListener {
         @Override
         public void event(DeviceEvent event) {
+            eventHandlerExecutor.submit(() -> handleDeviceEvent(event));
+        }
+
+        private void handleDeviceEvent(DeviceEvent event) {
             final DeviceId deviceId = event.subject().id();
 
             // Ensure only one instance handles the event
@@ -1498,3 +1525,4 @@ public class DhcpL2Relay
         }
     }
 }
+

@@ -36,6 +36,10 @@ public final class OsgiPropertyConstants {
     public static final String PACKET_PROCESSOR_THREADS = "packetProcessorThreads";
     public static final int PACKET_PROCESSOR_THREADS_DEFAULT = 10;
 
+    public static final String EVENT_HANDLER_THREADS = "eventHandlerThreads";
+    public static final int EVENT_HANDLER_THREADS_DEFAULT = 10;
+
     public static final String SYNC_COUNTERS_RATE = "syncCountersRate";
     public static final int SYNC_COUNTERS_RATE_DEFAULT = 5;
 }
+

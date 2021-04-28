@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2fb63f6a_7477770b",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/OsgiPropertyConstants.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2021-04-28T12:22:55Z",
+      "side": 1,
+      "message": "seems a bit excessive for the device related events, maybe 4 ?",
+      "revId": "5f690f7e35786d60c9164036d9b0e1d26ef2a807",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

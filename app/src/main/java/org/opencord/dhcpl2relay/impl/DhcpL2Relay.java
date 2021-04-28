@@ -16,6 +16,7 @@
 package org.opencord.dhcpl2relay.impl;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.onlab.packet.DHCP.DHCPOptionCode.OptionCode_MessageType;
 import static org.onlab.packet.MacAddress.valueOf;
 import static org.onlab.util.Tools.groupedThreads;
@@ -239,6 +240,7 @@ public class DhcpL2Relay
     private DhcpL2RelayStoreDelegate delegate = new InnerDhcpL2RelayStoreDelegate();
 
     protected ExecutorService packetProcessorExecutor;
+    protected ExecutorService eventHandlerExecutor;
 
     @Activate
     protected void activate(ComponentContext context) {
@@ -262,6 +264,8 @@ public class DhcpL2Relay
                 .build();
 
         dhcpL2RelayCounters.setDelegate(delegate);
+
+        eventHandlerExecutor = newSingleThreadExecutor(groupedThreads("onos/dhcp", "dhcp-event-%d", log));
 
         cfgService.addListener(cfgListener);
         mastershipService.addListener(changeListener);
@@ -302,6 +306,7 @@ public class DhcpL2Relay
         cancelDhcpPktsFromServer();
 
         packetProcessorExecutor.shutdown();
+        eventHandlerExecutor.shutdown();
         componentConfigService.unregisterProperties(getClass(), false);
         deviceService.removeListener(deviceListener);
         mastershipService.removeListener(changeListener);
@@ -1310,7 +1315,10 @@ public class DhcpL2Relay
 
         @Override
         public void event(NetworkConfigEvent event) {
+            eventHandlerExecutor.submit(() -> handleNetworkConfigEventEvent(event));
+        }
 
+        private void handleNetworkConfigEventEvent(NetworkConfigEvent event) {
             if ((event.type() == NetworkConfigEvent.Type.CONFIG_ADDED ||
                     event.type() == NetworkConfigEvent.Type.CONFIG_UPDATED) &&
                     event.configClass().equals(DhcpL2RelayConfig.class)) {
@@ -1327,11 +1335,15 @@ public class DhcpL2Relay
     private class InnerMastershipListener implements MastershipListener {
         @Override
         public void event(MastershipEvent event) {
+            eventHandlerExecutor.submit(() -> handleMastershipEvent(event));
+        }
+
+        private void handleMastershipEvent(MastershipEvent event) {
             if (!useOltUplink) {
                 if (dhcpServerConnectPoint.get() != null &&
                         dhcpServerConnectPoint.get().deviceId().
                                 equals(event.subject())) {
-                    log.trace("Mastership Event recevived for {}", event.subject());
+                    log.trace("Mastership Event received for {}", event.subject());
                     // mastership of the device for our connect point has changed
                     // reselect
                     selectServerConnectPoint();
@@ -1393,6 +1405,10 @@ public class DhcpL2Relay
     private class InnerDeviceListener implements DeviceListener {
         @Override
         public void event(DeviceEvent event) {
+            eventHandlerExecutor.submit(() -> handleDeviceEvent(event));
+        }
+
+        private void handleDeviceEvent(DeviceEvent event) {
             final DeviceId deviceId = event.subject().id();
 
             // Ensure only one instance handles the event

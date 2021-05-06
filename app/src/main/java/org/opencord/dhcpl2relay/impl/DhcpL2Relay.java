@@ -1368,26 +1368,22 @@ public class DhcpL2Relay
 
     /**
      * Checks for mastership or falls back to leadership on deviceId.
-     * If the node is not master and device is available
-     * or the device is not available and the leader is different
-     * we let master or leader else handle it
+     * If the device is available use mastership,
+     * otherwise fallback on leadership.
      * Leadership on the device topic is needed because the master can be NONE
      * in case the device went away, we still need to handle events
      * consistently
      */
     private boolean isLocalLeader(DeviceId deviceId) {
-        if (!mastershipService.isLocalMaster(deviceId)) {
-            // When the device is available we just check the mastership
-            if (deviceService.isAvailable(deviceId)) {
-                return false;
-            }
+        if (deviceService.isAvailable(deviceId)) {
+            return mastershipService.isLocalMaster(deviceId);
+        } else {
             // Fallback with Leadership service - device id is used as topic
             NodeId leader = leadershipService.runForLeadership(
                     deviceId.toString()).leaderNodeId();
             // Verify if this node is the leader
             return clusterService.getLocalNode().id().equals(leader);
         }
-        return true;
     }
 
     /**

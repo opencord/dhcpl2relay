@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f7e6b6aa_4399c30b",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 358,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2021-05-17T07:04:59Z",
+      "side": 1,
+      "message": "make this the single threaded executor pier is talking about. The reasoning is that if you have 4 threads a port down could be processed after a device removed event and that could cause inconsistencies.",
+      "revId": "76978b579891277747db7fdf2203c4635d2c9b87",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

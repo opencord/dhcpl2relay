@@ -16,6 +16,24 @@
       "revId": "9e1c19d5e85b1f308227d8b9d072a3362a68e379",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b52dbc93_e125af9e",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 247,
+      "author": {
+        "id": 1000681
+      },
+      "writtenOn": "2021-05-17T08:22:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1d621994_a9666826",
+      "revId": "9e1c19d5e85b1f308227d8b9d072a3362a68e379",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": false
     }
   ]
 }

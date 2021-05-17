@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1d621994_a9666826",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 247,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2021-05-17T08:19:54Z",
+      "side": 1,
+      "message": "to be safe I\u0027d place this Lower, after the storage creation, before the deviceService.addListener",
+      "revId": "9e1c19d5e85b1f308227d8b9d072a3362a68e379",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

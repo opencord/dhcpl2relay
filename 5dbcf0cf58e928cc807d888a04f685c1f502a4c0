@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "14eb1d6c_1465aa07",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 7
+      },
+      "lineNbr": 1314,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2021-05-17T10:48:27Z",
+      "side": 1,
+      "message": "agreed with pier, please move the this ConfigListener and the MastershipListener to the new executor you just created. the same approach of the DeviceListener with the inner private method is good.",
+      "revId": "5dbcf0cf58e928cc807d888a04f685c1f502a4c0",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

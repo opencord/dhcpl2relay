@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f8a00ff8_bde4e847",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 1506,
+      "author": {
+        "id": 1000461
+      },
+      "writtenOn": "2021-05-17T09:19:35Z",
+      "side": 1,
+      "message": "remove",
+      "revId": "22ac1cb76ed9ebf640bcfa85dca41a002051ae11",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "81ab9a92_39fecaf4",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/OsgiPropertyConstants.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 1000461
+      },
+      "writtenOn": "2021-05-17T09:19:35Z",
+      "side": 1,
+      "message": "remove",
+      "revId": "22ac1cb76ed9ebf640bcfa85dca41a002051ae11",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

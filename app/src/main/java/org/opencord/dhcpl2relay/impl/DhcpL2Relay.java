@@ -765,12 +765,6 @@ public class DhcpL2Relay
                           context.inPacket().receivedFrom(), ethernetPacket);
             }
 
-            MacAddress relayAgentMac = relayAgentMacAddress(context);
-            if (relayAgentMac == null) {
-                log.warn("RelayAgent MAC not found ");
-                return null;
-            }
-
             Ethernet etherReply = (Ethernet) ethernetPacket.clone();
 
             IPv4 ipv4Packet = (IPv4) etherReply.getPayload();
@@ -815,6 +809,12 @@ public class DhcpL2Relay
             ipv4Packet.setPayload(udpPacket);
             etherReply.setPayload(ipv4Packet);
             if (modifyClientPktsSrcDstMac) {
+                MacAddress relayAgentMac = relayAgentMacAddress(context);
+                if (relayAgentMac == null) {
+                    log.warn("Requesting packet src but RelayAgent MAC not found for {} in sadis",
+                             context.inPacket().receivedFrom().deviceId());
+                    return null;
+                }
                 etherReply.setSourceMACAddress(relayAgentMac);
                 etherReply.setDestinationMACAddress(dhcpConnectMac);
             }

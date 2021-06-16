@@ -765,12 +765,6 @@ public class DhcpL2Relay
                           context.inPacket().receivedFrom(), ethernetPacket);
             }
 
-            MacAddress relayAgentMac = relayAgentMacAddress(context);
-            if (relayAgentMac == null) {
-                log.warn("RelayAgent MAC not found ");
-                return null;
-            }
-
             Ethernet etherReply = (Ethernet) ethernetPacket.clone();
 
             IPv4 ipv4Packet = (IPv4) etherReply.getPayload();
@@ -815,6 +809,13 @@ public class DhcpL2Relay
             ipv4Packet.setPayload(udpPacket);
             etherReply.setPayload(ipv4Packet);
             if (modifyClientPktsSrcDstMac) {
+                MacAddress relayAgentMac = relayAgentMacAddress(context);
+                if (relayAgentMac == null) {
+                    log.warn("Rewriting src MAC failed because OLT MAC not found for {} in sadis. " +
+                                     "Packet is dropped, can't act as RelayAgent",
+                             context.inPacket().receivedFrom().deviceId());
+                    return null;
+                }
                 etherReply.setSourceMACAddress(relayAgentMac);
                 etherReply.setDestinationMACAddress(dhcpConnectMac);
             }
@@ -1287,7 +1288,7 @@ public class DhcpL2Relay
         private MacAddress relayAgentMacAddress(PacketContext context) {
             SubscriberAndDeviceInformation device = this.getDevice(context);
             if (device == null) {
-                log.warn("Device not found for {}", context.inPacket().receivedFrom());
+                log.warn("Information for Device {} not found in Sadis", context.inPacket().receivedFrom());
                 return null;
             }
             return device.hardwareIdentifier();

@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9128ea25_52bcd739",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 769,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2021-06-17T13:01:58Z",
+      "side": 0,
+      "message": "it might be better add modifyClientPktsSrcDstMac to this condition - if the packet is malformed can be risky go further in the processing and then drop.",
+      "revId": "ad640f81fb1c6c4d6ee1ccf2e8bcbb5f7ef1f9e7",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

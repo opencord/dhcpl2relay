@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "834f9a10_a3333e2d",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 814,
+      "author": {
+        "id": 1000042
+      },
+      "writtenOn": "2021-06-17T13:01:58Z",
+      "side": 1,
+      "message": "I found a bit cryptic this log message (like the old one) - add at least something say that packet is actually dropped and that you are doing an attempt of rewriting the srcMac.",
+      "revId": "6353bca8196e9ccbc033a4b5896575bb9bd0046d",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

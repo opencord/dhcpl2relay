@@ -16,6 +16,24 @@
       "revId": "ad640f81fb1c6c4d6ee1ccf2e8bcbb5f7ef1f9e7",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "1e2f7c3a_f1885d6c",
+        "filename": "app/src/main/java/org/opencord/dhcpl2relay/impl/DhcpL2Relay.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 769,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2021-06-21T12:11:44Z",
+      "side": 0,
+      "message": "The error here arrives if the device we received the packet is not in Sadis, so we can\u0027t get it\u0027s information. The packet has been already properly serialised so there is no issue of the packet being malformed. I moved it below because we are using this only in the case of the request to swap the Mac.",
+      "parentUuid": "9128ea25_52bcd739",
+      "revId": "ad640f81fb1c6c4d6ee1ccf2e8bcbb5f7ef1f9e7",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
     }
   ]
 }

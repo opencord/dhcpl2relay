@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a4dc62a_88365e03",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1000461
+      },
+      "writtenOn": "2021-06-21T12:55:24Z",
+      "side": 1,
+      "message": "typo",
+      "range": {
+        "startLine": 7,
+        "startChar": 125,
+        "endLine": 7,
+        "endChar": 128
+      },
+      "revId": "d3d7f2cd7f743f1d30b67206acfbc9802bbdd03f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388",
+      "unresolved": true
+    }
+  ]
+}

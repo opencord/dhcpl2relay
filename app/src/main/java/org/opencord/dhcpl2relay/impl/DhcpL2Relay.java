@@ -889,7 +889,7 @@ public class DhcpL2Relay
                 if (opt != null && opt instanceof DhcpRelayAgentOption) {
                     DhcpRelayAgentOption d82 = (DhcpRelayAgentOption) opt;
                     DhcpOption d82ckt = d82.getSubOption(DhcpOption82Data.CIRCUIT_ID_CODE);
-                    if (d82ckt.getData() != null) {
+                    if (d82ckt != null && d82ckt.getData() != null) {
                         r2cData = decodeCircuitId(new String(d82ckt.getData()));
                     }
                 }

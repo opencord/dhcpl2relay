@@ -51,3 +51,34 @@ The default value of this parameter is **false**. Only if this parameter is fals
     }
  ```
 
+# REST API
+
+Information about the DHCP allocations are available through REST API.
+
+You can query all DHCP allocations using the endpoint "/onos/dhcpl2relay/app/allocations", e.g:
+```sh
+$ curl -u karaf:karaf 'http://localhost:8181/onos/dhcpl2relay/app/allocations'
+```
+
+You can also filter by device-id "/onos/dhcpl2relay/app/allocations/{device-id}", e.g:
+```sh
+curl -u karaf:karaf 'http://localhost:8181/onos/dhcpl2relay/app/allocations/of%3A00000a0a0a0a0a0a'
+```
+
+These commands will output a JSON representation of the allocations, e.g:
+```sh
+{
+  "entries": [
+    {
+      "subscriberId": "BBSM000a0001-1",
+      "connectPoint": "of:00000a0a0a0a0a0a/256",
+      "state": "DHCPACK",
+      "macAddress": "2E:0A:00:01:00:00",
+      "vlanId": 900,
+      "circuitId": "BBSM000a0001-1",
+      "ipAllocated": "10.1.0.0",
+      "allocationTimestamp": "2022-05-25T20:09:28.672454Z"
+    }
+  ]
+}
+```

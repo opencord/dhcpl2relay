@@ -38,6 +38,13 @@
         <onos.app.requires>
             org.opencord.sadis
         </onos.app.requires>
+
+        <web.context>/onos/dhcpl2relay</web.context>
+        <api.version>1.0.0</api.version>
+        <api.title>DhcpL2Relay REST API</api.title>
+        <api.description>REST API to query DhcpL2Relay allocation entries.</api.description>
+        <api.package>org.opencord.dhcpl2relay.rest</api.package>
+
     </properties>
 
     <dependencies>
@@ -132,6 +139,19 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.onosproject</groupId>
+            <artifactId>onlab-rest</artifactId>
+            <version>${onos.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -146,6 +166,15 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
                     <instructions>
+                        <_wab>src/main/webapp/</_wab>
+                        <Include-Resource>
+                            WEB-INF/classes/apidoc/swagger.json=target/swagger.json,
+                            {maven-resources}
+                        </Include-Resource>
+                        <Import-Package>
+                            *,org.glassfish.jersey.servlet
+                        </Import-Package>
+                        <Web-ContextPath>${web.context}</Web-ContextPath>
                         <Karaf-Commands>org.opencord.dhcpl2relay.cli</Karaf-Commands>
                     </instructions>
                 </configuration>

@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "89e678e9_ca5a8e81",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000007
+      },
+      "writtenOn": "2022-05-24T17:16:01Z",
+      "side": 1,
+      "message": "@Gustavo this is a great addition, thanks for providing it!\n\nWould you mind adding a couple `curl` examples to the README with the endpoints and the return values?\n\nThanks",
+      "revId": "b4d7471f37420ab48ab3698d5bb9d201cbd14598",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388"
+    }
+  ]
+}

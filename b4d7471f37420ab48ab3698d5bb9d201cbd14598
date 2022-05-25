@@ -16,6 +16,23 @@
       "message": "@Gustavo this is a great addition, thanks for providing it!\n\nWould you mind adding a couple `curl` examples to the README with the endpoints and the return values?\n\nThanks",
       "revId": "b4d7471f37420ab48ab3698d5bb9d201cbd14598",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "d56ba883_2106c4f6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000116
+      },
+      "writtenOn": "2022-05-25T07:41:23Z",
+      "side": 1,
+      "message": "yes, please add the examples in the README file, great work! ",
+      "revId": "b4d7471f37420ab48ab3698d5bb9d201cbd14598",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388"
     }
   ]
 }

@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "12413d6d_6166eb64",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000948
+      },
+      "writtenOn": "2023-01-05T18:57:20Z",
+      "side": 1,
+      "message": "Submit pom.xml changes created by earlier jenkins job.\nThis will trigger the artifact build passed along to maven central.",
+      "revId": "b1a9f28edf09ad0743fe873cbfa2876d56f88097",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388"
+    }
+  ]
+}

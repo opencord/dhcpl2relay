@@ -40,7 +40,7 @@
         </onos.app.requires>
 
         <web.context>/onos/dhcpl2relay</web.context>
-        <api.version>1.0.0</api.version>
+        <api.version>1.0.1</api.version>
         <api.title>DhcpL2Relay REST API</api.title>
         <api.description>REST API to query DhcpL2Relay allocation entries.</api.description>
         <api.package>org.opencord.dhcpl2relay.rest</api.package>

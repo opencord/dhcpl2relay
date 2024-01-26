@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8cb547e0_017773be",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000948
+      },
+      "writtenOn": "2024-01-26T19:17:34Z",
+      "side": 1,
+      "message": "Merge will publish component\u003ddhcpl2relay, release artifact.",
+      "revId": "13c0d4787658dbb2a0a4d6395da58bb40dbab617",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388"
+    }
+  ]
+}

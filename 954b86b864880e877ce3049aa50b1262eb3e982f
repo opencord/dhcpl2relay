@@ -16,6 +16,23 @@
       "message": "recheck\n\nValidate JJB v4",
       "revId": "954b86b864880e877ce3049aa50b1262eb3e982f",
       "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "98df74f1_483ce7e3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000948
+      },
+      "writtenOn": "2024-03-14T13:45:43Z",
+      "side": 1,
+      "message": "recheck\n\nSanity check JJB upgrade: global-jjb v0.60.5\n",
+      "revId": "954b86b864880e877ce3049aa50b1262eb3e982f",
+      "serverId": "2a2bfe1b-c5c2-48ed-9ac8-16438ab24388"
     }
   ]
 }
